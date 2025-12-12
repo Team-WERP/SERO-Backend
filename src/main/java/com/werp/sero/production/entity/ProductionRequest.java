@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
-@Table(name = "sales_order")
+@Table(name = "production_request")
 @NoArgsConstructor
 @Entity
 public class ProductionRequest {
