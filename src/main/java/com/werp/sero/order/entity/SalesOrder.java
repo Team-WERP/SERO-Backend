@@ -1,0 +1,89 @@
+package com.werp.sero.order.entity;
+
+import com.werp.sero.client.entity.Client;
+import com.werp.sero.client.entity.ClientEmployee;
+import com.werp.sero.employee.entity.Employee;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@Table(name = "sales_order")
+@NoArgsConstructor
+@Entity
+public class SalesOrder {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
+    @Column(name = "so_code", nullable = false, unique = true)
+    private String soCode;
+
+    @Column(name = "client_name", nullable = false)
+    private String clientName;
+
+    @Column(name = "ordered_at", nullable = false)
+    private String orderedAt;
+
+    @Column(name = "shipped_at", nullable = false)
+    private String shippedAt;
+
+    @Column(name = "po_code")
+    private String poCode;
+
+    @Column(name = "total_quantity", nullable = false, columnDefinition = "int default 0")
+    private int totalQuantity;
+
+    @Column(name = "total_item_count", nullable = false, columnDefinition = "int default 0")
+    private int totalItemCount;
+
+    @Column(name = "total_price", nullable = false, columnDefinition = "bigint default 0")
+    private long totalPrice;
+
+    @Column(name = "so_url", columnDefinition = "text")
+    private String soUrl;
+
+    @Column(name = "rejection_reason")
+    private String rejectionReason;
+
+    @Column(name = "main_item_name", nullable = false)
+    private String mainItemName;
+
+    private String note;
+
+    @Column(name = "approval_code", unique = true)
+    private String approvalCode;
+
+    @Column(name = "shipping_name", nullable = false)
+    private String shippingName;
+
+    @Column(nullable = false)
+    private String address;
+
+    @Column(columnDefinition = "DECIMAL(10,7)")
+    private Double latitude;
+
+    @Column(columnDefinition = "DECIMAL(10,7)")
+    private Double longitude;
+
+    @Column(name = "recipient_name", nullable = false)
+    private String recipientName;
+
+    @Column(name = "recipient_contact", nullable = false)
+    private String recipientContact;
+
+    @Column(nullable = false, columnDefinition = "varchar(100) default 'ORD_RED'")
+    private String status;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "client_id", nullable = false)
+    private Client client;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "client_manager_id", nullable = false)
+    private ClientEmployee clientEmployee;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "manager_id")
+    private Employee employee;
+}
