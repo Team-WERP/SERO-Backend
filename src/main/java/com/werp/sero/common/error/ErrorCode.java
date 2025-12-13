@@ -8,7 +8,10 @@ public enum ErrorCode {
     /* COMMON */
     ENTITY_NOT_FOUND(HttpStatus.NOT_FOUND, "COMMON001", "Entity not found"),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "COMMON002", "Internal server error"),
-    BAD_REQUEST(HttpStatus.BAD_REQUEST, "COMMON003", "Bad request");
+    BAD_REQUEST(HttpStatus.BAD_REQUEST, "COMMON003", "Bad request"),
+
+    /* ORDER */
+    ORDER_LIST_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER001", "Order list not found");
 
     private final HttpStatus status;
     private final String code;
