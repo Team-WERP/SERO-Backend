@@ -1,4 +1,4 @@
-package com.werp.sero.masterdata.entity;
+package com.werp.sero.commoncode.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
