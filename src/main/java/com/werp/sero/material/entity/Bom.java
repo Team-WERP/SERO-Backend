@@ -25,10 +25,10 @@ public class Bom {
     private String updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "material_id")
+    @JoinColumn(name = "material_id", nullable = false)
     private Material material;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "raw_material_id")
+    @JoinColumn(name = "raw_material_id", nullable = false)
     private Material rawMaterial;
 }
