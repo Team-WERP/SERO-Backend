@@ -16,7 +16,10 @@ public class ProductionRequestItemQuantity {
     private int id;
 
     @Column(nullable = false, columnDefinition = "int default 0")
-    private String quantity;
+    private int quantity;
+
+    @Column(nullable = false)
+    private String status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pr_id", nullable = false)

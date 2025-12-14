@@ -21,6 +21,9 @@ public class ProductionRequest {
     @Column(nullable = false, columnDefinition = "varchar(100) default 'PR_RVW'")
     private String status;
 
+    @Column(name = "production_status")
+    private String productionStatus;
+
     @Column(name = "requested_at", nullable = false)
     private String requestedAt;
 
@@ -42,7 +45,13 @@ public class ProductionRequest {
     @JoinColumn(name = "so_id", nullable = false)
     private SalesOrder salesOrder;
 
+    /** 작성자 (영업팀) */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "manager_id", nullable = false)
-    private Employee employee;
+    @JoinColumn(name = "drafter_id", nullable = false)
+    private Employee drafter;
+
+    /** 담당자 (생산팀, 배정 전 NULL) */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "manager_id")
+    private Employee manager;
 }
