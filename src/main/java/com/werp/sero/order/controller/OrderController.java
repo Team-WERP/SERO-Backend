@@ -1,6 +1,7 @@
 package com.werp.sero.order.controller;
 
 import com.werp.sero.order.dto.OrderDetailResponseDTO;
+import com.werp.sero.order.dto.OrderManagerRequestDTO;
 import com.werp.sero.order.dto.OrderResponseDTO;
 import com.werp.sero.order.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -74,5 +75,34 @@ public class OrderController {
 
         return ResponseEntity.ok(response);
     }
+
+    @Operation(summary = "주문 담당자 배정")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "주문 담당자 배정", content = @Content(
+                    mediaType = "application/json",
+                    array = @ArraySchema(
+                            schema = @Schema(implementation = OrderDetailResponseDTO.class)
+                    )
+            )),
+            @ApiResponse(responseCode = "404", content = @Content(mediaType = "application/json", examples = {
+                    @ExampleObject(name = "EMPLOYEE_NOT_FOUND", value = """
+                            {
+                                "code": "EMPLOYEE002",
+                                "message": "Employee not found"
+                            }
+                            """)
+            }))
+    })
+
+    @PutMapping("/{orderId}/manager")
+    public ResponseEntity<Void> assignOrderManager(
+            @PathVariable("orderId") final int orderId,
+            @RequestBody final OrderManagerRequestDTO request) {
+
+        orderService.assignManagerToOrder(orderId, request.getEmpId());
+
+        return ResponseEntity.noContent().build();
+    }
+
 
 }

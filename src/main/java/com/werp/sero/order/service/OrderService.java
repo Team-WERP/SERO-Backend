@@ -9,4 +9,6 @@ public interface OrderService {
     List<OrderResponseDTO> findOrderList();
 
     OrderDetailResponseDTO findOrderDetails(final int orderId);
+
+    void assignManagerToOrder(final int orderId, final int empId);
 }

@@ -15,7 +15,8 @@ public enum ErrorCode {
     ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER002", "Order not found"),
 
     /* EMPLOYEE */
-    EMPLOYEE_LIST_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER001", "Order list not found");
+    EMPLOYEE_LIST_NOT_FOUND(HttpStatus.NOT_FOUND, "EMP001", "Employee list not found"),
+    EMPLOYEE_NOT_FOUND(HttpStatus.NOT_FOUND, "EMP002", "Employee not found");
 
 
     private final HttpStatus status;

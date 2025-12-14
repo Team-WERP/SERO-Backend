@@ -86,4 +86,8 @@ public class SalesOrder {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manager_id")
     private Employee employee;
+
+    public void updateManager(Employee manager) {
+        this.employee = manager;
+    }
 }
