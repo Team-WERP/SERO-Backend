@@ -2,6 +2,7 @@ package com.werp.sero.order.service;
 
 import com.werp.sero.employee.entity.Employee;
 import com.werp.sero.employee.exception.EmployeeNotFoundException;
+import com.werp.sero.order.dto.OrderCancelRequestDTO;
 import com.werp.sero.order.dto.OrderDetailResponseDTO;
 import com.werp.sero.order.dto.OrderResponseDTO;
 import com.werp.sero.order.entity.SalesOrder;
@@ -53,5 +54,16 @@ public class OrderServiceImpl implements OrderService {
         salesOrder.updateManager(manager);
 
         salesOrderRepository.save(salesOrder);
+    }
+
+    @Transactional
+    @Override
+    public OrderDetailResponseDTO cancelOrder(final int orderId, final OrderCancelRequestDTO request) {
+        SalesOrder salesOrder = salesOrderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException("주문을 찾을 수 없습니다."));
+
+        salesOrder.cancel(request.getRejectionReason());
+
+        return OrderDetailResponseDTO.of(salesOrder);
     }
 }

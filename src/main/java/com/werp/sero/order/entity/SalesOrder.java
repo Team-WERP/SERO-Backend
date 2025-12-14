@@ -90,4 +90,11 @@ public class SalesOrder {
     public void updateManager(Employee manager) {
         this.employee = manager;
     }
+
+    public void cancel(String reason) {
+        final String CANCEL_STATUS = "ORD_CANCEL";
+
+        this.status = CANCEL_STATUS;
+        this.rejectionReason = reason;
+    }
 }

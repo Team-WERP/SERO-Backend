@@ -1,5 +1,6 @@
 package com.werp.sero.order.controller;
 
+import com.werp.sero.order.dto.OrderCancelRequestDTO;
 import com.werp.sero.order.dto.OrderDetailResponseDTO;
 import com.werp.sero.order.dto.OrderManagerRequestDTO;
 import com.werp.sero.order.dto.OrderResponseDTO;
@@ -12,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -104,5 +106,14 @@ public class OrderController {
         return ResponseEntity.noContent().build();
     }
 
+    @PutMapping("/{orderId}/cancel") // 리소스의 상태 일부를 변경하므로 PATCH 사용
+    public ResponseEntity<OrderDetailResponseDTO> cancelOrder(
+            @PathVariable("orderId") final int orderId,
+            @Valid @RequestBody final OrderCancelRequestDTO request) {
+
+        OrderDetailResponseDTO response = orderService.cancelOrder(orderId, request);
+
+        return ResponseEntity.ok(response);
+    }
 
 }
