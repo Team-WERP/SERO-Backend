@@ -1,6 +1,7 @@
 package com.werp.sero.order.controller;
 
-import com.werp.sero.order.dto.OrderResponseDTO;
+import com.werp.sero.order.dto.OrderItemResponseDTO;
+import com.werp.sero.order.service.OrderItemService;
 import com.werp.sero.order.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -13,24 +14,25 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@Tag(name = "order", description = "주문 관련 API")
+@Tag(name = "Order Item", description = "주문 품목 관련 API")
 @RequestMapping("/orders")
 @RequiredArgsConstructor
 @RestController
-public class OrderController {
-    private final OrderService orderService;
+public class OrderItemController {
+    private final OrderItemService orderItemService;
 
-    @Operation(summary = "주문 목록 조회")
+    @Operation(summary = "주문 품목 목록 조회")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "주문 목록 조회", content = @Content(
                     mediaType = "application/json",
                     array = @ArraySchema(
-                            schema = @Schema(implementation = OrderResponseDTO.class)
+                            schema = @Schema(implementation = OrderItemResponseDTO.class)
                     )
             )),
             @ApiResponse(responseCode = "404", content = @Content(mediaType = "application/json", examples = {
@@ -42,12 +44,11 @@ public class OrderController {
                             """)
             }))
     })
-    @GetMapping
-    public ResponseEntity<List<OrderResponseDTO>> findOrderList() {
+    @GetMapping("/{orderId}")
+    public ResponseEntity<List<OrderItemResponseDTO>> findOrderList(@PathVariable("orderId") final int orderId) {
 
-        final List<OrderResponseDTO> response = orderService.findOrderList();
+        final List<OrderItemResponseDTO> response = orderItemService.findOrderItemsById(orderId);
 
         return ResponseEntity.ok(response);
     }
-
 }
