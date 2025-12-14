@@ -3,11 +3,23 @@ package com.werp.sero.material.service;
 import com.werp.sero.material.dto.BomExplosionRequestDTO;
 import com.werp.sero.material.dto.BomExplosionResponseDTO;
 import com.werp.sero.material.dto.BomImplosionResponseDTO;
+import com.werp.sero.material.dto.MaterialSearchResponseDTO;
+
+import java.util.List;
 
 /**
  * BOM 소요량 계산 서비스
  */
 public interface BomCalculationService {
+
+    /**
+     * 자재 검색
+     *
+     * @param keyword 검색어
+     * @param type 자재 타입
+     * @return 검색된 자재 목록
+     */
+    List<MaterialSearchResponseDTO> searchMaterials(String keyword, String type);
 
     /**
      * 정전개: 완제품 생산에 필요한 원부자재 소요량 계산
