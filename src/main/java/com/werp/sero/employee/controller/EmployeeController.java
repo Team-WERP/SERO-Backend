@@ -1,5 +1,7 @@
 package com.werp.sero.employee.controller;
 
+import com.werp.sero.common.security.AccessType;
+import com.werp.sero.common.security.RequirePermission;
 import com.werp.sero.employee.dto.DepartmentWithEmployeesDTO;
 import com.werp.sero.employee.dto.OrganizationResponseDTO;
 import com.werp.sero.employee.service.EmployeeService;
@@ -23,6 +25,7 @@ public class EmployeeController {
      * @return 회사명, 부서 목록, 각 부서별 사원 목록
      */
     @GetMapping("/organization")
+    @RequirePermission(menu = "MM_EMP", authorities = {"AC_SYS", "AC_SAL", "AC_PRO", "AC_WHS"}, accessType = AccessType.READ)
     public OrganizationResponseDTO getOrganization() {
         return employeeService.getOrganization();
     }
@@ -35,6 +38,7 @@ public class EmployeeController {
      * @return 부서 정보 및 해당 부서의 사원 목록
      */
     @GetMapping("/departments/{departmentId}")
+    @RequirePermission(menu = "MM_EMP", authorities = {"AC_SYS", "AC_SAL", "AC_PRO", "AC_WHS"}, accessType = AccessType.READ)
     public DepartmentWithEmployeesDTO getDepartmentEmployees(@PathVariable int departmentId) {
         return employeeService.getDepartmentEmployees(departmentId);
     }

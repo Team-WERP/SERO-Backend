@@ -1,5 +1,7 @@
 package com.werp.sero.material.controller;
 
+import com.werp.sero.common.security.AccessType;
+import com.werp.sero.common.security.RequirePermission;
 import com.werp.sero.material.dto.BomExplosionRequestDTO;
 import com.werp.sero.material.dto.BomExplosionResponseDTO;
 import com.werp.sero.material.dto.BomImplosionResponseDTO;
@@ -30,6 +32,7 @@ public class BomCalculationController {
      * @return 검색된 품목 목록
      */
     @GetMapping("/materials/search")
+    @RequirePermission(menu = "MM_MAT", authorities = {"AC_SYS", "AC_SAL", "AC_PRO", "AC_WHS"}, accessType = AccessType.READ)
     public List<MaterialSearchResponseDTO> searchMaterials(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String type) {
@@ -49,6 +52,7 @@ public class BomCalculationController {
      * @return 필요한 원부자재 목록 및 총 소요량
      */
     @PostMapping("/explosion")
+    @RequirePermission(menu = "MM_MAT", authorities = {"AC_SYS", "AC_SAL", "AC_PRO", "AC_WHS"}, accessType = AccessType.READ)
     public BomExplosionResponseDTO calculateExplosion(@RequestBody BomExplosionRequestDTO request) {
         return bomCalculationService.calculateExplosion(request);
     }
@@ -62,6 +66,7 @@ public class BomCalculationController {
      * @return 해당 원자재를 사용하는 완제품 목록
      */
     @GetMapping("/implosion/{rawMaterialId}")
+    @RequirePermission(menu = "MM_MAT", authorities = {"AC_SYS", "AC_SAL", "AC_PRO", "AC_WHS"}, accessType = AccessType.READ)
     public BomImplosionResponseDTO calculateImplosion(@PathVariable int rawMaterialId) {
         return bomCalculationService.calculateImplosion(rawMaterialId);
     }
