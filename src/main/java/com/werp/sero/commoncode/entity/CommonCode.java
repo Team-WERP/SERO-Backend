@@ -16,8 +16,11 @@ public class CommonCode {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String code;
+
+    @Column(name = "parent_code")
+    private String parentCode;
 
     @Column(name = "sort_order", nullable = false)
     private int sortOrder;
@@ -28,10 +31,6 @@ public class CommonCode {
     private boolean isUsed;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "type_id", nullable = false)
+    @JoinColumn(name = "type_code", referencedColumnName = "code", nullable = false)
     private CommonCodeType commonCodeType;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_id", nullable = false)
-    private CommonCode parentCommonCode;
 }

@@ -13,11 +13,11 @@ public class CommonCodeType {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(nullable = false)
-    private String name;
-
     @Column(nullable = false, unique = true)
     private String code;
+
+    @Column(nullable = false)
+    private String name;
 
     private String description;
 }

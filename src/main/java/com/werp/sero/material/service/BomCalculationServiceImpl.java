@@ -3,6 +3,7 @@ package com.werp.sero.material.service;
 import com.werp.sero.material.dto.BomExplosionRequestDTO;
 import com.werp.sero.material.dto.BomExplosionResponseDTO;
 import com.werp.sero.material.dto.BomImplosionResponseDTO;
+import com.werp.sero.material.dto.MaterialSearchResponseDTO;
 import com.werp.sero.material.entity.Bom;
 import com.werp.sero.material.entity.Material;
 import com.werp.sero.material.exception.MaterialNotFoundException;
@@ -21,6 +22,15 @@ public class BomCalculationServiceImpl implements BomCalculationService {
 
     private final MaterialRepository materialRepository;
     private final BomRepository bomRepository;
+
+    @Override
+    public List<MaterialSearchResponseDTO> searchMaterials(String keyword, String type) {
+        List<Material> materials = materialRepository.findByCondition(type, null, keyword);
+
+        return materials.stream()
+                .map(MaterialSearchResponseDTO::from)
+                .toList();
+    }
 
     @Override
     public BomExplosionResponseDTO calculateExplosion(BomExplosionRequestDTO request) {
