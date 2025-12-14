@@ -19,6 +19,9 @@ public class Client {
     @Column(name = "ceo_name", nullable = false)
     private String ceoName;
 
+    @Column(name = "company_contact", nullable = false)
+    private String companyContact;
+
     @Column(name = "business_no", nullable = false, unique = true)
     private String businessNo;
 

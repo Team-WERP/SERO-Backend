@@ -15,7 +15,11 @@ public enum ErrorCode {
     MATERIAL_CODE_DUPLICATED(HttpStatus.CONFLICT, "MATERIAL002", "Material code already exists"),
 
     /* WAREHOUSE */
-    WAREHOUSE_STOCK_NOT_FOUND(HttpStatus.NOT_FOUND, "WAREHOUSE001", "Warehouse stock not found");
+    WAREHOUSE_STOCK_NOT_FOUND(HttpStatus.NOT_FOUND, "WAREHOUSE001", "Warehouse stock not found"),
+
+    /* CLIENT */
+    CLIENT_NOT_FOUND(HttpStatus.NOT_FOUND, "CLIENT001", "Client not found"),
+    CLIENT_BUSINESS_NO_DUPLICATED(HttpStatus.CONFLICT, "CLIENT002", "Business number already exists");
 
     private final HttpStatus status;
     private final String code;
