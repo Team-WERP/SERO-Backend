@@ -1,7 +1,7 @@
-package com.werp.sero.material.service.warehouse;
+package com.werp.sero.material.service;
 
-import com.werp.sero.material.dto.warehouse.WarehouseStockDetailResponseDTO;
-import com.werp.sero.material.dto.warehouse.WarehouseStockListResponseDTO;
+import com.werp.sero.material.dto.WarehouseStockDetailResponseDTO;
+import com.werp.sero.material.dto.WarehouseStockListResponseDTO;
 import com.werp.sero.material.entity.WarehouseStock;
 import com.werp.sero.material.entity.WarehouseStockHistory;
 import com.werp.sero.material.exception.WarehouseStockNotFoundException;

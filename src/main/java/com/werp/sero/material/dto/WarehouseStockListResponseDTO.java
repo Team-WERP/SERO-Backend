@@ -1,4 +1,4 @@
-package com.werp.sero.material.dto.warehouse;
+package com.werp.sero.material.dto;
 
 import com.werp.sero.material.entity.WarehouseStock;
 import lombok.AllArgsConstructor;

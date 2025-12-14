@@ -1,8 +1,8 @@
-package com.werp.sero.material.controller.warehouse;
+package com.werp.sero.material.controller;
 
-import com.werp.sero.material.dto.warehouse.WarehouseStockDetailResponseDTO;
-import com.werp.sero.material.dto.warehouse.WarehouseStockListResponseDTO;
-import com.werp.sero.material.service.warehouse.WarehouseStockService;
+import com.werp.sero.material.dto.WarehouseStockDetailResponseDTO;
+import com.werp.sero.material.dto.WarehouseStockListResponseDTO;
+import com.werp.sero.material.service.WarehouseStockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
