@@ -44,7 +44,7 @@ public class OrderItemController {
                             """)
             }))
     })
-    @GetMapping("/{orderId}")
+    @GetMapping("/{orderId}/items")
     public ResponseEntity<List<OrderItemResponseDTO>> findOrderList(@PathVariable("orderId") final int orderId) {
 
         final List<OrderItemResponseDTO> response = orderItemService.findOrderItemsById(orderId);

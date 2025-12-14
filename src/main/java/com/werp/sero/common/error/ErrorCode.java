@@ -11,7 +11,8 @@ public enum ErrorCode {
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "COMMON003", "Bad request"),
 
     /* ORDER */
-    ORDER_LIST_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER001", "Order list not found");
+    ORDER_LIST_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER001", "Order list not found"),
+    ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER002", "Order not found");
 
     private final HttpStatus status;
     private final String code;

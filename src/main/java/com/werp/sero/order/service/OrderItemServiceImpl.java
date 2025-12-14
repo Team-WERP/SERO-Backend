@@ -1,7 +1,6 @@
 package com.werp.sero.order.service;
 
 import com.werp.sero.order.dto.OrderItemResponseDTO;
-import com.werp.sero.order.dto.OrderResponseDTO;
 import com.werp.sero.order.entity.SalesOrderItem;
 import com.werp.sero.order.repository.SalesOrderItemRepository;
 import lombok.RequiredArgsConstructor;
