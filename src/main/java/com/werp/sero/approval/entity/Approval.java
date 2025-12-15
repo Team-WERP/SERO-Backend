@@ -39,10 +39,6 @@ public class Approval {
     private String draftedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "document_prefix_id", nullable = false)
-    private DocumentPrefix documentPrefix;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "drafter_id", nullable = false)
     private Employee employee;
 }

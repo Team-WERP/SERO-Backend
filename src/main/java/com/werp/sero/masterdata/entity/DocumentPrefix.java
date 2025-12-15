@@ -1,4 +1,4 @@
-package com.werp.sero.approval.entity;
+package com.werp.sero.masterdata.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
