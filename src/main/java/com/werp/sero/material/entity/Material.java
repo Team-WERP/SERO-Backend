@@ -29,25 +29,25 @@ public class Material {
     @Column(name = "base_unit", nullable = false)
     private String baseUnit;
 
-    private int moq;
+    private Integer moq;
 
     @Column(name = "cycle_time")
-    private int cycleTime;
+    private Integer cycleTime;
 
     @Column(name = "unit_price")
-    private long unitPrice;
+    private Long unitPrice;
 
     @Column(name = "image_url", columnDefinition = "text")
     private String imageUrl;
 
     @Column(name = "conversion_rate")
-    private int conversionRate;
+    private Integer conversionRate;
 
     @Column(name = "safety_stock", nullable = false, columnDefinition = "int default 1")
-    private int safetyStock;
+    private Integer safetyStock;
 
     @Column(name = "raw_material_count")
-    private int rawMaterialCount;
+    private Integer rawMaterialCount;
 
     @Column(nullable = false)
     private String type;
