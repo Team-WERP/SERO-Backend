@@ -2,12 +2,12 @@ package com.werp.sero.order.service;
 
 import com.werp.sero.employee.entity.Employee;
 import com.werp.sero.employee.exception.EmployeeNotFoundException;
+import com.werp.sero.employee.repository.EmployeeRepository;
 import com.werp.sero.order.dto.OrderCancelRequestDTO;
 import com.werp.sero.order.dto.OrderDetailResponseDTO;
 import com.werp.sero.order.dto.OrderResponseDTO;
 import com.werp.sero.order.entity.SalesOrder;
 import com.werp.sero.order.exception.OrderNotFoundException;
-import com.werp.sero.order.repository.EmployeeRepository;
 import com.werp.sero.order.repository.SalesOrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

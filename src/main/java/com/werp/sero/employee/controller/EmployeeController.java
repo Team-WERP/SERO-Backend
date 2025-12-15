@@ -1,5 +1,6 @@
 package com.werp.sero.employee.controller;
 
+import com.werp.sero.employee.dto.DepartmentWithEmployeesDTO;
 import com.werp.sero.employee.dto.EmployeeByDepartmentResponseDTO;
 import com.werp.sero.employee.service.EmployeeService;
 import com.werp.sero.order.dto.OrderResponseDTO;
@@ -47,10 +48,12 @@ public class EmployeeController {
             }))
     })
     @GetMapping
-    public ResponseEntity<List<EmployeeByDepartmentResponseDTO>> getEmployeesByDept(@RequestParam(value = "deptCode", required = true) String deptCode) {
+    public ResponseEntity<List<DepartmentWithEmployeesDTO>> getEmployeesByDept(
+            @RequestParam(value = "deptCode", required = true) String deptCode) {
 
-        final List<EmployeeByDepartmentResponseDTO> employees = employeeService.findEmployeesByDeptCode(deptCode);
+        final List<DepartmentWithEmployeesDTO> hierarchy =
+                employeeService.findEmployeesByDeptCode(deptCode);
 
-        return ResponseEntity.ok(employees);
+        return ResponseEntity.ok(hierarchy);
     }
 }

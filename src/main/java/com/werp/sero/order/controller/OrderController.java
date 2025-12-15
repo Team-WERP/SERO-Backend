@@ -69,7 +69,6 @@ public class OrderController {
                             """)
             }))
     })
-
     @GetMapping("/{orderId}")
     public ResponseEntity<OrderDetailResponseDTO> findOrderDetails(@PathVariable("orderId") final int orderId) {
 
@@ -95,7 +94,6 @@ public class OrderController {
                             """)
             }))
     })
-
     @PutMapping("/{orderId}/manager")
     public ResponseEntity<Void> assignOrderManager(
             @PathVariable("orderId") final int orderId,
@@ -106,7 +104,24 @@ public class OrderController {
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/{orderId}/cancel") // 리소스의 상태 일부를 변경하므로 PATCH 사용
+    @Operation(summary = "주문 취소")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "주문 취소", content = @Content(
+                    mediaType = "application/json",
+                    array = @ArraySchema(
+                            schema = @Schema(implementation = OrderDetailResponseDTO.class)
+                    )
+            )),
+            @ApiResponse(responseCode = "404", content = @Content(mediaType = "application/json", examples = {
+                    @ExampleObject(name = "ORDER_NOT_FOUND", value = """
+                            {
+                                "code": "ORDER002",
+                                "message": "Order not found"
+                            }
+                            """)
+            }))
+    })
+    @PutMapping("/{orderId}/cancel")
     public ResponseEntity<OrderDetailResponseDTO> cancelOrder(
             @PathVariable("orderId") final int orderId,
             @Valid @RequestBody final OrderCancelRequestDTO request) {
