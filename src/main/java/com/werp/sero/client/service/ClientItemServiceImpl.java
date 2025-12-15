@@ -1,7 +1,10 @@
 package com.werp.sero.client.service;
 
+import com.werp.sero.client.dto.ClientItemPriceHistoryResponse;
 import com.werp.sero.client.dto.ClientItemResponse;
 import com.werp.sero.client.entity.ClientItem;
+import com.werp.sero.client.entity.ClientItemPriceHistory;
+import com.werp.sero.client.repository.ClientItemPriceHistoryRepository;
 import com.werp.sero.client.repository.ClientItemRepository;
 import com.werp.sero.client.repository.ClientRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +19,7 @@ public class ClientItemServiceImpl implements ClientItemService{
 
     private final ClientRepository clientRepository;
     private final ClientItemRepository clientItemRepository;
-
+    private final ClientItemPriceHistoryRepository clientItemPriceHistoryRepository;
 
     @Override
     public List<ClientItemResponse> getClientItems(int clientId, String keyword, String status) {
@@ -42,4 +45,24 @@ public class ClientItemServiceImpl implements ClientItemService{
                 .map(ClientItemResponse::from)
                 .collect(Collectors.toList());
     }
+
+
+    @Override
+    public List<ClientItemPriceHistoryResponse> getPriceHistory(int clientId, int itemId) {
+
+        // 1, clientItem이 해당 client에 속하는지 검증
+        clientItemRepository.findById(itemId)
+            .filter(item -> item.getClient().getId() == clientId)
+            .orElseThrow(() -> new RuntimeException("해당 품목을 찾을 수 없습니다."));
+
+        // 2. 단가 이력 조회
+        List<ClientItemPriceHistory> histories = 
+            clientItemPriceHistoryRepository.findByClientIdAndClientItemIdOrderByCreatedAtDesc(clientId, itemId); 
+
+        return histories.stream()
+                .map(ClientItemPriceHistoryResponse::from)
+                .collect(Collectors.toList());
+
+    }
+    
 }

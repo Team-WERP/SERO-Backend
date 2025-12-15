@@ -9,9 +9,9 @@ import lombok.Getter;
 @Builder
 @AllArgsConstructor
 public class ClientItemPriceHistoryResponse {
-    private int id;
-    private int unitPrice;
-    private int contractPrice;
+    private Integer id;
+    private Integer unitPrice;
+    private Integer contractPrice;
     private String reason;
     private String name;
     private String status;
