@@ -5,7 +5,7 @@ import com.werp.sero.client.dto.ClientInfoResponseDTO;
 
 import java.util.List;
 
-public interface ClientService {
+public interface ClientInfoService {
 
     /**
      * 고객사 기본 정보 조회

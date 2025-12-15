@@ -21,7 +21,7 @@ public class MaterialSearchResponseDTO {
     private String spec;
     private String type;
     private String baseUnit;
-    private int rawMaterialCount;
+    private Integer rawMaterialCount;
 
     public static MaterialSearchResponseDTO from(Material material) {
         return MaterialSearchResponseDTO.builder()
@@ -31,7 +31,7 @@ public class MaterialSearchResponseDTO {
                 .spec(material.getSpec())
                 .type(material.getType())
                 .baseUnit(material.getBaseUnit())
-                .rawMaterialCount(material.getRawMaterialCount())
+                .rawMaterialCount(material.getRawMaterialCount() != null ? material.getRawMaterialCount() : 0)
                 .build();
     }
 }

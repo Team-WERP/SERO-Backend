@@ -37,7 +37,7 @@ class BomCalculationControllerTest {
     private BomCalculationService bomCalculationService;
 
     @Test
-    @DisplayName("GET /api/bom/materials/search - 자재 검색 성공")
+    @DisplayName("GET /bom/materials/search - 자재 검색 성공")
     void searchMaterials_Success() throws Exception {
         // given
         List<MaterialSearchResponseDTO> materials = List.of(
@@ -61,7 +61,7 @@ class BomCalculationControllerTest {
         given(bomCalculationService.searchMaterials(anyString(), any())).willReturn(materials);
 
         // when & then
-        mockMvc.perform(get("/api/bom/materials/search")
+        mockMvc.perform(get("/bom/materials/search")
                         .param("keyword", "자재"))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -73,7 +73,7 @@ class BomCalculationControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/bom/materials/search - 타입 필터링")
+    @DisplayName("GET /bom/materials/search - 타입 필터링")
     void searchMaterials_WithTypeFilter() throws Exception {
         // given
         List<MaterialSearchResponseDTO> materials = List.of(
@@ -89,7 +89,7 @@ class BomCalculationControllerTest {
         given(bomCalculationService.searchMaterials(any(), anyString())).willReturn(materials);
 
         // when & then
-        mockMvc.perform(get("/api/bom/materials/search")
+        mockMvc.perform(get("/bom/materials/search")
                         .param("type", "MAT_RAW"))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -100,7 +100,7 @@ class BomCalculationControllerTest {
     }
 
     @Test
-    @DisplayName("POST /api/bom/explosion - BOM 정전개 성공")
+    @DisplayName("POST /bom/explosion - BOM 정전개 성공")
     void calculateExplosion_Success() throws Exception {
         // given
         BomExplosionRequestDTO request = new BomExplosionRequestDTO(1, 100);
@@ -150,7 +150,7 @@ class BomCalculationControllerTest {
                 .willReturn(response);
 
         // when & then
-        mockMvc.perform(post("/api/bom/explosion")
+        mockMvc.perform(post("/bom/explosion")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
@@ -170,7 +170,7 @@ class BomCalculationControllerTest {
     }
 
     @Test
-    @DisplayName("POST /api/bom/explosion - 존재하지 않는 완제품")
+    @DisplayName("POST /bom/explosion - 존재하지 않는 완제품")
     void calculateExplosion_MaterialNotFound() throws Exception {
         // given
         BomExplosionRequestDTO request = new BomExplosionRequestDTO(999, 100);
@@ -178,7 +178,7 @@ class BomCalculationControllerTest {
                 .willThrow(new MaterialNotFoundException("해당 자재를 찾을 수 없습니다. ID: 999"));
 
         // when & then
-        mockMvc.perform(post("/api/bom/explosion")
+        mockMvc.perform(post("/bom/explosion")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
@@ -188,7 +188,7 @@ class BomCalculationControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/bom/implosion/{rawMaterialId} - BOM 역전개 성공")
+    @DisplayName("GET /bom/implosion/{rawMaterialId} - BOM 역전개 성공")
     void calculateImplosion_Success() throws Exception {
         // given
         BomImplosionResponseDTO.MaterialInfo rawMaterial = BomImplosionResponseDTO.MaterialInfo.builder()
@@ -231,7 +231,7 @@ class BomCalculationControllerTest {
         given(bomCalculationService.calculateImplosion(2)).willReturn(response);
 
         // when & then
-        mockMvc.perform(get("/api/bom/implosion/2"))
+        mockMvc.perform(get("/bom/implosion/2"))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.rawMaterial.name").value("원자재A"))
@@ -246,14 +246,14 @@ class BomCalculationControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/bom/implosion/{rawMaterialId} - 존재하지 않는 원자재")
+    @DisplayName("GET /bom/implosion/{rawMaterialId} - 존재하지 않는 원자재")
     void calculateImplosion_MaterialNotFound() throws Exception {
         // given
         given(bomCalculationService.calculateImplosion(999))
                 .willThrow(new MaterialNotFoundException("해당 자재를 찾을 수 없습니다. ID: 999"));
 
         // when & then
-        mockMvc.perform(get("/api/bom/implosion/999"))
+        mockMvc.perform(get("/bom/implosion/999"))
                 .andDo(print())
                 .andExpect(status().is4xxClientError());
 
@@ -261,7 +261,7 @@ class BomCalculationControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/bom/implosion/{rawMaterialId} - 사용처가 없는 원자재")
+    @DisplayName("GET /bom/implosion/{rawMaterialId} - 사용처가 없는 원자재")
     void calculateImplosion_NoUsage() throws Exception {
         // given
         BomImplosionResponseDTO.MaterialInfo rawMaterial = BomImplosionResponseDTO.MaterialInfo.builder()
@@ -283,7 +283,7 @@ class BomCalculationControllerTest {
         given(bomCalculationService.calculateImplosion(2)).willReturn(response);
 
         // when & then
-        mockMvc.perform(get("/api/bom/implosion/2"))
+        mockMvc.perform(get("/bom/implosion/2"))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.rawMaterial.name").value("원자재A"))

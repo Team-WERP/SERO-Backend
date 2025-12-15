@@ -29,7 +29,7 @@ class WarehouseStockControllerTest {
     private WarehouseStockService warehouseStockService;
 
     @Test
-    @DisplayName("GET /api/warehouse-stocks - 전체 조회 성공")
+    @DisplayName("GET /warehouse/stocks - 전체 조회 성공")
     void getWarehouseStocks_Success() throws Exception {
         // given
         List<WarehouseStockListResponseDTO> stocks = List.of(
@@ -56,7 +56,7 @@ class WarehouseStockControllerTest {
                 .willReturn(stocks);
 
         // when & then
-        mockMvc.perform(get("/api/warehouse-stocks"))
+        mockMvc.perform(get("/warehouse/stocks"))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
@@ -69,7 +69,7 @@ class WarehouseStockControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/warehouse-stocks - 창고 ID로 필터링")
+    @DisplayName("GET /warehouse/stocks - 창고 ID로 필터링")
     void getWarehouseStocks_WithWarehouseId() throws Exception {
         // given
         List<WarehouseStockListResponseDTO> stocks = List.of(
@@ -87,7 +87,7 @@ class WarehouseStockControllerTest {
                 .willReturn(stocks);
 
         // when & then
-        mockMvc.perform(get("/api/warehouse-stocks")
+        mockMvc.perform(get("/warehouse/stocks")
                         .param("warehouseId", "1"))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -99,7 +99,7 @@ class WarehouseStockControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/warehouse-stocks - 자재 타입으로 필터링")
+    @DisplayName("GET /warehouse/stocks - 자재 타입으로 필터링")
     void getWarehouseStocks_WithMaterialType() throws Exception {
         // given
         List<WarehouseStockListResponseDTO> stocks = List.of(
@@ -118,7 +118,7 @@ class WarehouseStockControllerTest {
                 .willReturn(stocks);
 
         // when & then
-        mockMvc.perform(get("/api/warehouse-stocks")
+        mockMvc.perform(get("/warehouse/stocks")
                         .param("materialType", "MAT_RAW"))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -130,7 +130,7 @@ class WarehouseStockControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/warehouse-stocks - 재고 상태로 필터링")
+    @DisplayName("GET /warehouse/stocks - 재고 상태로 필터링")
     void getWarehouseStocks_WithStockStatus() throws Exception {
         // given
         List<WarehouseStockListResponseDTO> stocks = List.of(
@@ -148,7 +148,7 @@ class WarehouseStockControllerTest {
                 .willReturn(stocks);
 
         // when & then
-        mockMvc.perform(get("/api/warehouse-stocks")
+        mockMvc.perform(get("/warehouse/stocks")
                         .param("stockStatus", "LOW"))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -160,7 +160,7 @@ class WarehouseStockControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/warehouse-stocks - 키워드로 검색")
+    @DisplayName("GET /warehouse/stocks - 키워드로 검색")
     void getWarehouseStocks_WithKeyword() throws Exception {
         // given
         List<WarehouseStockListResponseDTO> stocks = List.of(
@@ -178,7 +178,7 @@ class WarehouseStockControllerTest {
                 .willReturn(stocks);
 
         // when & then
-        mockMvc.perform(get("/api/warehouse-stocks")
+        mockMvc.perform(get("/warehouse/stocks")
                         .param("keyword", "원자재"))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -190,7 +190,7 @@ class WarehouseStockControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/warehouse-stocks/{id} - 상세 조회 성공")
+    @DisplayName("GET /warehouse/stocks/{id} - 상세 조회 성공")
     void getWarehouseStock_Success() throws Exception {
         // given
         WarehouseStockDetailResponseDTO stock = WarehouseStockDetailResponseDTO.builder()
@@ -203,7 +203,7 @@ class WarehouseStockControllerTest {
         given(warehouseStockService.getWarehouseStockDetail(1)).willReturn(stock);
 
         // when & then
-        mockMvc.perform(get("/api/warehouse-stocks/1"))
+        mockMvc.perform(get("/warehouse/stocks/1"))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
@@ -215,14 +215,14 @@ class WarehouseStockControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/warehouse-stocks/{id} - 존재하지 않는 재고")
+    @DisplayName("GET /warehouse/stocks/{id} - 존재하지 않는 재고")
     void getWarehouseStock_NotFound() throws Exception {
         // given
         given(warehouseStockService.getWarehouseStockDetail(999))
                 .willThrow(new WarehouseStockNotFoundException("재고를 찾을 수 없습니다."));
 
         // when & then
-        mockMvc.perform(get("/api/warehouse-stocks/999"))
+        mockMvc.perform(get("/warehouse/stocks/999"))
                 .andDo(print())
                 .andExpect(status().is4xxClientError());
 
@@ -230,7 +230,7 @@ class WarehouseStockControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/warehouse-stocks - 복합 필터링")
+    @DisplayName("GET /warehouse/stocks - 복합 필터링")
     void getWarehouseStocks_MultipleFilters() throws Exception {
         // given
         List<WarehouseStockListResponseDTO> stocks = List.of(
@@ -249,7 +249,7 @@ class WarehouseStockControllerTest {
                 .willReturn(stocks);
 
         // when & then
-        mockMvc.perform(get("/api/warehouse-stocks")
+        mockMvc.perform(get("/warehouse/stocks")
                         .param("warehouseId", "1")
                         .param("materialType", "MAT_RAW")
                         .param("stockStatus", "NORMAL")

@@ -6,7 +6,7 @@ import com.werp.sero.client.entity.Client;
 import com.werp.sero.client.entity.ClientAddress;
 import com.werp.sero.client.exception.ClientNotFoundException;
 import com.werp.sero.client.repository.ClientAddressRepository;
-import com.werp.sero.client.repository.ClientRepository;
+import com.werp.sero.client.repository.ClientInfoRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,16 +26,16 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("ClientServiceImpl 테스트")
-class ClientServiceImplTest {
+class ClientInfoServiceImplTest {
 
     @Mock
-    private ClientRepository clientRepository;
+    private ClientInfoRepository clientInfoRepository;
 
     @Mock
     private ClientAddressRepository clientAddressRepository;
 
     @InjectMocks
-    private ClientServiceImpl clientService;
+    private ClientInfoServiceImpl clientService;
 
     @Test
     @DisplayName("고객사 기본 정보 조회 - 성공")
@@ -52,7 +52,7 @@ class ClientServiceImplTest {
         when(client.getBusinessItem()).thenReturn("자동차부품");
         when(client.getAddress()).thenReturn("서울특별시 강남구 테헤란로 123");
 
-        given(clientRepository.findById(clientId)).willReturn(Optional.of(client));
+        given(clientInfoRepository.findById(clientId)).willReturn(Optional.of(client));
 
         // when
         ClientInfoResponseDTO result = clientService.getClientInfo(clientId);
@@ -74,7 +74,7 @@ class ClientServiceImplTest {
     void getClientInfo_NotFound() {
         // given
         int clientId = 999;
-        given(clientRepository.findById(clientId)).willReturn(Optional.empty());
+        given(clientInfoRepository.findById(clientId)).willReturn(Optional.empty());
 
         // when & then
         assertThatThrownBy(() -> clientService.getClientInfo(clientId))
@@ -111,7 +111,7 @@ class ClientServiceImplTest {
 
         List<ClientAddress> addresses = Arrays.asList(address1, address2);
 
-        given(clientRepository.existsById(clientId)).willReturn(true);
+        given(clientInfoRepository.existsById(clientId)).willReturn(true);
         given(clientAddressRepository.findByClientIdOrderByDefault(clientId)).willReturn(addresses);
 
         // when
@@ -137,7 +137,7 @@ class ClientServiceImplTest {
     void getClientAddresses_ClientNotFound() {
         // given
         int clientId = 999;
-        given(clientRepository.existsById(clientId)).willReturn(false);
+        given(clientInfoRepository.existsById(clientId)).willReturn(false);
 
         // when & then
         assertThatThrownBy(() -> clientService.getClientAddresses(clientId))
@@ -149,7 +149,7 @@ class ClientServiceImplTest {
     void getClientAddresses_EmptyList() {
         // given
         int clientId = 1;
-        given(clientRepository.existsById(clientId)).willReturn(true);
+        given(clientInfoRepository.existsById(clientId)).willReturn(true);
         given(clientAddressRepository.findByClientIdOrderByDefault(clientId)).willReturn(List.of());
 
         // when

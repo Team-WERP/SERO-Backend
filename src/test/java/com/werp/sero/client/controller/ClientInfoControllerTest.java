@@ -2,7 +2,7 @@ package com.werp.sero.client.controller;
 
 import com.werp.sero.client.dto.ClientAddressResponseDTO;
 import com.werp.sero.client.dto.ClientInfoResponseDTO;
-import com.werp.sero.client.service.ClientService;
+import com.werp.sero.client.service.ClientInfoService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,15 +17,15 @@ import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(ClientController.class)
+@WebMvcTest(ClientInfoController.class)
 @DisplayName("ClientController 테스트")
-class ClientControllerTest {
+class ClientInfoControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockitoBean
-    private ClientService clientService;
+    private ClientInfoService clientInfoService;
 
     @Test
     @DisplayName("고객사 기본 정보 조회 - 성공")
@@ -43,10 +43,10 @@ class ClientControllerTest {
                 .address("서울특별시 강남구 테헤란로 123")
                 .build();
 
-        given(clientService.getClientInfo(clientId)).willReturn(response);
+        given(clientInfoService.getClientInfo(clientId)).willReturn(response);
 
         // when & then
-        mockMvc.perform(get("/api/clients/{id}", clientId))
+        mockMvc.perform(get("/clients/{id}", clientId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(clientId))
                 .andExpect(jsonPath("$.companyName").value("(주)테스트고객사"))
@@ -86,10 +86,10 @@ class ClientControllerTest {
                         .build()
         );
 
-        given(clientService.getClientAddresses(clientId)).willReturn(addresses);
+        given(clientInfoService.getClientAddresses(clientId)).willReturn(addresses);
 
         // when & then
-        mockMvc.perform(get("/api/clients/{id}/addresses", clientId))
+        mockMvc.perform(get("/clients/{id}/addresses", clientId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(2))
@@ -107,10 +107,10 @@ class ClientControllerTest {
     void getClientAddresses_EmptyList() throws Exception {
         // given
         int clientId = 999;
-        given(clientService.getClientAddresses(clientId)).willReturn(List.of());
+        given(clientInfoService.getClientAddresses(clientId)).willReturn(List.of());
 
         // when & then
-        mockMvc.perform(get("/api/clients/{id}/addresses", clientId))
+        mockMvc.perform(get("/clients/{id}/addresses", clientId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(0));

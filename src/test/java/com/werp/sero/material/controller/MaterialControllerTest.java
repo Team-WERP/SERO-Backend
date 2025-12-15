@@ -38,7 +38,7 @@ class MaterialControllerTest {
     private MaterialService materialService;
 
     @Test
-    @DisplayName("GET /api/materials - 전체 조회 성공")
+    @DisplayName("GET /materials - 전체 조회 성공")
     void getMaterials_Success() throws Exception {
         // given
         List<MaterialListResponseDTO> materials = List.of(
@@ -62,7 +62,7 @@ class MaterialControllerTest {
         given(materialService.getMaterialList(null, null, null)).willReturn(materials);
 
         // when & then
-        mockMvc.perform(get("/api/materials"))
+        mockMvc.perform(get("/materials"))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
@@ -74,7 +74,7 @@ class MaterialControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/materials - 타입 필터링")
+    @DisplayName("GET /materials - 타입 필터링")
     void getMaterials_WithTypeFilter() throws Exception {
         // given
         List<MaterialListResponseDTO> materials = List.of(
@@ -90,7 +90,7 @@ class MaterialControllerTest {
         given(materialService.getMaterialList("MAT_RAW", null, null)).willReturn(materials);
 
         // when & then
-        mockMvc.perform(get("/api/materials")
+        mockMvc.perform(get("/materials")
                         .param("type", "MAT_RAW"))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -101,7 +101,7 @@ class MaterialControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/materials/{id} - 상세 조회 성공")
+    @DisplayName("GET /materials/{id} - 상세 조회 성공")
     void getMaterial_Success() throws Exception {
         // given
         MaterialDetailResponseDTO material = MaterialDetailResponseDTO.builder()
@@ -118,7 +118,7 @@ class MaterialControllerTest {
         given(materialService.getMaterialDetail(1)).willReturn(material);
 
         // when & then
-        mockMvc.perform(get("/api/materials/1"))
+        mockMvc.perform(get("/materials/1"))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
@@ -130,14 +130,14 @@ class MaterialControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/materials/{id} - 존재하지 않는 자재")
+    @DisplayName("GET /materials/{id} - 존재하지 않는 자재")
     void getMaterial_NotFound() throws Exception {
         // given
         given(materialService.getMaterialDetail(999))
                 .willThrow(new MaterialNotFoundException("해당 자재를 찾을 수 없습니다. ID: 999"));
 
         // when & then
-        mockMvc.perform(get("/api/materials/999"))
+        mockMvc.perform(get("/materials/999"))
                 .andDo(print())
                 .andExpect(status().is4xxClientError());
 
@@ -145,7 +145,7 @@ class MaterialControllerTest {
     }
 
     @Test
-    @DisplayName("POST /api/materials - 자재 생성 성공")
+    @DisplayName("POST /materials - 자재 생성 성공")
     void createMaterial_Success() throws Exception {
         // given
         MaterialCreateRequestDTO request = new MaterialCreateRequestDTO(
@@ -167,7 +167,7 @@ class MaterialControllerTest {
         willDoNothing().given(materialService).createMaterial(any(), eq(5));
 
         // when & then
-        mockMvc.perform(post("/api/materials")
+        mockMvc.perform(post("/materials")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
@@ -177,7 +177,7 @@ class MaterialControllerTest {
     }
 
     @Test
-    @DisplayName("POST /api/materials - 자재 코드 중복")
+    @DisplayName("POST /materials - 자재 코드 중복")
     void createMaterial_DuplicateCode() throws Exception {
         // given
         MaterialCreateRequestDTO request = new MaterialCreateRequestDTO(
@@ -200,7 +200,7 @@ class MaterialControllerTest {
                 .given(materialService).createMaterial(any(), eq(5));
 
         // when & then
-        mockMvc.perform(post("/api/materials")
+        mockMvc.perform(post("/materials")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
@@ -210,7 +210,7 @@ class MaterialControllerTest {
     }
 
     @Test
-    @DisplayName("PUT /api/materials/{id} - 자재 수정 성공")
+    @DisplayName("PUT /materials/{id} - 자재 수정 성공")
     void updateMaterial_Success() throws Exception {
         // given
         MaterialUpdateRequestDTO request = new MaterialUpdateRequestDTO(
@@ -230,7 +230,7 @@ class MaterialControllerTest {
         willDoNothing().given(materialService).updateMaterial(eq(1), any());
 
         // when & then
-        mockMvc.perform(put("/api/materials/1")
+        mockMvc.perform(put("/materials/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
@@ -240,7 +240,7 @@ class MaterialControllerTest {
     }
 
     @Test
-    @DisplayName("PUT /api/materials/{id} - 존재하지 않는 자재 수정")
+    @DisplayName("PUT /materials/{id} - 존재하지 않는 자재 수정")
     void updateMaterial_NotFound() throws Exception {
         // given
         MaterialUpdateRequestDTO request = new MaterialUpdateRequestDTO(
@@ -261,7 +261,7 @@ class MaterialControllerTest {
                 .given(materialService).updateMaterial(eq(999), any());
 
         // when & then
-        mockMvc.perform(put("/api/materials/999")
+        mockMvc.perform(put("/materials/999")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
@@ -271,13 +271,13 @@ class MaterialControllerTest {
     }
 
     @Test
-    @DisplayName("PATCH /api/materials/{id}/deactivate - 자재 비활성화 성공")
+    @DisplayName("PATCH /materials/{id}/deactivate - 자재 비활성화 성공")
     void deactivateMaterial_Success() throws Exception {
         // given
         willDoNothing().given(materialService).deactivateMaterial(1);
 
         // when & then
-        mockMvc.perform(patch("/api/materials/1/deactivate"))
+        mockMvc.perform(patch("/materials/1/deactivate"))
                 .andDo(print())
                 .andExpect(status().isOk());
 
@@ -285,14 +285,14 @@ class MaterialControllerTest {
     }
 
     @Test
-    @DisplayName("PATCH /api/materials/{id}/deactivate - 존재하지 않는 자재 비활성화")
+    @DisplayName("PATCH /materials/{id}/deactivate - 존재하지 않는 자재 비활성화")
     void deactivateMaterial_NotFound() throws Exception {
         // given
         willThrow(new MaterialNotFoundException("해당 자재를 찾을 수 없습니다. ID: 999"))
                 .given(materialService).deactivateMaterial(999);
 
         // when & then
-        mockMvc.perform(patch("/api/materials/999/deactivate"))
+        mockMvc.perform(patch("/materials/999/deactivate"))
                 .andDo(print())
                 .andExpect(status().is4xxClientError());
 

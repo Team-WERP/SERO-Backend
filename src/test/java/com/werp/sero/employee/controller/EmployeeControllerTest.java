@@ -46,7 +46,7 @@ class EmployeeControllerTest {
         given(employeeService.getOrganization()).willReturn(response);
 
         // when & then
-        mockMvc.perform(get("/api/employees/organization"))
+        mockMvc.perform(get("/employees/organization"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.companyName").value("(주)SERO"))
                 .andExpect(jsonPath("$.departments").isArray())
@@ -70,7 +70,7 @@ class EmployeeControllerTest {
         given(employeeService.getDepartmentEmployees(departmentId)).willReturn(response);
 
         // when & then
-        mockMvc.perform(get("/api/employees/departments/{departmentId}", departmentId))
+        mockMvc.perform(get("/employees/departments/{departmentId}", departmentId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.deptCode").value("AC_SAL"))
@@ -99,7 +99,7 @@ class EmployeeControllerTest {
         given(employeeService.getDepartmentEmployees(departmentId)).willReturn(response);
 
         // when & then
-        mockMvc.perform(get("/api/employees/departments/{departmentId}", departmentId))
+        mockMvc.perform(get("/employees/departments/{departmentId}", departmentId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(departmentId))
                 .andExpect(jsonPath("$.employeeCount").value(0))

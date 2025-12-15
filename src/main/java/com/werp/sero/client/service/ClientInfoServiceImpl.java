@@ -6,7 +6,7 @@ import com.werp.sero.client.entity.Client;
 import com.werp.sero.client.entity.ClientAddress;
 import com.werp.sero.client.exception.ClientNotFoundException;
 import com.werp.sero.client.repository.ClientAddressRepository;
-import com.werp.sero.client.repository.ClientRepository;
+import com.werp.sero.client.repository.ClientInfoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,15 +17,15 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class ClientServiceImpl implements ClientService {
+public class ClientInfoServiceImpl implements ClientInfoService {
 
-    private final ClientRepository clientRepository;
+    private final ClientInfoRepository clientInfoRepository;
     private final ClientAddressRepository clientAddressRepository;
 
     @Override
     public ClientInfoResponseDTO getClientInfo(int clientId) {
         // 1. 고객사 조회
-        Client client = clientRepository.findById(clientId)
+        Client client = clientInfoRepository.findById(clientId)
                 .orElseThrow(ClientNotFoundException::new);
 
         // 2. DTO 변환 및 반환
@@ -35,7 +35,7 @@ public class ClientServiceImpl implements ClientService {
     @Override
     public List<ClientAddressResponseDTO> getClientAddresses(int clientId) {
         // 1. 고객사 존재 확인
-        if (!clientRepository.existsById(clientId)) {
+        if (!clientInfoRepository.existsById(clientId)) {
             throw new ClientNotFoundException();
         }
 

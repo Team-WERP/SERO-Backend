@@ -29,7 +29,7 @@ public class MaterialDetailResponseDTO {
     private Long unitPrice;
     private String imageUrl;
     private Integer conversionRate;
-    private Integer safetyStock;
+    private int safetyStock;
     private Integer rawMaterialCount;
     private String type;
     private String status;
