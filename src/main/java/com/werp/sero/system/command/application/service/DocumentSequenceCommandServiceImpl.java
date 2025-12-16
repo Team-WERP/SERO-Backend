@@ -20,7 +20,7 @@ public class DocumentSequenceCommandServiceImpl implements DocumentSequenceComma
     @Transactional
     @Override
     public String generateDocumentCode(String docTypeCode) {
-        String prefix = commonCodeQueryService.getCodeValue("DOC_TYPE", docTypeCode);
+        String prefix = commonCodeQueryService.getName("DOC_TYPE", docTypeCode);
         String today = LocalDate.now()
                 .format(DateTimeFormatter.BASIC_ISO_DATE);
 
