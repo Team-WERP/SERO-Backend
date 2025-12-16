@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.werp.sero.client.query.dao.ClientItemMapper">
+
+    <!-- ResultMap 정의 -->
+    <resultMap id="clientItemResultMap" type="com.werp.sero.client.query.dto.ClientItemResponseDTO">
+        <id property="id" column="id"/>
+        <result property="itemCode" column="item_code"/>
+        <result property="itemName" column="item_name"/>
+        <result property="spec" column="spec"/>
+        <result property="unit" column="unit"/>
+        <result property="contractPrice" column="contract_price"/>
+        <result property="moq" column="moq"/>
+        <result property="status" column="status"/>
+    </resultMap>
+
+    <!-- 공통 SQL 조각 -->
+    <sql id="selectClientItemColumns">
+        SELECT
+            ci.id,
+            m.material_code AS item_code,
+            m.name AS item_name,
+            m.spec,
+            m.base_unit AS unit,
+            ci.contract_price,
+            m.moq,
+            ci.status
+        FROM client_item ci
+        INNER JOIN material m ON ci.item_id = m.id
+    </sql>
+
+    <!-- 고객사별 거래 품목 조회 -->
+    <select id="findByClientId" resultMap="clientItemResultMap">
+        <include refid="selectClientItemColumns"/>
+        WHERE ci.client_id = #{clientId}
+    </select>
+
+    <!-- 키워드로 검색 -->
+    <select id="findByClientIdAndKeyword" resultMap="clientItemResultMap">
+        <include refid="selectClientItemColumns"/>
+        WHERE ci.client_id = #{clientId}
+          AND (m.material_code LIKE CONCAT('%', #{keyword}, '%')
+           OR m.name LIKE CONCAT('%', #{keyword}, '%'))
+    </select>
+
+    <!-- 상태로 필터링 -->
+    <select id="findByClientIdAndStatus" resultMap="clientItemResultMap">
+        <include refid="selectClientItemColumns"/>
+        WHERE ci.client_id = #{clientId}
+          AND ci.status = #{status}
+    </select>
+
+    <!-- 키워드 + 상태로 필터링 -->
+    <select id="findByClientIdAndStatusAndKeyword" resultMap="clientItemResultMap">
+        <include refid="selectClientItemColumns"/>
+        WHERE ci.client_id = #{clientId}
+          AND ci.status = #{status}
+          AND (m.material_code LIKE CONCAT('%', #{keyword}, '%')
+           OR m.name LIKE CONCAT('%', #{keyword}, '%'))
+    </select>
+
+</mapper>
