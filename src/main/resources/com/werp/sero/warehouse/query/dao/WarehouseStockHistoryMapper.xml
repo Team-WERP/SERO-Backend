@@ -13,7 +13,7 @@
         <result property="createdAt" column="created_at"/>
     </resultMap>
 
-    <!-- Find stock history by warehouse stock ID -->
+    <!-- 창고별 재고 상세 조회(수량 변경 이력) -->
     <select id="findByWarehouseStockId" resultMap="warehouseStockHistoryResultMap">
         SELECT
             A.id,
@@ -27,33 +27,4 @@
         WHERE A.warehouse_stock_id = #{warehouseStockId}
         ORDER BY A.created_at DESC
     </select>
-
-    <!-- Find stock history with conditions -->
-    <select id="findByCondition" resultMap="warehouseStockHistoryResultMap">
-        SELECT
-            A.id,
-            A.warehouse_stock_id,
-            A.type,
-            A.reason,
-            A.changed_quantity,
-            A.current_stock,
-            A.created_at
-        FROM warehouse_stock_history A
-        <where>
-            <if test="warehouseStockId != null">
-                AND A.warehouse_stock_id = #{warehouseStockId}
-            </if>
-            <if test="type != null and type != ''">
-                AND A.type = #{type}
-            </if>
-            <if test="startDate != null">
-                AND A.created_at &gt;= #{startDate}
-            </if>
-            <if test="endDate != null">
-                AND A.created_at &lt;= #{endDate}
-            </if>
-        </where>
-        ORDER BY A.created_at DESC
-    </select>
-
 </mapper>

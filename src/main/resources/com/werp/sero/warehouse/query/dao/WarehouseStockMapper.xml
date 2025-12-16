@@ -30,9 +30,7 @@
         </association>
     </resultMap>
 
-    <!-- =============================== -->
     <!-- 창고별 재고 조건 조회 -->
-    <!-- =============================== -->
     <select id="findByCondition" resultMap="warehouseStockResultMap">
         SELECT
         A.id,
@@ -85,9 +83,7 @@
         ORDER BY A.id DESC
     </select>
 
-    <!-- =============================== -->
     <!-- 재고 상세 조회 -->
-    <!-- =============================== -->
     <select id="findByIdWithDetails" resultMap="warehouseStockResultMap">
         SELECT
             A.id,
@@ -109,9 +105,7 @@
         WHERE A.id = #{id}
     </select>
 
-    <!-- =============================== -->
     <!-- 창고 + 자재 단건 조회 -->
-    <!-- =============================== -->
     <select id="findByWarehouseIdAndMaterialId"
             resultMap="warehouseStockResultMap">
         SELECT
