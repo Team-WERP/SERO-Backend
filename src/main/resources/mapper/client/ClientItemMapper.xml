@@ -19,46 +19,38 @@
     <!-- 공통 SQL 조각 -->
     <sql id="selectClientItemColumns">
         SELECT
-            ci.id,
-            m.material_code AS item_code,
-            m.name AS item_name,
-            m.spec,
-            m.base_unit AS unit,
-            ci.contract_price,
-            m.moq,
-            ci.status
-        FROM client_item ci
-        INNER JOIN material m ON ci.item_id = m.id
+            A.id,
+            B.material_code AS item_code,
+            B.name AS item_name,
+            B.spec,
+            B.base_unit AS unit,
+            A.contract_price,
+            B.moq,
+            A.status
+        FROM client_item A
+        INNER JOIN material B ON A.item_id = B.id
     </sql>
 
     <!-- 고객사별 거래 품목 조회 -->
     <select id="findByClientId" resultMap="clientItemResultMap">
         <include refid="selectClientItemColumns"/>
-        WHERE ci.client_id = #{clientId}
+        WHERE A.client_id = #{clientId}
+        <if test="status != null and status !=''">
+            AND A.status = #{status}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (B.material_code LIKE CONCAT('%', #{keyword}, '%')
+             OR B.name LIKE CONCAT('%', #{keyword}, '%'))
+        </if>     
     </select>
 
-    <!-- 키워드로 검색 -->
-    <select id="findByClientIdAndKeyword" resultMap="clientItemResultMap">
-        <include refid="selectClientItemColumns"/>
-        WHERE ci.client_id = #{clientId}
-          AND (m.material_code LIKE CONCAT('%', #{keyword}, '%')
-           OR m.name LIKE CONCAT('%', #{keyword}, '%'))
-    </select>
 
-    <!-- 상태로 필터링 -->
-    <select id="findByClientIdAndStatus" resultMap="clientItemResultMap">
-        <include refid="selectClientItemColumns"/>
-        WHERE ci.client_id = #{clientId}
-          AND ci.status = #{status}
-    </select>
-
-    <!-- 키워드 + 상태로 필터링 -->
-    <select id="findByClientIdAndStatusAndKeyword" resultMap="clientItemResultMap">
-        <include refid="selectClientItemColumns"/>
-        WHERE ci.client_id = #{clientId}
-          AND ci.status = #{status}
-          AND (m.material_code LIKE CONCAT('%', #{keyword}, '%')
-           OR m.name LIKE CONCAT('%', #{keyword}, '%'))
-    </select>
+    <!-- 품목이 해당 고객사에 속하는지 검증 -->
+    <select id="existsByIdAndClientId" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM client_item
+        WHERE id = #{itemId}
+             AND client_id = #{clientId}
+     </select>        
 
 </mapper>

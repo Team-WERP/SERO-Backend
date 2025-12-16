@@ -8,7 +8,7 @@ import lombok.Getter;
 @Builder
 @AllArgsConstructor
 public class ClientItemPriceHistoryResponseDTO {
-    private Integer id;
+    private int id;
     private Integer unitPrice;
     private Integer contractPrice;
     private String reason;

@@ -4,6 +4,9 @@ import com.werp.sero.client.query.dao.ClientItemMapper;
 import com.werp.sero.client.query.dao.ClientItemPriceHistoryMapper;
 import com.werp.sero.client.query.dto.ClientItemPriceHistoryResponseDTO;
 import com.werp.sero.client.query.dto.ClientItemResponseDTO;
+import com.werp.sero.common.error.ErrorCode;
+import com.werp.sero.common.error.exception.BusinessException;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,22 +22,19 @@ public class ClientItemQueryServiceImpl implements ClientItemQueryService {
     @Override
     public List<ClientItemResponseDTO> getClientItems(int clientId, String keyword, String status) {
 
-        if (keyword != null && status != null) {
-            return clientItemMapper.findByClientIdAndStatusAndKeyword(clientId, status, keyword);
-        }
-        else if (keyword != null) {
-            return clientItemMapper.findByClientIdAndKeyword(clientId, keyword);
-        }
-        else if (status != null) {
-            return clientItemMapper.findByClientIdAndStatus(clientId, status);
-        }
-        else {
-            return clientItemMapper.findByClientId(clientId);
-        }
+            return clientItemMapper.findByClientId(clientId,keyword,status);
     }
+    
 
     @Override
     public List<ClientItemPriceHistoryResponseDTO> getPriceHistory(int clientId, int itemId) {
+
+        // 검증: 해당 품목이 해당 고객사의 거래 품목인지 확인
+            if(!clientItemMapper.existsByIdAndClientId(clientId, itemId)) {
+
+                throw new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "해당 고객사의 거래 품목이 아닙니다.");
+            }
+
         return clientItemPriceHistoryMapper.findByClientIdAndClientItemIdOrderByCreatedAtDesc(clientId, itemId);
     }
 }
