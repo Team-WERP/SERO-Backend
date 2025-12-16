@@ -1,5 +1,6 @@
 package com.werp.sero.client.command.domain.aggregate;
 
+import com.werp.sero.material.command.domain.aggregate.Material;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,4 +29,8 @@ public class ClientItem {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "client_id", nullable = false)
     private Client client;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "item_id", nullable = false)
+    private Material material;
 }

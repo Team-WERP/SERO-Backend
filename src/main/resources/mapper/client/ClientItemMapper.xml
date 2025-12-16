@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.werp.sero.client.query.dao.ClientItemMapper">
+
+    <!-- ResultMap 정의 -->
+    <resultMap id="clientItemResultMap" type="com.werp.sero.client.query.dto.ClientItemResponseDTO">
+        <id property="id" column="id"/>
+        <result property="itemCode" column="item_code"/>
+        <result property="itemName" column="item_name"/>
+        <result property="spec" column="spec"/>
+        <result property="unit" column="unit"/>
+        <result property="contractPrice" column="contract_price"/>
+        <result property="moq" column="moq"/>
+        <result property="status" column="status"/>
+    </resultMap>
+
+    <!-- 공통 SQL 조각 -->
+    <sql id="selectClientItemColumns">
+        SELECT
+            A.id,
+            B.material_code AS item_code,
+            B.name AS item_name,
+            B.spec,
+            B.base_unit AS unit,
+            A.contract_price,
+            B.moq,
+            A.status
+        FROM client_item A
+        INNER JOIN material B ON A.item_id = B.id
+    </sql>
+
+    <!-- 고객사별 거래 품목 조회 -->
+    <select id="findByClientId" resultMap="clientItemResultMap">
+        <include refid="selectClientItemColumns"/>
+        WHERE A.client_id = #{clientId}
+        <if test="status != null and status !=''">
+            AND A.status = #{status}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (B.material_code LIKE CONCAT('%', #{keyword}, '%')
+             OR B.name LIKE CONCAT('%', #{keyword}, '%'))
+        </if>     
+    </select>
+
+
+    <!-- 품목이 해당 고객사에 속하는지 검증 -->
+    <select id="existsByIdAndClientId" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM client_item A
+        WHERE A.id = #{itemId}
+             AND A.client_id = #{clientId}
+     </select>        
+
+</mapper>
