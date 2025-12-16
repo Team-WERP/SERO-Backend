@@ -12,6 +12,7 @@ public enum ErrorCode {
 
     /* SALES ORDER */
     SALES_ORDER_LIST_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER001", "주문 목록을 찾을 수 없습니다."),
+    SALES_ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER002", "주문 정보를 찾을 수 없습니다."),
 
     /* Client */
     CLIENT_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "CLIENT001", "해당 고객사의 거래 품목이 아닙니다.");

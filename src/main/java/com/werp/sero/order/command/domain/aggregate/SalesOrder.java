@@ -86,4 +86,11 @@ public class SalesOrder {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manager_id")
     private Employee employee;
+
+    public void cancel(String reason) {
+        final String CANCEL_STATUS = "ORD_CANCEL";
+
+        this.status = CANCEL_STATUS;
+        this.rejectionReason = reason;
+    }
 }
