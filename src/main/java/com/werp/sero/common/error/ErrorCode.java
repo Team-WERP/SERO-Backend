@@ -8,7 +8,10 @@ public enum ErrorCode {
     /* COMMON */
     ENTITY_NOT_FOUND(HttpStatus.NOT_FOUND, "COMMON001", "Entity not found"),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "COMMON002", "Internal server error"),
-    BAD_REQUEST(HttpStatus.BAD_REQUEST, "COMMON003", "Bad request");
+    BAD_REQUEST(HttpStatus.BAD_REQUEST, "COMMON003", "Bad request"),
+
+    /* System */
+    SYSTEM_COMMON_CODE_NOT_FOUND(HttpStatus.NOT_FOUND, "SYSTEM001", "공통코드를 찾을 수 없습니다.");
 
     private final HttpStatus status;
     private final String code;
