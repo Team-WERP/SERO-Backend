@@ -6,7 +6,7 @@ import com.werp.sero.client.query.dto.ClientItemResponseDTO;
 import java.util.List;
 
 public interface ClientItemQueryService {
-    List<ClientItemResponseDTO> getClientItems(int clientId, String keyword, String status);
+    List<ClientItemResponseDTO> getClientItems(int clientId, String status, String keyword);
  
 
     List<ClientItemPriceHistoryResponseDTO> getPriceHistory(int clientId, int itemId);
