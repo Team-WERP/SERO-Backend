@@ -1,19 +1,30 @@
 package com.werp.sero.employee.query.dao;
 
-
 import com.werp.sero.employee.command.domain.aggregate.Employee;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Optional;
 
-public interface EmployeeMapper extends JpaRepository<Employee, Integer> {
+/**
+ * 직원 MyBatis Mapper 인터페이스
+ */
+@Mapper
+public interface EmployeeMapper {
 
-    /* 설명. 부서별 사원 목록 조회 (부서 정보 포함) */
-    @Query("SELECT e FROM Employee e JOIN FETCH e.department WHERE e.department.id = :departmentId")
-    List<Employee> findByDepartmentIdWithDepartment(int departmentId);
+    /**
+     * 부서별 사원 목록 조회 (부서 정보 포함)
+     */
+    List<Employee> findByDepartmentIdWithDepartment(@Param("departmentId") int departmentId);
 
-    /* 설명. 전체 사원 목록 조회 (부서 정보 포함) */
-    @Query("SELECT e FROM Employee e LEFT JOIN FETCH e.department")
+    /**
+     * 전체 사원 목록 조회 (부서 정보 포함)
+     */
     List<Employee> findAllWithDepartment();
+
+    /**
+     * ID로 직원 조회
+     */
+    Optional<Employee> findById(@Param("id") int id);
 }

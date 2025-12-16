@@ -1,22 +1,19 @@
 package com.werp.sero.warehouse.query.dao;
 
 import com.werp.sero.warehouse.command.domain.aggregate.WarehouseStockHistory;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
-public interface WarehouseStockHistoryMapper extends JpaRepository<WarehouseStockHistory, Integer> {
+/**
+ * 창고 재고 이력 Query MyBatis Mapper 인터페이스 (조회 전용)
+ */
+@Mapper
+public interface WarehouseStockHistoryMapper {
 
     /**
      * 특정 재고의 변동 이력 조회 (최신순)
      */
-    @Query("""
-        SELECT h
-        FROM WarehouseStockHistory h
-        WHERE h.warehouseStockId = :warehouseStockId
-        ORDER BY h.createdAt DESC
-    """)
     List<WarehouseStockHistory> findByWarehouseStockId(@Param("warehouseStockId") int warehouseStockId);
 }

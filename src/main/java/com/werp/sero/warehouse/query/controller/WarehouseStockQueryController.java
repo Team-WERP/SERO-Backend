@@ -48,7 +48,7 @@ public class WarehouseStockQueryController {
             @Parameter(description = "자재 유형 (MAT_FG: 완제품, MAT_RM: 원부자재)", example = "MAT_FG")
             @RequestParam(required = false) String materialType,
 
-            @Parameter(description = "재고 상태 (NORMAL: 정상, LOW: 부족, OUT_OF_STOCK: 품절)", example = "LOW")
+            @Parameter(description = "재고 상태 (NORMAL: 정상, LOW: 부족, OUT_OF_STOCK: 품절)", example = "NORMAL")
             @RequestParam(required = false) String stockStatus,
 
             @Parameter(description = "검색어 (자재명 또는 자재코드)", example = "브레이크")

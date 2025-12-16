@@ -1,21 +1,23 @@
 package com.werp.sero.material.command.infrastructure.service;
 
 import com.werp.sero.material.command.domain.repository.BomRepository;
-import com.werp.sero.material.query.dao.BomMapper;
+import com.werp.sero.material.command.infrastructure.repository.JpaBomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
- * BOM Repository 구현체 (MyBatis Mapper 활용)
+ * BOM Repository 구현체 (JPA 활용)
  */
 @Repository
 @RequiredArgsConstructor
 public class BomRepositoryImpl implements BomRepository {
 
-    private final BomMapper bomMapper;
+    private final JpaBomRepository jpaBomRepository;
 
     @Override
+    @Transactional
     public void deleteByMaterialId(int materialId) {
-        bomMapper.deleteByMaterialId(materialId);
+        jpaBomRepository.deleteByMaterialId(materialId);
     }
 }

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.werp.sero.material.query.dao.BomMapper">
+
+    <!-- BOM with RawMaterial ResultMap -->
+    <resultMap id="bomWithRawMaterialResultMap" type="com.werp.sero.material.command.domain.aggregate.Bom">
+        <id property="id" column="id"/>
+        <result property="requirement" column="requirement"/>
+        <result property="note" column="note"/>
+        <result property="createdAt" column="created_at"/>
+        <association property="rawMaterial" javaType="com.werp.sero.material.command.domain.aggregate.Material">
+            <id property="id" column="raw_material_id"/>
+            <result property="name" column="raw_material_name"/>
+            <result property="materialCode" column="raw_material_code"/>
+            <result property="spec" column="raw_material_spec"/>
+            <result property="baseUnit" column="raw_material_base_unit"/>
+            <result property="unitPrice" column="raw_material_unit_price"/>
+            <result property="type" column="raw_material_type"/>
+            <result property="status" column="raw_material_status"/>
+        </association>
+    </resultMap>
+
+    <!-- BOM with Material ResultMap (for reverse explosion) -->
+    <resultMap id="bomWithMaterialResultMap" type="com.werp.sero.material.command.domain.aggregate.Bom">
+        <id property="id" column="id"/>
+        <result property="requirement" column="requirement"/>
+        <result property="note" column="note"/>
+        <result property="createdAt" column="created_at"/>
+        <association property="material" javaType="com.werp.sero.material.command.domain.aggregate.Material">
+            <id property="id" column="material_id"/>
+            <result property="name" column="material_name"/>
+            <result property="materialCode" column="material_code"/>
+            <result property="spec" column="material_spec"/>
+            <result property="baseUnit" column="material_base_unit"/>
+            <result property="unitPrice" column="material_unit_price"/>
+            <result property="type" column="material_type"/>
+            <result property="status" column="material_status"/>
+        </association>
+    </resultMap>
+
+    <select id="findByMaterialIdWithRawMaterial" resultMap="bomWithRawMaterialResultMap">
+        SELECT
+            A.id,
+            A.requirement,
+            A.note,
+            A.created_at,
+            B.id AS raw_material_id,
+            B.name AS raw_material_name,
+            B.material_code AS raw_material_code,
+            B.spec AS raw_material_spec,
+            B.base_unit AS raw_material_base_unit,
+            B.unit_price AS raw_material_unit_price,
+            B.type AS raw_material_type,
+            B.status AS raw_material_status
+        FROM bom A
+        INNER JOIN material B ON A.raw_material_id = B.id
+        WHERE A.material_id = #{materialId}
+        ORDER BY A.id
+    </select>
+
+    <select id="findByRawMaterialIdWithMaterial" resultMap="bomWithMaterialResultMap">
+        SELECT
+            A.id,
+            A.requirement,
+            A.note,
+            A.created_at,
+            B.id AS material_id,
+            B.name AS material_name,
+            B.material_code AS material_code,
+            B.spec AS material_spec,
+            B.base_unit AS material_base_unit,
+            B.unit_price AS material_unit_price,
+            B.type AS material_type,
+            B.status AS material_status
+        FROM bom A
+        INNER JOIN material B ON A.material_id = B.id
+        WHERE A.raw_material_id = #{rawMaterialId}
+        ORDER BY A.id
+    </select>
+
+</mapper>

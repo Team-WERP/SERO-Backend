@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.werp.sero.warehouse.query.dao.WarehouseStockHistoryMapper">
+
+    <resultMap id="warehouseStockHistoryResultMap" type="com.werp.sero.warehouse.command.domain.aggregate.WarehouseStockHistory">
+        <id property="id" column="id"/>
+        <result property="warehouseStockId" column="warehouse_stock_id"/>
+        <result property="transactionType" column="transaction_type"/>
+        <result property="quantity" column="quantity"/>
+        <result property="balanceAfter" column="balance_after"/>
+        <result property="transactionDate" column="transaction_date"/>
+        <result property="referenceType" column="reference_type"/>
+        <result property="referenceId" column="reference_id"/>
+        <result property="notes" column="notes"/>
+    </resultMap>
+
+    <!-- Find stock history by warehouse stock ID -->
+    <select id="findByWarehouseStockId" resultMap="warehouseStockHistoryResultMap">
+        SELECT
+            A.id,
+            A.warehouse_stock_id,
+            A.transaction_type,
+            A.quantity,
+            A.balance_after,
+            A.transaction_date,
+            A.reference_type,
+            A.reference_id,
+            A.notes
+        FROM warehouse_stock_history A
+        WHERE A.warehouse_stock_id = #{warehouseStockId}
+        ORDER BY A.transaction_date DESC
+    </select>
+
+    <!-- Find stock history with conditions -->
+    <select id="findByCondition" resultMap="warehouseStockHistoryResultMap">
+        SELECT
+            A.id,
+            A.warehouse_stock_id,
+            A.transaction_type,
+            A.quantity,
+            A.balance_after,
+            A.transaction_date,
+            A.reference_type,
+            A.reference_id,
+            A.notes
+        FROM warehouse_stock_history A
+        WHERE 1=1
+        <if test="warehouseStockId != null">
+            AND A.warehouse_stock_id = #{warehouseStockId}
+        </if>
+        <if test="transactionType != null and transactionType != ''">
+            AND A.transaction_type = #{transactionType}
+        </if>
+        <if test="startDate != null">
+            AND A.transaction_date >= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND A.transaction_date &lt;= #{endDate}
+        </if>
+        ORDER BY A.transaction_date DESC
+    </select>
+
+</mapper>
