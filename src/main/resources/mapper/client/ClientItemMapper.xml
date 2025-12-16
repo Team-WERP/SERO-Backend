@@ -48,9 +48,9 @@
     <!-- 품목이 해당 고객사에 속하는지 검증 -->
     <select id="existsByIdAndClientId" resultType="boolean">
         SELECT COUNT(*) > 0
-        FROM client_item
-        WHERE id = #{itemId}
-             AND client_id = #{clientId}
+        FROM client_item A
+        WHERE A.id = #{itemId}
+             AND A.client_id = #{clientId}
      </select>        
 
 </mapper>

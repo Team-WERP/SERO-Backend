@@ -18,16 +18,16 @@
     <!-- 고객사별 품목 가격 이력 조회 (최신순) -->
     <select id="findByClientIdAndClientItemIdOrderByCreatedAtDesc" resultMap="clientItemPriceHistoryResultMap">
         SELECT
-            id,
-            unit_price,
-            contract_price,
-            reason,
-            name,
-            status,
-            created_at
-        FROM client_item_price_history
-        WHERE client_id = #{clientId}
-          AND client_item_id = #{clientItemId}
+            A.id,
+            A.unit_price,
+            A.contract_price,
+            A.reason,
+            A.name,
+            A.status,
+            A.created_at
+        FROM client_item_price_history A
+        WHERE A.client_id = #{clientId}
+          AND A.client_item_id = #{clientItemId}
         ORDER BY created_at DESC
     </select>
 
