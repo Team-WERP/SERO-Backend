@@ -61,4 +61,5 @@ public interface WarehouseStockMapper extends JpaRepository<WarehouseStock, Inte
             @Param("warehouseId") int warehouseId,
             @Param("materialId") int materialId
     );
+    
 }
