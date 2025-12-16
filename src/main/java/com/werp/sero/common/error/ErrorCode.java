@@ -11,7 +11,10 @@ public enum ErrorCode {
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "COMMON003", "Bad request"),
 
     /* SALES ORDER */
-    SALES_ORDER_LIST_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER001", "주문 목록을 찾을 수 없습니다.");
+    SALES_ORDER_LIST_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER001", "주문 목록을 찾을 수 없습니다."),
+
+    /* Client */
+    CLIENT_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "CLIENT001", "해당 고객사의 거래 품목이 아닙니다.");
 
     private final HttpStatus status;
     private final String code;
