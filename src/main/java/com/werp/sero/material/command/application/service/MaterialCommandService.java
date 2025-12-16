@@ -1,0 +1,25 @@
+package com.werp.sero.material.command.application.service;
+
+import com.werp.sero.material.command.application.dto.MaterialCreateRequestDTO;
+import com.werp.sero.material.command.application.dto.MaterialUpdateRequestDTO;
+
+/**
+ * 자재 Command Service 인터페이스
+ */
+public interface MaterialCommandService {
+
+    /**
+     * 자재 등록
+     */
+    void createMaterial(MaterialCreateRequestDTO materialCreateRequestDTO, int loginEmployeeId);
+
+    /**
+     * 자재 수정
+     */
+    void updateMaterial(int materialId, MaterialUpdateRequestDTO materialUpdateRequestDTO);
+
+    /**
+     * 자재 비활성화
+     */
+    void deactivateMaterial(int materialId);
+}

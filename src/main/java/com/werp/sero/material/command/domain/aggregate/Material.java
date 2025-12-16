@@ -2,12 +2,18 @@ package com.werp.sero.material.command.domain.aggregate;
 
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Table(name = "material")
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder
 @Entity
 public class Material {
     @Id
@@ -64,4 +70,52 @@ public class Material {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manager_id", nullable = false)
     private Employee employee;
+
+    @OneToMany(mappedBy = "material", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Bom> bomList = new ArrayList<>();
+
+    // 수정 메서드
+    public void update(String name, String spec, String operationUnit, String baseUnit,
+                       Integer moq, Integer cycleTime, Long unitPrice, String imageUrl,
+                       Integer conversionRate, Integer safetyStock, String status) {
+        this.name = name;
+        this.spec = spec;
+        this.operationUnit = operationUnit;
+        this.baseUnit = baseUnit;
+        this.moq = moq;
+        this.cycleTime = cycleTime;
+        this.unitPrice = unitPrice != null ? unitPrice : 0;
+        this.imageUrl = imageUrl;
+        this.conversionRate = conversionRate;
+        this.safetyStock = safetyStock != null ? safetyStock : 1;
+        this.status = status;
+        this.updatedAt = getCurrentTimestamp();
+    }
+
+    // 비활성화
+    public void deactivate() {
+        this.status = "MAT_STOP";
+        this.updatedAt = getCurrentTimestamp();
+    }
+
+    // BOM 추가
+    public void addBom(Bom bom) {
+        this.bomList.add(bom);
+        this.rawMaterialCount = this.bomList.size();
+        this.updatedAt = getCurrentTimestamp();
+    }
+
+    // BOM 목록 교체
+    public void replaceBomList(List<Bom> newBomList) {
+        this.bomList.clear();
+        this.bomList.addAll(newBomList);
+        this.rawMaterialCount = this.bomList.size();
+        this.updatedAt = getCurrentTimestamp();
+    }
+
+    // 현재 시간 포맷
+    private String getCurrentTimestamp() {
+        return LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+    }
 }
