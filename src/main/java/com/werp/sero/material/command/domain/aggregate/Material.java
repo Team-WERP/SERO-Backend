@@ -99,6 +99,12 @@ public class Material {
         this.updatedAt = getCurrentTimestamp();
     }
 
+    // 활성화
+    public void activate() {
+        this.status = "MAT_NORMAL";
+        this.updatedAt = getCurrentTimestamp();
+    }
+
     // BOM 추가
     public void addBom(Bom bom) {
         this.bomList.add(bom);

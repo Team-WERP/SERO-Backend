@@ -1,13 +1,17 @@
 package com.werp.sero.material.command.domain.repository;
 
 import com.werp.sero.material.command.domain.aggregate.Material;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 /**
  * 자재 Command Repository 인터페이스
  */
-public interface MaterialRepository {
+@Repository
+public interface MaterialRepository extends JpaRepository<Material, Integer> {
 
     /**
      * 자재 저장
@@ -22,6 +26,13 @@ public interface MaterialRepository {
     /**
      * BOM 포함 자재 조회
      */
+    @Query("""
+        SELECT A
+        FROM Material A
+        LEFT JOIN FETCH A.bomList B
+        LEFT JOIN FETCH B.rawMaterial
+        WHERE A.id = :id
+    """)
     Optional<Material> findByIdWithBom(int id);
 
     /**

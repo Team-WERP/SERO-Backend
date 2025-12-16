@@ -89,19 +89,20 @@
             A.updated_at,
             A.manager_id
         FROM material A
-        WHERE 1=1
-        <if test="type != null and type != ''">
-            AND A.type = #{type}
-        </if>
-        <if test="status != null and status != ''">
-            AND A.status = #{status}
-        </if>
-        <if test="keyword != null and keyword != ''">
-            AND (
-                A.name LIKE CONCAT('%', #{keyword}, '%')
-                OR A.material_code LIKE CONCAT('%', #{keyword}, '%')
-            )
-        </if>
+        <where>
+            <if test="type != null and type != ''">
+                AND A.type = #{type}
+            </if>
+            <if test="status != null and status != ''">
+                AND A.status = #{status}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    A.name LIKE CONCAT('%', #{keyword}, '%')
+                    OR A.material_code LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+        </where>
         ORDER BY A.id DESC
     </select>
 

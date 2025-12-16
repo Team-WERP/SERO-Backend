@@ -32,4 +32,17 @@ public class Bom {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "raw_material_id", nullable = false)
     private Material rawMaterial;
+
+    private Bom(Material material, Material rawMaterial, int requirement, String note, String createdAt) {
+        this.material = material;
+        this.rawMaterial = rawMaterial;
+        this.requirement = requirement;
+        this.note = note;
+        this.createdAt = createdAt;
+    }
+
+    public static Bom create(Material material, Material rawMaterial,
+                             int requirement, String note, String createdAt) {
+        return new Bom(material, rawMaterial, requirement, note, createdAt);
+    }
 }

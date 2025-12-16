@@ -22,4 +22,9 @@ public interface MaterialCommandService {
      * 자재 비활성화
      */
     void deactivateMaterial(int materialId);
+
+    /**
+     * 자재 활성화
+     */
+    void activateMaterial(int materialId);
 }

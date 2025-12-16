@@ -38,7 +38,7 @@ public class MaterialCommandServiceImpl implements MaterialCommandService {
 
         // 2. 담당자 조회
         Employee manager = employeeRepository.findById(loginEmployeeId)
-                .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 담당자입니다."));
 
         // 3. 자재 생성
         Material material = Material.builder()
@@ -105,22 +105,21 @@ public class MaterialCommandServiceImpl implements MaterialCommandService {
 
         // 3. BOM 수정 (완제품인 경우)
         if ("MAT_FG".equals(material.getType()) && request.getBomList() != null) {
-            // 기존 BOM 삭제
-            bomRepository.deleteByMaterialId(materialId);
 
             // 새로운 BOM 생성 (Builder 패턴)
             List<Bom> newBomList = new ArrayList<>();
+
             for (MaterialUpdateRequestDTO.BomRequest bomRequest : request.getBomList()) {
                 Material rawMaterial = materialRepository.findById(bomRequest.getRawMaterialId())
                         .orElseThrow(MaterialNotFoundException::new);
 
-                Bom bom = Bom.builder()
-                        .material(material)
-                        .rawMaterial(rawMaterial)
-                        .requirement(bomRequest.getRequirement())
-                        .note(bomRequest.getNote())
-                        .createdAt(getCurrentTimestamp())
-                        .build();
+                Bom bom = Bom.create(
+                        material,
+                        rawMaterial,
+                        bomRequest.getRequirement(),
+                        bomRequest.getNote(),
+                        getCurrentTimestamp()
+                );
 
                 newBomList.add(bom);
             }
@@ -135,6 +134,14 @@ public class MaterialCommandServiceImpl implements MaterialCommandService {
                 .orElseThrow(MaterialNotFoundException::new);
 
         material.deactivate();
+    }
+
+    @Override
+    public void activateMaterial(int materialId) {
+        Material material = materialRepository.findById(materialId)
+                .orElseThrow(MaterialNotFoundException::new);
+
+        material.activate();
     }
 
     private String getCurrentTimestamp() {

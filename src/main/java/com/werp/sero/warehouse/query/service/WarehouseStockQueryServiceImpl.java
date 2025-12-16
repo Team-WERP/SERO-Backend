@@ -43,7 +43,6 @@ public class WarehouseStockQueryServiceImpl implements WarehouseStockQueryServic
     @Override
     public WarehouseStockDetailResponseDTO getWarehouseStockDetail(int stockId) {
         // 1. 재고 정보 조회
-        Object WarehouseStockNotFoundException;
         WarehouseStock stock = warehouseStockMapper.findByIdWithDetails(stockId)
                 .orElseThrow(WarehouseStockNotFoundException::new);
 

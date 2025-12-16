@@ -87,4 +87,23 @@ public class MaterialCommandController {
             @PathVariable int id) {
         materialCommandService.deactivateMaterial(id);
     }
+
+    /**
+     * 자재 활성화 처리
+     *
+     * PATCH /materials/{id}/deactivate
+     *
+     * @param id 활성화할 자재 ID (예: 7)
+     */
+    @Operation(
+            summary = "자재 활성화",
+            description = "자재를 비성화 처리합니다."
+    )
+    @PatchMapping("/{id}/activate")
+    @RequirePermission(menu = "MM_MAT", authorities = {"AC_SYS", "AC_SAL", "AC_PRO"}, accessType = AccessType.WRITE)
+    public void activate(
+            @Parameter(description = "자재 ID", example = "7")
+            @PathVariable int id) {
+        materialCommandService.activateMaterial(id);
+    }
 }
