@@ -2,6 +2,7 @@ package com.werp.sero.material.command.application.controller;
 
 import com.werp.sero.common.security.AccessType;
 import com.werp.sero.common.security.RequirePermission;
+import com.werp.sero.common.swagger.ApiErrorResponses;
 import com.werp.sero.material.command.application.dto.MaterialCreateRequestDTO;
 import com.werp.sero.material.command.application.dto.MaterialUpdateRequestDTO;
 import com.werp.sero.material.command.application.service.MaterialCommandService;
@@ -26,10 +27,8 @@ public class MaterialCommandController {
      *
      * @param request 자재 등록 요청 정보 (자재명, 자재코드, 유형, 단가, 설명 등)
      */
-    @Operation(
-            summary = "자재 등록",
-            description = "신규 자재를 등록합니다."
-    )
+    @Operation(summary = "자재 등록", description = "신규 자재를 등록합니다.")
+    @ApiErrorResponses.MaterialCodeDuplicated
     @PostMapping
     @RequirePermission(menu = "MM_MAT", authorities = {"AC_SYS", "AC_SAL", "AC_PRO"}, accessType = AccessType.WRITE)
     public void createMaterial(
@@ -49,10 +48,8 @@ public class MaterialCommandController {
      * @param id 수정할 자재 ID (예: 7)
      * @param request 자재 수정 요청 정보 (자재명, 단가, 상태, 설명 등)
      */
-    @Operation(
-            summary = "자재 수정",
-            description = "기존 자재 정보를 수정합니다."
-    )
+    @Operation(summary = "자재 수정", description = "기존 자재 정보를 수정합니다.")
+    @ApiErrorResponses.MaterialNotFound
     @PutMapping("/{id}")
     @RequirePermission(menu = "MM_MAT", authorities = {"AC_SYS", "AC_SAL", "AC_PRO"}, accessType = AccessType.WRITE)
     public void updateMaterial(

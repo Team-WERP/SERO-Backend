@@ -6,20 +6,33 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum ErrorCode {
     /* COMMON */
-    ENTITY_NOT_FOUND(HttpStatus.NOT_FOUND, "COMMON001", "Entity not found"),
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "COMMON002", "Internal server error"),
-    BAD_REQUEST(HttpStatus.BAD_REQUEST, "COMMON003", "Bad request"),
+    ENTITY_NOT_FOUND(HttpStatus.NOT_FOUND, "COMMON001", "요청한 데이터를 찾을 수 없습니다."),
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "COMMON002", "서버 내부 오류가 발생했습니다."),
+    BAD_REQUEST(HttpStatus.BAD_REQUEST, "COMMON003", "잘못된 요청입니다."),
 
     /* MATERIAL */
-    MATERIAL_NOT_FOUND(HttpStatus.NOT_FOUND, "MATERIAL001", "Material not found"),
-    MATERIAL_CODE_DUPLICATED(HttpStatus.CONFLICT, "MATERIAL002", "Material code already exists"),
+    MATERIAL_NOT_FOUND(HttpStatus.NOT_FOUND, "MATERIAL001", "자재 정보를 찾을 수 없습니다."),
+    MATERIAL_CODE_DUPLICATED(HttpStatus.CONFLICT, "MATERIAL002", "이미 존재하는 자재 코드입니다."),
+    INVALID_MATERIAL_TYPE_FOR_MATERIAL(HttpStatus.BAD_REQUEST, "MATERIAL003", "잘못된 자재 유형입니다. (허용: MAT_FG, MAT_RM)"),
+    INVALID_MATERIAL_STATUS(HttpStatus.BAD_REQUEST, "MATERIAL004", "잘못된 자재 상태입니다. (허용: MAT_NORMAL, MAT_STOP)"),
 
     /* WAREHOUSE */
-    WAREHOUSE_STOCK_NOT_FOUND(HttpStatus.NOT_FOUND, "WAREHOUSE001", "Warehouse stock not found"),
+    WAREHOUSE_STOCK_NOT_FOUND(HttpStatus.NOT_FOUND, "WAREHOUSE001", "창고 재고 정보를 찾을 수 없습니다."),
+    WAREHOUSE_NOT_FOUND(HttpStatus.NOT_FOUND, "WAREHOUSE002", "창고 정보를 찾을 수 없습니다."),
+    INVALID_MATERIAL_TYPE(HttpStatus.BAD_REQUEST, "WAREHOUSE003", "잘못된 자재 유형입니다. (허용: MAT_FG, MAT_RM)"),
+    INVALID_STOCK_STATUS(HttpStatus.BAD_REQUEST, "WAREHOUSE004", "잘못된 재고 상태입니다. (허용: NORMAL, LOW, OUT_OF_STOCK)"),
 
     /* CLIENT */
-    CLIENT_NOT_FOUND(HttpStatus.NOT_FOUND, "CLIENT001", "Client not found"),
-    CLIENT_BUSINESS_NO_DUPLICATED(HttpStatus.CONFLICT, "CLIENT002", "Business number already exists");
+    CLIENT_NOT_FOUND(HttpStatus.NOT_FOUND, "CLIENT001", "거래처 정보를 찾을 수 없습니다."),
+    CLIENT_BUSINESS_NO_DUPLICATED(HttpStatus.CONFLICT, "CLIENT002", "이미 등록된 사업자번호입니다."),
+
+    /* SECURITY */
+    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "SECURITY001", "인증되지 않은 사용자입니다."),
+    PERMISSION_DENIED(HttpStatus.FORBIDDEN, "SECURITY002", "해당 기능에 대한 권한이 없습니다."),
+
+    /* EMPLOYEE */
+    EMPLOYEE_NOT_FOUND(HttpStatus.NOT_FOUND, "EMPLOYEE001", "직원 정보를 찾을 수 없습니다."),
+    DEPARTMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "EMPLOYEE002", "부서 정보를 찾을 수 없습니다.");
 
     private final HttpStatus status;
     private final String code;

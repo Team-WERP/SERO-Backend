@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep:*)",
+      "Bash(git -C /c/Users/USER/Desktop/SWCAMP_project/Fin_project_/SERO-Backend log --oneline -10)",
+      "Bash(./gradlew test:*)",
+      "Bash(./gradlew clean build:*)",
+      "Bash(tree:*)"
+    ]
+  }
+}

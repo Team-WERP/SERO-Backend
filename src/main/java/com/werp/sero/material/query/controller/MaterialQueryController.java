@@ -2,6 +2,7 @@ package com.werp.sero.material.query.controller;
 
 import com.werp.sero.common.security.AccessType;
 import com.werp.sero.common.security.RequirePermission;
+import com.werp.sero.common.swagger.ApiErrorResponses;
 import com.werp.sero.material.query.dto.MaterialDetailResponseDTO;
 import com.werp.sero.material.query.dto.MaterialListResponseDTO;
 import com.werp.sero.material.query.service.MaterialQueryService;
@@ -58,10 +59,8 @@ public class MaterialQueryController {
      * @param id 자재 ID (예: 7)
      * @return 자재 상세 정보 (기본 정보, 단가, 상태, BOM 관계, 재고 정보 등)
      */
-    @Operation(
-            summary = "자재 상세 조회",
-            description = "자재 ID 기준으로 상세 정보를 조회합니다."
-    )
+    @Operation(summary = "자재 상세 조회", description = "자재 ID 기준으로 상세 정보를 조회합니다.")
+    @ApiErrorResponses.MaterialNotFound
     @GetMapping("/{id}")
     @RequirePermission(menu = "MM_MAT", authorities = {"AC_SYS", "AC_SAL", "AC_PRO", "AC_WHS"}, accessType = AccessType.READ)
     public MaterialDetailResponseDTO getMaterial(

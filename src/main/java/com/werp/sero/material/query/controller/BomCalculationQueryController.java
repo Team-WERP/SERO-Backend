@@ -62,7 +62,7 @@ public class BomCalculationQueryController {
             summary = "BOM 정전개",
             description = "완제품 생산 수량 기준으로 원부자재 소요량을 계산합니다."
     )
-    @GetMapping("/explosion")
+    @GetMapping("/explosion/{materialId}")
     @RequirePermission(menu = "MM_MAT", authorities = {"AC_SYS", "AC_SAL", "AC_PRO", "AC_WHS"}, accessType = AccessType.READ)
     public BomExplosionResponseDTO calculateExplosion(
             @Parameter(description = "완제품 ID", example = "7", required = true)

@@ -1,5 +1,6 @@
 package com.werp.sero.material.query.service;
 
+import com.werp.sero.material.exception.InvalidMaterialTypeException;
 import com.werp.sero.material.exception.MaterialNotFoundException;
 import com.werp.sero.material.command.domain.aggregate.Bom;
 import com.werp.sero.material.command.domain.aggregate.Material;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -23,8 +25,17 @@ public class BomCalculationQueryServiceImpl implements BomCalculationQueryServic
     private final MaterialMapper materialMapper;
     private final BomMapper bomMapper;
 
+    // 허용되는 자재 유형
+    private static final List<String> VALID_MATERIAL_TYPES = Arrays.asList("MAT_FG", "MAT_RM");
+
     @Override
     public List<MaterialSearchResponseDTO> searchMaterials(String keyword, String type) {
+        // 1. 자재 유형 유효성 검증 (값이 있을 경우에만)
+        if (type != null && !type.isEmpty() && !VALID_MATERIAL_TYPES.contains(type)) {
+            throw new InvalidMaterialTypeException();
+        }
+
+        // 2. 자재 검색
         List<Material> materials = materialMapper.findByCondition(type, null, keyword);
 
         return materials.stream()
