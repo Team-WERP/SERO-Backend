@@ -1,6 +1,7 @@
 package com.werp.sero.material.command.application.service;
 
 import com.werp.sero.material.command.application.dto.MaterialCreateRequestDTO;
+import com.werp.sero.material.command.application.dto.MaterialCreateResponseDTO;
 import com.werp.sero.material.command.application.dto.MaterialUpdateRequestDTO;
 
 /**
@@ -10,8 +11,9 @@ public interface MaterialCommandService {
 
     /**
      * 자재 등록
+     * @return 생성된 자재 정보
      */
-    void createMaterial(MaterialCreateRequestDTO materialCreateRequestDTO, int loginEmployeeId);
+    MaterialCreateResponseDTO createMaterial(MaterialCreateRequestDTO materialCreateRequestDTO, int loginEmployeeId);
 
     /**
      * 자재 수정

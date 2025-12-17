@@ -3,11 +3,14 @@ package com.werp.sero.material.command.application.service;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.employee.command.domain.repository.EmployeeRepository;
 import com.werp.sero.material.command.application.dto.MaterialCreateRequestDTO;
+import com.werp.sero.material.command.application.dto.MaterialCreateResponseDTO;
 import com.werp.sero.material.command.application.dto.MaterialUpdateRequestDTO;
 import com.werp.sero.material.command.domain.aggregate.Bom;
 import com.werp.sero.material.command.domain.aggregate.Material;
 import com.werp.sero.material.command.domain.repository.BomRepository;
 import com.werp.sero.material.command.domain.repository.MaterialRepository;
+import com.werp.sero.material.exception.MaterialAlreadyActivatedException;
+import com.werp.sero.material.exception.MaterialAlreadyDeactivatedException;
 import com.werp.sero.material.exception.MaterialCodeDuplicatedException;
 import com.werp.sero.material.exception.MaterialNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +33,7 @@ public class MaterialCommandServiceImpl implements MaterialCommandService {
     private final EmployeeRepository employeeRepository;
 
     @Override
-    public void createMaterial(MaterialCreateRequestDTO request, int loginEmployeeId) {
+    public MaterialCreateResponseDTO createMaterial(MaterialCreateRequestDTO request, int loginEmployeeId) {
         // 1. 자재 코드 중복 체크
         if (materialRepository.existsByMaterialCode(request.getMaterialCode())) {
             throw new MaterialCodeDuplicatedException();
@@ -80,6 +83,9 @@ public class MaterialCommandServiceImpl implements MaterialCommandService {
                 savedMaterial.addBom(bom);
             }
         }
+
+        // 6. DTO 변환 및 반환
+        return MaterialCreateResponseDTO.from(savedMaterial);
     }
 
     @Override
@@ -133,6 +139,11 @@ public class MaterialCommandServiceImpl implements MaterialCommandService {
         Material material = materialRepository.findById(materialId)
                 .orElseThrow(MaterialNotFoundException::new);
 
+        // 이미 비활성화된 상태인지 확인
+        if ("MAT_STOP".equals(material.getStatus())) {
+            throw new MaterialAlreadyDeactivatedException();
+        }
+
         material.deactivate();
     }
 
@@ -140,6 +151,11 @@ public class MaterialCommandServiceImpl implements MaterialCommandService {
     public void activateMaterial(int materialId) {
         Material material = materialRepository.findById(materialId)
                 .orElseThrow(MaterialNotFoundException::new);
+
+        // 이미 활성화된 상태인지 확인
+        if ("MAT_NORMAL".equals(material.getStatus())) {
+            throw new MaterialAlreadyActivatedException();
+        }
 
         material.activate();
     }
