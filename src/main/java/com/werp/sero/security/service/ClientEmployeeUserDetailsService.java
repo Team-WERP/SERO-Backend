@@ -3,7 +3,7 @@ package com.werp.sero.security.service;
 import com.werp.sero.employee.command.domain.aggregate.ClientEmployee;
 import com.werp.sero.employee.command.domain.repository.ClientEmployeeRepository;
 import com.werp.sero.employee.command.exception.ClientEmployeeNotFoundException;
-import com.werp.sero.security.dto.CustomUserDetails;
+import com.werp.sero.security.principal.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

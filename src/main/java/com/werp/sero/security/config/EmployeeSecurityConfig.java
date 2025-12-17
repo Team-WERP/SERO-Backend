@@ -1,7 +1,7 @@
 package com.werp.sero.security.config;
 
-import com.werp.sero.security.CustomAccessDeniedHandler;
-import com.werp.sero.security.CustomAuthenticationEntryPoint;
+import com.werp.sero.security.handler.CustomAccessDeniedHandler;
+import com.werp.sero.security.handler.CustomAuthenticationEntryPoint;
 import com.werp.sero.security.jwt.JwtAuthenticationFilter;
 import com.werp.sero.security.jwt.JwtExceptionFilter;
 import com.werp.sero.security.jwt.JwtTokenProvider;

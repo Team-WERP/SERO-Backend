@@ -1,9 +1,9 @@
 package com.werp.sero.security.jwt;
 
-import com.werp.sero.security.dto.CustomUserDetails;
+import com.werp.sero.security.principal.CustomUserDetails;
 import com.werp.sero.security.dto.JwtToken;
-import com.werp.sero.security.exception.ExpiredTokenException;
-import com.werp.sero.security.exception.InvalidTokenException;
+import com.werp.sero.security.jwt.exception.ExpiredTokenException;
+import com.werp.sero.security.jwt.exception.InvalidTokenException;
 import com.werp.sero.security.service.ClientEmployeeUserDetailsService;
 import com.werp.sero.security.service.EmployeeUserDetailsService;
 import io.jsonwebtoken.*;

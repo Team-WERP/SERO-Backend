@@ -1,8 +1,8 @@
 package com.werp.sero.security.jwt;
 
 import com.werp.sero.common.error.ErrorCode;
-import com.werp.sero.security.exception.ExpiredTokenException;
-import com.werp.sero.security.exception.InvalidTokenException;
+import com.werp.sero.security.jwt.exception.ExpiredTokenException;
+import com.werp.sero.security.jwt.exception.InvalidTokenException;
 import com.werp.sero.util.ErrorResponseUtil;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;

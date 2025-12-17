@@ -4,7 +4,7 @@ import com.werp.sero.auth.dto.LoginRequestDTO;
 import com.werp.sero.auth.dto.LoginResponseDTO;
 import com.werp.sero.auth.exception.LoginFailedException;
 import com.werp.sero.security.dto.JwtToken;
-import com.werp.sero.security.dto.enums.Type;
+import com.werp.sero.security.enums.Type;
 import com.werp.sero.security.jwt.JwtTokenProvider;
 import com.werp.sero.util.CookieUtil;
 import com.werp.sero.util.RedisUtil;

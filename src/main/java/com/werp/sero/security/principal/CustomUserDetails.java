@@ -1,8 +1,8 @@
-package com.werp.sero.security.dto;
+package com.werp.sero.security.principal;
 
 import com.werp.sero.employee.command.domain.aggregate.ClientEmployee;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
-import com.werp.sero.security.dto.enums.Type;
+import com.werp.sero.security.enums.Type;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

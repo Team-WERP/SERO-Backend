@@ -6,7 +6,7 @@ import com.werp.sero.auth.service.AuthService;
 import com.werp.sero.employee.command.domain.aggregate.ClientEmployee;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.security.annotation.CurrentUser;
-import com.werp.sero.security.dto.enums.Type;
+import com.werp.sero.security.enums.Type;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

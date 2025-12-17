@@ -1,4 +1,4 @@
-package com.werp.sero.security.dto.enums;
+package com.werp.sero.security.enums;
 
 import lombok.Getter;
 

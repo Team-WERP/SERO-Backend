@@ -1,4 +1,4 @@
-package com.werp.sero.security.exception;
+package com.werp.sero.security.jwt.exception;
 
 import com.werp.sero.common.error.ErrorCode;
 import com.werp.sero.common.error.exception.BusinessException;
