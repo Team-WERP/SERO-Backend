@@ -2,12 +2,13 @@ package com.werp.sero.client.command.domain.aggregate;
 
 import com.werp.sero.material.command.domain.aggregate.Material;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @Table(name = "client_item")
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 public class ClientItem {
     @Id
