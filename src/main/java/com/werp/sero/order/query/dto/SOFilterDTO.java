@@ -25,11 +25,11 @@ public class SOFilterDTO {
     @Schema(description = "날짜 범위 종료일", example = "2025-12-31")
     private String endDate;
 
-    @Schema(description = "담당자 id", example = "1")
-    private Integer managerId;
+    @Schema(description = "담당자 이름", example = "김승우")
+    private String managerName;
 
-    @Schema(description = "고객사 id", example = "1")
-    private Integer clientId;
+    @Schema(description = "고객사 이름", example = "에스엘(주)")
+    private String  clientName;
 
     @Schema(description = "브레이크")
     private String searchKeyword;

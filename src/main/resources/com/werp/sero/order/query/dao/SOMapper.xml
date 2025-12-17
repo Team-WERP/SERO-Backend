@@ -26,7 +26,7 @@
         <result property="recipientContact" column="recipient_contact"/>
         <result property="clientId" column="client_id"/>
         <result property="clientManagerId" column="client_manager_id"/>
-        <result property="managerId" column="manager_id"/>
+        <result property="managerName" column="manager_name"/>
     </resultMap>
 
     <select id="selectAllSalesOrders" resultMap="SOResultMap">
@@ -35,8 +35,7 @@
         A.so_code,
         A.client_id,
         A.client_manager_id,
-        A.manager_id,
-        A.client_name,
+        A.manager_id, A.client_name,
         A.ordered_at,
         A.shipped_at,
         A.po_code,
@@ -52,23 +51,16 @@
         A.shipping_name,
         A.address,
         A.recipient_name,
-        A.recipient_contact
+        A.recipient_contact,
+        B.name AS manager_name
         FROM sales_order A
+        LEFT JOIN employee B ON A.manager_id = B.id
 
         <where>
             <if test="statusType != null and statusType != ''">
                 <choose>
                     <when test='statusType.equals("ORD_PEND")'>
                         AND A.status IN ('ORD_RED', 'ORD_REV')
-                    </when>
-                    <when test='statusType.equals("ORD_APPR")'>
-                        AND A.status IN ('ORD_APPR_PEND', 'ORD_APPR_DONE', 'ORD_APPR_RJCT')
-                    </when>
-                    <when test='statusType.equals("ORD_ING")'>
-                        AND A.status IN ('ORD_WORK_REQ', 'ORD_PRO', 'ORD_SHIP_READY', 'ORD_SHIPPING')
-                    </when>
-                    <when test='statusType.equals("ORD_DONE")'>
-                        AND A.status IN ('ORD_DONE', 'ORD_CANCEL')
                     </when>
                     <otherwise>
                         AND A.status = #{statusType}
@@ -80,12 +72,12 @@
                 AND A.${dateField} BETWEEN CONCAT(#{startDate}, ' 00:00:00') AND CONCAT(#{endDate}, ' 23:59:59')
             </if>
 
-            <if test="managerId != null and managerId > 0">
-                AND A.manager_id = #{managerId}
+            <if test="managerName != null and managerName != ''">
+                AND B.name LIKE CONCAT('%', #{managerName}, '%')
             </if>
 
-            <if test="clientId != null and clientId > 0">
-                AND A.client_id = #{clientId}
+            <if test="clientName != null and clientName != ''">
+                AND A.client_name LIKE CONCAT('%', #{clientName}, '%')
             </if>
 
             <if test="searchKeyword != null and searchKeyword != ''">

@@ -2,11 +2,14 @@ package com.werp.sero.order.query.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.order.command.domain.aggregate.SalesOrder;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.Optional;
 
 @Getter
 @AllArgsConstructor
@@ -82,11 +85,15 @@ public class SOResponseDTO {
     private int clientManagerId;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @Schema(description = "담당자 ID")
-    private Integer managerId;
-
+    @Schema(description = "담당자 이름")
+    private String managerName;
 
     public static SOResponseDTO of(final SalesOrder salesOrder) {
+
+        String managerName = Optional.ofNullable(salesOrder.getEmployee())
+                .map(Employee::getName)
+                .orElse(null);
+
         return new SOResponseDTO(
                 salesOrder.getId(),
                 salesOrder.getSoCode(),
@@ -109,7 +116,7 @@ public class SOResponseDTO {
                 salesOrder.getRecipientContact(),
                 salesOrder.getClient().getId(),
                 salesOrder.getClientEmployee().getId(),
-                salesOrder.getEmployee() != null ? salesOrder.getEmployee().getId() : null
+                managerName
         );
     }
 }

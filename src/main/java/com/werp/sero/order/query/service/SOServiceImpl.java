@@ -34,8 +34,8 @@ public class SOServiceImpl implements SOQueryService {
         params.put("dateField", filter.getDateField());
         params.put("startDate", filter.getStartDate());
         params.put("endDate", filter.getEndDate());
-        params.put("managerId", filter.getManagerId());
-        params.put("clientId", filter.getClientId());
+        params.put("managerName", filter.getManagerName());
+        params.put("clientName", filter.getClientName());
         params.put("searchKeyword", filter.getSearchKeyword());
         // 페이지네이션
         params.put("limit", limit);

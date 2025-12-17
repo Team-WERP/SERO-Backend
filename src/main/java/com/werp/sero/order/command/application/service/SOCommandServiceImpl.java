@@ -40,5 +40,6 @@ public class SOCommandServiceImpl implements SOCommandService{
 
         salesOrder.updateManager(manager);
 
-        return SODetailResponseDTO.of(salesOrder);    }
+        return SODetailResponseDTO.of(salesOrder);
+    }
 }
