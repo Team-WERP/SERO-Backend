@@ -10,9 +10,9 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -28,32 +28,30 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
+@RequiredArgsConstructor
 @Component
 public class JwtTokenProvider {
     private static final String AUTHORITIES_KEY = "auth";
-    private static final String CLIENT_PERMISSION ="AC_CLI";
+    private static final String CLIENT_PERMISSION = "AC_CLI";
 
-    private static long ACCESS_TOKEN_EXPIRATION_TIME;
-    private static long REFRESH_TOKEN_EXPIRATION_TIME;
+    @Value("${jwt.secret-key}")
+    private String secretKeyString;
 
-    private final SecretKey secretKey;
+    @Value("${jwt.access-token-expiration-time}")
+    private long accessTokenExpirationTime;
+
+    @Value("${jwt.refresh-token-expiration-time}")
+    private long refreshTokenExpirationTime;
+
+    private SecretKey secretKey;
+
     private final EmployeeUserDetailsService employeeUserDetailsService;
     private final ClientEmployeeUserDetailsService clientEmployeeUserDetailsService;
 
-    @Autowired
-    public JwtTokenProvider(@Value("${jwt.secret-key}") final String secretKeyString,
-                            @Value("${jwt.access-token-expiration-time}") final long accessTokenExpirationTime,
-                            @Value("${jwt.refresh-token-expiration-time}") final long refreshTokenExpirationTime,
-                            final EmployeeUserDetailsService employeeUserDetailsService,
-                            @Qualifier("clientEmployeeUserDetailsService") final ClientEmployeeUserDetailsService clientEmployeeUserDetailsService) {
+    @PostConstruct
+    public void init() {
         final byte[] keyBytes = Decoders.BASE64.decode(secretKeyString);
         this.secretKey = Keys.hmacShaKeyFor(keyBytes);
-
-        this.ACCESS_TOKEN_EXPIRATION_TIME = accessTokenExpirationTime;
-        this.REFRESH_TOKEN_EXPIRATION_TIME = refreshTokenExpirationTime;
-
-        this.employeeUserDetailsService = employeeUserDetailsService;
-        this.clientEmployeeUserDetailsService = clientEmployeeUserDetailsService;
     }
 
     public JwtToken generateAccessToken(final Authentication authentication) {
@@ -66,11 +64,11 @@ public class JwtTokenProvider {
         final String accessToken = Jwts.builder()
                 .subject(customUserDetails.getUsername())
                 .claim(AUTHORITIES_KEY, authorities)
-                .expiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION_TIME))
+                .expiration(new Date(System.currentTimeMillis() + accessTokenExpirationTime))
                 .signWith(secretKey)
                 .compact();
 
-        return new JwtToken(accessToken, authorities, ACCESS_TOKEN_EXPIRATION_TIME);
+        return new JwtToken(accessToken, authorities, accessTokenExpirationTime);
     }
 
     public JwtToken generateRefreshToken(final Authentication authentication) {
@@ -78,11 +76,11 @@ public class JwtTokenProvider {
 
         final String refreshToken = Jwts.builder()
                 .subject(customUserDetails.getUsername())
-                .expiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION_TIME))
+                .expiration(new Date(System.currentTimeMillis() + refreshTokenExpirationTime))
                 .signWith(secretKey)
                 .compact();
 
-        return new JwtToken(refreshToken, null, REFRESH_TOKEN_EXPIRATION_TIME);
+        return new JwtToken(refreshToken, null, refreshTokenExpirationTime);
     }
 
     public Claims parseClaims(final String token) {
