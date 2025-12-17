@@ -10,6 +10,7 @@ public enum ErrorCode {
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "COMMON002", "서버 내부 오류가 발생했습니다."),
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "COMMON003", "잘못된 요청입니다."),
 
+
     /* MATERIAL */
     MATERIAL_NOT_FOUND(HttpStatus.NOT_FOUND, "MATERIAL001", "자재 정보를 찾을 수 없습니다."),
     MATERIAL_CODE_DUPLICATED(HttpStatus.CONFLICT, "MATERIAL002", "이미 존재하는 자재 코드입니다."),
@@ -17,6 +18,10 @@ public enum ErrorCode {
     INVALID_MATERIAL_STATUS(HttpStatus.BAD_REQUEST, "MATERIAL004", "잘못된 자재 상태입니다. (허용: MAT_NORMAL, MAT_STOP)"),
     MATERIAL_ALREADY_ACTIVATED(HttpStatus.CONFLICT, "MATERIAL005", "이미 활성화된 자재입니다."),
     MATERIAL_ALREADY_DEACTIVATED(HttpStatus.CONFLICT, "MATERIAL006", "이미 비활성화된 자재입니다."),
+
+    /* System */
+    SYSTEM_COMMON_CODE_NOT_FOUND(HttpStatus.NOT_FOUND, "SYSTEM001", "공통코드를 찾을 수 없습니다."),
+
 
     /* WAREHOUSE */
     WAREHOUSE_STOCK_NOT_FOUND(HttpStatus.NOT_FOUND, "WAREHOUSE001", "창고 재고 정보를 찾을 수 없습니다."),
@@ -36,6 +41,7 @@ public enum ErrorCode {
     /* EMPLOYEE */
     EMPLOYEE_NOT_FOUND(HttpStatus.NOT_FOUND, "EMPLOYEE001", "직원 정보를 찾을 수 없습니다."),
     DEPARTMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "EMPLOYEE002", "부서 정보를 찾을 수 없습니다.");
+
 
     private final HttpStatus status;
     private final String code;
