@@ -136,4 +136,36 @@ public class ApiErrorResponses {
             )
     })
     public @interface WarehouseStockSearchValidation {}
+
+    /**
+     * BOM 등록/수정 시 자재 유형 검증 에러 응답
+     */
+    @Target({ElementType.METHOD})
+    @Retention(RetentionPolicy.RUNTIME)
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "성공"),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "BOM은 완제품에만 등록 가능",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = com.werp.sero.common.error.ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"MATERIAL007\", \"message\": \"BOM은 완제품(MAT_FG)에만 등록할 수 있습니다.\", \"timestamp\": \"2025-12-17 14:30:25\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "자재를 찾을 수 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = com.werp.sero.common.error.ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"MATERIAL001\", \"message\": \"자재 정보를 찾을 수 없습니다.\", \"timestamp\": \"2025-12-17 14:30:25\"}"
+                            )
+                    )
+            )
+    })
+    public @interface BomValidation {}
 }

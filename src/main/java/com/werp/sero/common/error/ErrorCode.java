@@ -18,6 +18,7 @@ public enum ErrorCode {
     INVALID_MATERIAL_STATUS(HttpStatus.BAD_REQUEST, "MATERIAL004", "잘못된 자재 상태입니다. (허용: MAT_NORMAL, MAT_STOP)"),
     MATERIAL_ALREADY_ACTIVATED(HttpStatus.CONFLICT, "MATERIAL005", "이미 활성화된 자재입니다."),
     MATERIAL_ALREADY_DEACTIVATED(HttpStatus.CONFLICT, "MATERIAL006", "이미 비활성화된 자재입니다."),
+    BOM_NOT_ALLOWED_FOR_NON_FG(HttpStatus.BAD_REQUEST, "MATERIAL007", "BOM은 완제품(MAT_FG)에만 등록할 수 있습니다."),
 
     /* System */
     SYSTEM_COMMON_CODE_NOT_FOUND(HttpStatus.NOT_FOUND, "SYSTEM001", "공통코드를 찾을 수 없습니다."),

@@ -2,6 +2,8 @@ package com.werp.sero.material.command.application.service;
 
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.employee.command.domain.repository.EmployeeRepository;
+import com.werp.sero.material.command.application.dto.BomCreateRequestDTO;
+import com.werp.sero.material.command.application.dto.BomCreateResponseDTO;
 import com.werp.sero.material.command.application.dto.MaterialCreateRequestDTO;
 import com.werp.sero.material.command.application.dto.MaterialCreateResponseDTO;
 import com.werp.sero.material.command.application.dto.MaterialUpdateRequestDTO;
@@ -9,6 +11,7 @@ import com.werp.sero.material.command.domain.aggregate.Bom;
 import com.werp.sero.material.command.domain.aggregate.Material;
 import com.werp.sero.material.command.domain.repository.BomRepository;
 import com.werp.sero.material.command.domain.repository.MaterialRepository;
+import com.werp.sero.material.exception.BomNotAllowedForNonFinishedGoodsException;
 import com.werp.sero.material.exception.MaterialAlreadyActivatedException;
 import com.werp.sero.material.exception.MaterialAlreadyDeactivatedException;
 import com.werp.sero.material.exception.MaterialCodeDuplicatedException;
@@ -66,25 +69,7 @@ public class MaterialCommandServiceImpl implements MaterialCommandService {
         // 4. 자재 저장
         Material savedMaterial = materialRepository.save(material);
 
-        // 5. BOM 생성 (완제품인 경우)
-        if ("MAT_FG".equals(request.getType()) && request.getBomList() != null) {
-            for (MaterialCreateRequestDTO.BomRequest bomRequest : request.getBomList()) {
-                Material rawMaterial = materialRepository.findById(bomRequest.getRawMaterialId())
-                        .orElseThrow(MaterialNotFoundException::new);
-
-                Bom bom = Bom.builder()
-                        .material(savedMaterial)
-                        .rawMaterial(rawMaterial)
-                        .requirement(bomRequest.getRequirement())
-                        .note(bomRequest.getNote())
-                        .createdAt(getCurrentTimestamp())
-                        .build();
-
-                savedMaterial.addBom(bom);
-            }
-        }
-
-        // 6. DTO 변환 및 반환
+        // 5. DTO 변환 및 반환
         return MaterialCreateResponseDTO.from(savedMaterial);
     }
 
@@ -158,6 +143,77 @@ public class MaterialCommandServiceImpl implements MaterialCommandService {
         }
 
         material.activate();
+    }
+
+    @Override
+    public BomCreateResponseDTO addBom(int materialId, BomCreateRequestDTO request) {
+        // 1. 자재 조회
+        Material material = materialRepository.findByIdWithBom(materialId)
+                .orElseThrow(MaterialNotFoundException::new);
+
+        // 2. 완제품인지 확인
+        if (!"MAT_FG".equals(material.getType())) {
+            throw new BomNotAllowedForNonFinishedGoodsException();
+        }
+
+        // 3. BOM 구성 추가
+        if (request.getBomList() != null) {
+            for (BomCreateRequestDTO.BomItemRequest bomRequest : request.getBomList()) {
+                Material rawMaterial = materialRepository.findById(bomRequest.getRawMaterialId())
+                        .orElseThrow(MaterialNotFoundException::new);
+
+                Bom bom = Bom.builder()
+                        .material(material)
+                        .rawMaterial(rawMaterial)
+                        .requirement(bomRequest.getRequirement())
+                        .note(bomRequest.getNote())
+                        .createdAt(getCurrentTimestamp())
+                        .build();
+
+                material.addBom(bom);
+            }
+        }
+
+        // 4. DTO 변환 및 반환
+        return BomCreateResponseDTO.from(material);
+    }
+
+    @Override
+    public BomCreateResponseDTO updateBom(int materialId, BomCreateRequestDTO request) {
+        // 1. 자재 조회
+        Material material = materialRepository.findByIdWithBom(materialId)
+                .orElseThrow(MaterialNotFoundException::new);
+
+        // 2. 완제품인지 확인
+        if (!"MAT_FG".equals(material.getType())) {
+            throw new BomNotAllowedForNonFinishedGoodsException();
+        }
+
+        // 3. 새로운 BOM 목록 생성
+        List<Bom> newBomList = new ArrayList<>();
+
+        if (request.getBomList() != null) {
+            for (BomCreateRequestDTO.BomItemRequest bomRequest : request.getBomList()) {
+                Material rawMaterial = materialRepository.findById(bomRequest.getRawMaterialId())
+                        .orElseThrow(MaterialNotFoundException::new);
+
+                Bom bom = Bom.create(
+                        material,
+                        rawMaterial,
+                        bomRequest.getRequirement(),
+                        bomRequest.getNote(),
+                        getCurrentTimestamp()
+                );
+
+                newBomList.add(bom);
+            }
+        }
+
+        // 4. 기존 BOM 교체
+        material.replaceBomList(newBomList);
+
+        // 5. DTO 변환 및 반환
+        return BomCreateResponseDTO.from(material);
     }
 
     private String getCurrentTimestamp() {

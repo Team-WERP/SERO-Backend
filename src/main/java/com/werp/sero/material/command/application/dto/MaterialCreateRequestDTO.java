@@ -5,8 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 /**
  * 자재 등록 요청 DTO
  */
@@ -61,26 +59,4 @@ public class MaterialCreateRequestDTO {
             allowableValues = {"MAT_NORMAL", "MAT_INACTIVE"}
     )
     private String status;
-
-    @Schema(description = "BOM 구성 목록")
-    private List<BomRequest> bomList;
-
-    // =============================
-    // BOM 요청 DTO
-    // =============================
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Schema(description = "BOM 구성 자재 요청")
-    public static class BomRequest {
-
-        @Schema(description = "원자재 ID", example = "1")
-        private int rawMaterialId;
-
-        @Schema(description = "소요 수량", example = "2")
-        private int requirement;
-
-        @Schema(description = "비고", example = "마찰재")
-        private String note;
-    }
 }
