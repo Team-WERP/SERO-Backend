@@ -30,4 +30,5 @@ public @interface RequirePermission {
      * 접근 타입 (READ: 조회, WRITE: 수정)
      */
     AccessType accessType() default AccessType.READ;
+
 }
