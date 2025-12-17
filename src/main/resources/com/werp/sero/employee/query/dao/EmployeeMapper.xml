@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.werp.sero.employee.query.dao.EmployeeMapper">
+
+    <resultMap id="EmployeeResultMap" type="com.werp.sero.employee.command.domain.aggregate.Employee">
+        <id property="id" column="emp_id"/>
+        <result property="empCode" column="emp_code"/>
+        <result property="email" column="email"/>
+        <result property="name" column="emp_name"/>
+        <result property="contact" column="contact"/>
+        <result property="status" column="status"/>
+        <result property="positionCode" column="position_code"/>
+        <result property="rankCode" column="rank_code"/>
+        <result property="startDate" column="start_date"/>
+        <association property="department" javaType="com.werp.sero.employee.command.domain.aggregate.Department">
+            <id property="id" column="dept_id"/>
+            <result property="deptCode" column="dept_code"/>
+            <result property="deptName" column="dept_name"/>
+        </association>
+    </resultMap>
+
+
+    <select id="findAllEmployeesByDeptCode" resultMap="EmployeeResultMap">
+        WITH RECURSIVE DeptHierarchy AS (
+
+            SELECT
+                id,
+                dept_code,
+                dept_name,
+                parent_dept_id
+            FROM department
+            WHERE dept_code = #{rootDeptCode}
+
+            UNION ALL
+
+            SELECT
+                d.id,
+                d.dept_code,
+                d.dept_name,
+                d.parent_dept_id
+            FROM department d
+                     INNER JOIN DeptHierarchy dh ON d.parent_dept_id = dh.id
+        )
+        SELECT
+            E.id AS emp_id,
+            E.emp_code,
+            E.email,
+            E.name AS emp_name,
+            E.contact,
+            E.status,
+            E.position_code,
+            E.rank_code,
+            E.start_date,
+            D.id AS dept_id,
+            D.dept_code,
+            D.dept_name
+        FROM employee E
+                 JOIN department D ON E.dept_id = D.id
+        WHERE D.id IN (SELECT id FROM DeptHierarchy)
+        ORDER BY D.parent_dept_id ASC, D.id ASC, E.name ASC
+    </select>
+</mapper>
