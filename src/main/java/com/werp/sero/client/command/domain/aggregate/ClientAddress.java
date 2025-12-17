@@ -1,5 +1,6 @@
 package com.werp.sero.client.command.domain.aggregate;
 
+import com.werp.sero.client.command.domain.repository.ClientAddressCommandRepository;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -55,4 +56,5 @@ public class ClientAddress {
         this.isDefault = isDefault;
         this.updatedAt = updatedAt;
     }
+
 }

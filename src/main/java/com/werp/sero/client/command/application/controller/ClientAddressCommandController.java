@@ -22,7 +22,7 @@ public class ClientAddressCommandController {
 
     private final ClientAddressCommandService clientAddressCommandService;
 
-    @Operation(summary = "신규 배송지 등록" , description = "모달창을 통해 신규 배송지 등록")
+    @Operation(summary = "고객사 신규 배송지 등록" , description = "모달창을 통해 신규 배송지 등록")
     @PostMapping("/addresses")
     public ResponseEntity<ClientAddressCreateResponse> createNewAddress(
         
@@ -36,7 +36,7 @@ public class ClientAddressCommandController {
             
     }
 
-    @Operation(summary = "배송지 수정" , description = "모달창을 통해 배송지 정보 수정")
+    @Operation(summary = "고객사 배송지 수정" , description = "모달창을 통해 배송지 정보 수정")
     @PutMapping("/addresses/{addressId}")
     public ResponseEntity<ClientAddressUpdateResponse> updateAddress(
 
@@ -48,5 +48,16 @@ public class ClientAddressCommandController {
         ClientAddressUpdateResponse response =
                 clientAddressCommandService.updateAddress(clientId,addressId,request);
         return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "고객사 배송지 삭제", description = "배송지 정보 삭제")
+    @DeleteMapping("/addresses/{addressId}")
+    public ResponseEntity<Void> deleteAddress(
+
+        @PathVariable int clientId,
+        @PathVariable int addressId
+    ) {
+        clientAddressCommandService.deleteAddress(clientId,addressId);
+        return ResponseEntity.ok().build();
     }
 }

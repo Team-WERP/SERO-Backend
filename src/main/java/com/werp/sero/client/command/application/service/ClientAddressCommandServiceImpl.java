@@ -107,4 +107,20 @@ public class ClientAddressCommandServiceImpl implements ClientAddressCommandServ
                 .isDefault(savedAddress.isDefault())
                 .build();
     }
+
+    @Override
+    @Transactional
+    public void deleteAddress(int clientId, int addressId) {
+
+        // 1. Client 조회 (임시)
+        Client client = clientRepository.findById(clientId)
+                .orElseThrow(ClientNotFoundException::new);
+
+        // 2. 기존 ClientAddress 조회
+        ClientAddress clientAddress = clientAddressCommandRepository.findById(addressId)
+                .orElseThrow(ClientAddressNotFoundException::new);
+
+        // 3. ClientAddress 삭제
+        clientAddressCommandRepository.delete(clientAddress);
+    }
 }

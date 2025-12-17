@@ -11,4 +11,6 @@ public interface ClientAddressCommandService {
     ClientAddressCreateResponse createAddress(int clientId,ClientAddressCreateRequest request);
 
     ClientAddressUpdateResponse updateAddress(int clientId, int addressId, ClientAddressUpdateRequest request);
+
+    void deleteAddress(int clientId, int addressId);
 }
