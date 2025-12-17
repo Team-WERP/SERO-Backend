@@ -4,7 +4,6 @@ import com.werp.sero.employee.command.domain.aggregate.Department;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -14,17 +13,7 @@ import java.util.Optional;
 public interface DepartmentMapper {
 
     /**
-     * 전체 부서 목록 조회
-     */
-    List<Department> findAll();
-
-    /**
      * ID로 부서 조회
      */
     Optional<Department> findById(@Param("id") int id);
-
-    /**
-     * 부서명으로 부서 조회
-     */
-    Optional<Department> findByName(@Param("name") String name);
 }

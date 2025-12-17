@@ -9,16 +9,6 @@
         <result property="deptName" column="dept_name"/>
     </resultMap>
 
-    <!-- Find all departments -->
-    <select id="findAll" resultMap="departmentResultMap">
-        SELECT
-            A.id,
-            A.dept_code,
-            A.dept_name
-        FROM department A
-        ORDER BY A.id
-    </select>
-
     <!-- Find department by ID -->
     <select id="findById" resultMap="departmentResultMap">
         SELECT
