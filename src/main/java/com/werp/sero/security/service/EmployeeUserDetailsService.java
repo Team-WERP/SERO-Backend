@@ -4,7 +4,7 @@ import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.employee.command.domain.repository.EmployeeRepository;
 import com.werp.sero.employee.command.exception.EmployeeNotFoundException;
 import com.werp.sero.security.principal.CustomUserDetails;
-import com.werp.sero.system.command.domain.repository.EmployeePermissionRepository;
+import com.werp.sero.permission.command.domain.repository.EmployeePermissionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
