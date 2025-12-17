@@ -32,6 +32,6 @@ public class CommonCode {
     private CommonCodeType commonCodeType;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_id", nullable = false)
+    @JoinColumn(name = "parent_id")
     private CommonCode parentCommonCode;
 }
