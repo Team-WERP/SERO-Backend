@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.werp.sero.employee.query.dao.EmployeeMapper">
+
+    <!-- Employee with Department ResultMap (공통) -->
+    <resultMap id="EmployeeResultMap" type="com.werp.sero.employee.command.domain.aggregate.Employee">
+        <id property="id" column="emp_id"/>
+        <result property="empCode" column="emp_code"/>
+        <result property="email" column="email"/>
+        <result property="password" column="password"/>
+        <result property="name" column="emp_name"/>
+        <result property="contact" column="contact"/>
+        <result property="status" column="status"/>
+        <result property="positionCode" column="position_code"/>
+        <result property="rankCode" column="rank_code"/>
+        <result property="startDate" column="start_date"/>
+        <result property="createdAt" column="created_at"/>
+        <association property="department" javaType="com.werp.sero.employee.command.domain.aggregate.Department">
+            <id property="id" column="dept_id"/>
+            <result property="deptCode" column="dept_code"/>
+            <result property="deptName" column="dept_name"/>
+        </association>
+    </resultMap>
+
+    <!-- 부서 코드 기준으로 하위 부서 포함 모든 직원 조회 (develop 브랜치 기능) -->
+    <select id="findAllEmployeesByDeptCode" resultMap="EmployeeResultMap">
+        WITH RECURSIVE DeptHierarchy AS (
+        -- Anchor Member
+        SELECT
+        A.id,
+        A.dept_code,
+        A.dept_name,
+        A.parent_dept_id
+        FROM department A
+        <where>
+            <choose>
+                <when test="rootDeptCode != null and rootDeptCode != ''">
+                    AND A.dept_code = #{rootDeptCode}
+                </when>
+                <otherwise>
+                    AND A.parent_dept_id IS NULL
+                </otherwise>
+            </choose>
+        </where>
+
+        UNION ALL
+
+        -- Recursive Member
+        SELECT
+        B.id,
+        B.dept_code,
+        B.dept_name,
+        B.parent_dept_id
+        FROM department B
+        INNER JOIN DeptHierarchy E ON B.parent_dept_id = E.id
+        )
+        SELECT
+        C.id AS emp_id,
+        C.emp_code,
+        C.email,
+        C.name AS emp_name,
+        C.contact,
+        C.status,
+        C.position_code,
+        C.rank_code,
+        C.start_date,
+        D.id AS dept_id,
+        D.dept_code,
+        D.dept_name
+        FROM employee C
+        JOIN department D ON C.dept_id = D.id
+        WHERE D.id IN (SELECT id FROM DeptHierarchy)
+        ORDER BY D.parent_dept_id ASC, D.id ASC, C.name ASC
+    </select>
+
+    <!-- 부서별 사원 목록 조회 (부서 정보 포함) (feat/16 브랜치 기능) -->
+    <select id="findByDepartmentIdWithDepartment" resultMap="EmployeeResultMap">
+        SELECT
+            A.id AS emp_id,
+            A.emp_code,
+            A.email,
+            A.password,
+            A.name AS emp_name,
+            A.contact,
+            A.status,
+            A.position_code,
+            A.rank_code,
+            A.start_date,
+            A.created_at,
+            B.id AS dept_id,
+            B.dept_name AS dept_name,
+            B.dept_code AS dept_code
+        FROM employee A
+        INNER JOIN department B ON A.dept_id = B.id
+        WHERE A.dept_id = #{departmentId}
+        ORDER BY A.id
+    </select>
+
+</mapper>

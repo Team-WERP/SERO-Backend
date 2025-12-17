@@ -2,12 +2,13 @@ package com.werp.sero.warehouse.command.domain.aggregate;
 
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
 @Table(name = "warehouse")
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder
 @Entity
 public class Warehouse {
     @Id
