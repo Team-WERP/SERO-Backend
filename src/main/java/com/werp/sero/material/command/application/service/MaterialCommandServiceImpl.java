@@ -76,7 +76,7 @@ public class MaterialCommandServiceImpl implements MaterialCommandService {
     @Override
     public void updateMaterial(int materialId, MaterialUpdateRequestDTO request) {
         // 1. 자재 조회
-        Material material = materialRepository.findByIdWithBom(materialId)
+        Material material = materialRepository.findById(materialId)
                 .orElseThrow(MaterialNotFoundException::new);
 
         // 2. 자재 정보 수정
@@ -93,30 +93,6 @@ public class MaterialCommandServiceImpl implements MaterialCommandService {
                 request.getSafetyStock(),
                 request.getStatus()
         );
-
-        // 3. BOM 수정 (완제품인 경우)
-        if ("MAT_FG".equals(material.getType()) && request.getBomList() != null) {
-
-            // 새로운 BOM 생성 (Builder 패턴)
-            List<Bom> newBomList = new ArrayList<>();
-
-            for (MaterialUpdateRequestDTO.BomRequest bomRequest : request.getBomList()) {
-                Material rawMaterial = materialRepository.findById(bomRequest.getRawMaterialId())
-                        .orElseThrow(MaterialNotFoundException::new);
-
-                Bom bom = Bom.create(
-                        material,
-                        rawMaterial,
-                        bomRequest.getRequirement(),
-                        bomRequest.getNote(),
-                        getCurrentTimestamp()
-                );
-
-                newBomList.add(bom);
-            }
-
-            material.replaceBomList(newBomList);
-        }
     }
 
     @Override
