@@ -45,4 +45,14 @@ public class ClientAddress {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "client_id", nullable = false)
     private Client client;
+
+    public void update(String name, String address, String recipientName,
+                       String recipientContact, boolean isDefault, String updatedAt) {
+        this.name = name;
+        this.address = address;
+        this.recipientName = recipientName;
+        this.recipientContact = recipientContact;
+        this.isDefault = isDefault;
+        this.updatedAt = updatedAt;
+    }
 }

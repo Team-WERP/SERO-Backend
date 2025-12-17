@@ -9,4 +9,9 @@ import lombok.Getter;
 @Builder
 @AllArgsConstructor
 public class ClientAddressUpdateRequest {
+    private String name;
+    private String address;
+    private String recipientName;
+    private String recipientContact;
+    private boolean isDefault;
 }
