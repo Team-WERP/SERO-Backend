@@ -32,7 +32,8 @@ public class EmployeeSecurityConfig {
             "/v3/api-docs/**",
             "/swagger-ui/**",
             "/swagger-resources/**",
-            "/auth/login"
+            "/auth/login",
+            "/warehouse/**"  // TODO: 개발 테스트용 - 프로덕션에서는 제거할 것
     };
 
     private static final String[] AUTHORITY_LIST = {

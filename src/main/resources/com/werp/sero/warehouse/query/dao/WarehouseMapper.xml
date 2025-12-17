@@ -36,4 +36,19 @@
         WHERE A.id = #{id}
     </select>
 
+    <!-- 모든 창고 목록 조회 -->
+    <select id="findAll" resultMap="warehouseResultMap">
+        SELECT
+            A.id,
+            A.name,
+            A.address,
+            A.latitude,
+            A.longitude,
+            A.type,
+            A.created_at,
+            A.updated_at
+        FROM warehouse A
+        ORDER BY A.id
+    </select>
+
 </mapper>
