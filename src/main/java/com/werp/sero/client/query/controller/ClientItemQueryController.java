@@ -2,6 +2,7 @@ package com.werp.sero.client.query.controller;
 
 import java.util.List;
 
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "고객사 거래 품목 관련 API", description = "고객사 거래 품목 관련 API")
 @RequestMapping("clients/{clientId}")
-@RequiredArgsConstructor
+@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 @RestController
 public class ClientItemQueryController {
 

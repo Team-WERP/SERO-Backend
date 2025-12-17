@@ -1,14 +1,16 @@
 package com.werp.sero.client.command.domain.aggregate;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
 @Table(name = "client_address")
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Entity
+@Builder
 public class ClientAddress {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -19,10 +21,10 @@ public class ClientAddress {
     @Column(nullable = false)
     private String address;
 
-    @Column(nullable = false, columnDefinition = "decimal(10,7)")
+    @Column(columnDefinition = "decimal(10,7)")
     private Double latitude;
 
-    @Column(nullable = false, columnDefinition = "decimal(10,7)")
+    @Column(columnDefinition = "decimal(10,7)")
     private Double longitude;
 
     @Column(name = "recipient_name", nullable = false)

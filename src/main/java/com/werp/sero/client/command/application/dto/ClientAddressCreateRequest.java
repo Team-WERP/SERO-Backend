@@ -8,14 +8,10 @@ import lombok.Getter;
 @Getter
 @Builder
 @AllArgsConstructor
-public class ClientAddressCreateResponse {
-    private int id;
+public class ClientAddressCreateRequest {
     private String name;
     private String address;
     private String recipientName;
     private String recipientContact;
     private boolean isDefault;
-
-
-
 }

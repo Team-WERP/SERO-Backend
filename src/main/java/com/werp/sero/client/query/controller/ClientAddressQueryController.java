@@ -15,12 +15,13 @@ import com.werp.sero.client.query.service.ClientAddressQueryService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
 
 @Tag(name = "고객사 배송지 관련 API", description = "고객사 배송지 관련 API")
 @RequestMapping("clients/{clientId}")
-@RequiredArgsConstructor
+@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 @RestController
 public class ClientAddressQueryController {
     
