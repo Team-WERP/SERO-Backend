@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import com.werp.sero.client.command.domain.aggregate.ClientAddress;
 
 
-@Repository
+
 public interface ClientAddressCommandRepository extends JpaRepository<ClientAddress, Integer> {
 
     // 특정 고객사의 모든 기본 배송지 조회

@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 
 @Tag(name = "고객사 배송지 관련 API", description = "고객사 배송지 관련 API")
 @RequestMapping("clients/{clientId}")
-@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
+@RequiredArgsConstructor
 @RestController
 public class ClientAddressQueryController {
     

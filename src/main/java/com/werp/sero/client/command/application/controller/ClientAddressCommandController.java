@@ -12,12 +12,13 @@ import com.werp.sero.client.command.application.dto.ClientAddressCreateRequest;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @Tag(name = "고객사 배송지 관련 API", description = "고객사 배송지 관련 API")
 @RestController
 @RequestMapping("clients/{clientId}")
-@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
+@RequiredArgsConstructor
 public class ClientAddressCommandController {
 
     private final ClientAddressCommandService clientAddressCommandService;
@@ -27,7 +28,7 @@ public class ClientAddressCommandController {
     public ResponseEntity<ClientAddressCreateResponse> createNewAddress(
         
         @PathVariable int clientId,
-        @RequestBody ClientAddressCreateRequest request
+        @RequestBody @Valid ClientAddressCreateRequest request
 
     ) {
         ClientAddressCreateResponse response =

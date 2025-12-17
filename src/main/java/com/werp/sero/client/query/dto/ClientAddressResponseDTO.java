@@ -8,6 +8,7 @@ import lombok.Getter;
 @Builder
 @AllArgsConstructor
 public class ClientAddressResponseDTO {
+
     private int id;
     private String name;
     private String address;

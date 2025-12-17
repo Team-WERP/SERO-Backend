@@ -25,6 +25,7 @@
                A.is_default
           FROM client_address A
          WHERE A.client_id = #{clientId}
+         ORDER BY A.is_default DESC, A.created_at DESC
     </select>       
 
 </mapper>

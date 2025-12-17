@@ -16,7 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "고객사 거래 품목 관련 API", description = "고객사 거래 품목 관련 API")
 @RequestMapping("clients/{clientId}")
-@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
+@RequiredArgsConstructor
 @RestController
 public class ClientItemQueryController {
 
