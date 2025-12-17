@@ -18,6 +18,16 @@ public enum ErrorCode {
     CLIENT_NOT_FOUND(HttpStatus.NOT_FOUND, "CLIENT002", "고객사를 찾을 수 없습니다."),
     CLIENT_ADDRESS_NOT_FOUND(HttpStatus.NOT_FOUND, "CLIENT003", "배송지를 찾을 수 없습니다.");
 
+    /* SALES ORDER */
+    SALES_ORDER_LIST_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER001", "주문 목록을 찾을 수 없습니다."),
+    SALES_ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER002", "주문 정보를 찾을 수 없습니다."),
+
+    /* Client */
+    CLIENT_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "CLIENT001", "해당 고객사의 거래 품목이 아닙니다."),
+
+    /* EMPLOYEE */
+    EMPLOYEE_NOT_FOUND(HttpStatus.NOT_FOUND, "EMPLOYEE001", "직원 정보를 찾을 수 없습니다."),
+    DEPARTMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "EMPLOYEE002", "부서 정보를 찾을 수 없습니다.");
 
     private final HttpStatus status;
     private final String code;
