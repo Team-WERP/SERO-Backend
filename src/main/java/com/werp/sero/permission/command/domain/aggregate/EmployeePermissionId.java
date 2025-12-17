@@ -1,4 +1,4 @@
-package com.werp.sero.system.command.domain.aggregate;
+package com.werp.sero.permission.command.domain.aggregate;
 
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import jakarta.persistence.Embeddable;
@@ -26,7 +26,7 @@ public class EmployeePermissionId {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        com.werp.sero.system.command.domain.aggregate.EmployeePermissionId that = (com.werp.sero.system.command.domain.aggregate.EmployeePermissionId) o;
+        EmployeePermissionId that = (EmployeePermissionId) o;
         return Objects.equals(employee, that.employee) && Objects.equals(permission, that.permission);
     }
 

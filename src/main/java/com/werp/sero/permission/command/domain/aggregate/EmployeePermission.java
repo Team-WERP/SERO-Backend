@@ -1,4 +1,4 @@
-package com.werp.sero.system.command.domain.aggregate;
+package com.werp.sero.permission.command.domain.aggregate;
 
 import jakarta.persistence.*;
 import lombok.Getter;
