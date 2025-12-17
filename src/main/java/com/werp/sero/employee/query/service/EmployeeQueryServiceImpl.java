@@ -37,9 +37,17 @@ public class EmployeeQueryServiceImpl implements EmployeeQueryService {
                 .filter(d -> d.getParentDepartment() != null)
                 .collect(Collectors.groupingBy(d -> d.getParentDepartment().getId()));
 
-        List<Department> rootDepartments = allDepartments.stream()
-                .filter(d -> d.getDeptCode().equals(deptCode))
-                .collect(Collectors.toList());
+        List<Department> rootDepartments;
+        if (deptCode != null && !deptCode.isEmpty()) {
+            // 특정 부서 코드 입력시
+            rootDepartments = allDepartments.stream()
+                    .filter(d -> d.getDeptCode().equals(deptCode))
+                    .collect(Collectors.toList());
+        } else {
+            rootDepartments = allDepartments.stream()
+                    .filter(d -> d.getParentDepartment() == null)
+                    .collect(Collectors.toList());
+        }
 
         return buildHierarchy(rootDepartments, employeesByDeptId, childrenMap);
     }
