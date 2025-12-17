@@ -13,6 +13,11 @@ import java.util.List;
 public interface EmployeeMapper {
 
     /**
+     * 부서 코드 기준으로 하위 부서 포함 모든 직원 조회
+     */
+    List<Employee> findAllEmployeesByDeptCode(final String rootDeptCode);
+
+    /**
      * 부서별 사원 목록 조회 (부서 정보 포함)
      */
     List<Employee> findByDepartmentIdWithDepartment(@Param("departmentId") int departmentId);

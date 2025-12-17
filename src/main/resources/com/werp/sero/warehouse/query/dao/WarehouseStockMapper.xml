@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.werp.sero.warehouse.query.dao.WarehouseStockMapper">
+
+    <resultMap id="warehouseStockResultMap"
+               type="com.werp.sero.warehouse.command.domain.aggregate.WarehouseStock">
+        <id property="id" column="id"/>
+        <result property="safetyStock" column="safety_stock"/>
+        <result property="currentStock" column="current_stock"/>
+        <result property="availableStock" column="available_stock"/>
+
+        <association property="warehouse"
+                     javaType="com.werp.sero.warehouse.command.domain.aggregate.Warehouse">
+            <id property="id" column="warehouse_id"/>
+            <result property="name" column="warehouse_name"/>
+            <result property="type" column="warehouse_type"/>
+        </association>
+
+        <association property="material"
+                     javaType="com.werp.sero.material.command.domain.aggregate.Material">
+            <id property="id" column="material_id"/>
+            <result property="name" column="material_name"/>
+            <result property="materialCode" column="material_code"/>
+            <result property="spec" column="material_spec"/>
+            <result property="type" column="material_type"/>
+            <result property="baseUnit" column="material_base_unit"/>
+        </association>
+    </resultMap>
+
+    <!-- 창고별 재고 조건 조회 -->
+    <select id="findByCondition" resultMap="warehouseStockResultMap">
+        SELECT
+        A.id,
+        A.safety_stock,
+        A.current_stock,
+        A.available_stock,
+        B.id   AS warehouse_id,
+        B.name AS warehouse_name,
+        B.type AS warehouse_type,
+        C.id   AS material_id,
+        C.name AS material_name,
+        C.material_code,
+        C.spec AS material_spec,
+        C.type AS material_type,
+        C.base_unit AS material_base_unit
+        FROM warehouse_stock A
+        INNER JOIN warehouse B ON A.warehouse_id = B.id
+        INNER JOIN material  C ON A.material_id  = C.id
+        <where>
+            <if test="warehouseId != null">
+                AND A.warehouse_id = #{warehouseId}
+            </if>
+
+            <if test="materialType != null and materialType != ''">
+                AND C.type = #{materialType}
+            </if>
+
+            <if test="stockStatus != null and stockStatus != ''">
+                <choose>
+                    <when test="stockStatus == 'NORMAL'">
+                        AND A.current_stock &gt;= A.safety_stock
+                    </when>
+                    <when test="stockStatus == 'LOW'">
+                        AND A.current_stock &lt; A.safety_stock
+                    </when>
+                    <when test="stockStatus == 'OUT_OF_STOCK'">
+                        AND A.current_stock = 0
+                    </when>
+                </choose>
+            </if>
+
+            <if test="keyword != null and keyword != ''">
+                AND (
+                C.name LIKE CONCAT('%', #{keyword}, '%')
+                OR C.material_code LIKE CONCAT('%', #{keyword}, '%')
+                OR B.name LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+        </where>
+        ORDER BY A.id DESC
+    </select>
+
+    <!-- 재고 상세 조회 -->
+    <select id="findByIdWithDetails" resultMap="warehouseStockResultMap">
+        SELECT
+            A.id,
+            A.safety_stock,
+            A.current_stock,
+            A.available_stock,
+            B.id   AS warehouse_id,
+            B.name AS warehouse_name,
+            B.type AS warehouse_type,
+            C.id   AS material_id,
+            C.name AS material_name,
+            C.material_code,
+            C.spec AS material_spec,
+            C.type AS material_type,
+            C.base_unit AS material_base_unit
+        FROM warehouse_stock A
+                 INNER JOIN warehouse B ON A.warehouse_id = B.id
+                 INNER JOIN material  C ON A.material_id  = C.id
+        WHERE A.id = #{id}
+    </select>
+
+    <!-- 창고 + 자재 단건 조회 -->
+    <select id="findByWarehouseIdAndMaterialId"
+            resultMap="warehouseStockResultMap">
+        SELECT
+            A.id,
+            A.safety_stock,
+            A.current_stock,
+            A.available_stock,
+            B.id   AS warehouse_id,
+            B.name AS warehouse_name,
+            B.type AS warehouse_type,
+            C.id   AS material_id,
+            C.name AS material_name,
+            C.material_code,
+            C.spec AS material_spec,
+            C.type AS material_type,
+            C.base_unit AS material_base_unit
+        FROM warehouse_stock A
+                 INNER JOIN warehouse B ON A.warehouse_id = B.id
+                 INNER JOIN material  C ON A.material_id  = C.id
+        WHERE A.warehouse_id = #{warehouseId}
+          AND A.material_id  = #{materialId}
+    </select>
+
+</mapper>

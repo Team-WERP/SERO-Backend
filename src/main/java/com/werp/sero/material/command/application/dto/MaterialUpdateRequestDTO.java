@@ -1,0 +1,52 @@
+package com.werp.sero.material.command.application.dto;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+/**
+ * 자재 수정 요청 DTO
+ */
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+public class MaterialUpdateRequestDTO {
+
+    @Schema(description = "자재명", example = "브레이크 패드 어셈블리")
+    private String name;
+
+    @Schema(description = "자재 사양", example = "Front, 280mm 디스크 대응")
+    private String spec;
+
+    @Schema(description = "작업 단위", example = "BOX")
+    private String operationUnit;
+
+    @Schema(description = "기본 단위", example = "EA")
+    private String baseUnit;
+
+    @Schema(description = "최소 주문 수량(MOQ)", example = "500")
+    private Integer moq;
+
+    @Schema(description = "사이클 타임(초)", example = "120")
+    private Integer cycleTime;
+
+    @Schema(description = "단가", example = "45000")
+    private Long unitPrice;
+
+    @Schema(description = "이미지 URL", example = "https://image.url/sample.png")
+    private String imageUrl;
+
+    @Schema(description = "단위 변환 비율", example = "1")
+    private Integer conversionRate;
+
+    @Schema(description = "안전 재고 수량", example = "200")
+    private Integer safetyStock;
+
+    @Schema(
+            description = "자재 상태",
+            example = "MAT_NORMAL",
+            allowableValues = {"MAT_NORMAL", "MAT_INACTIVE"}
+    )
+    private String status;
+}

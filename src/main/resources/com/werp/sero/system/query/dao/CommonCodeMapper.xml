@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.werp.sero.system.query.dao.CommonCodeMapper">
+
+    <resultMap id="CommonCodeResultMap"
+               type="com.werp.sero.system.query.dto.CommonCodeDTO">
+        <result property="code" column="code"/>
+        <result property="name" column="name"/>
+        <result property="description" column="description"/>
+        <result property="sortOrder" column="sort_order"/>
+    </resultMap>
+
+    <!-- ========================= -->
+    <!-- 단건 조회 (DTO 반환) -->
+    <!-- ========================= -->
+    <select id="findByCode" resultMap="CommonCodeResultMap">
+        SELECT
+            A.code,
+            A.name,
+            A.description,
+            A.sort_order
+        FROM common_code A
+                 INNER JOIN common_code_type B
+                            ON A.type_code = B.code
+        WHERE B.code = #{typeCode}
+          AND A.code = #{code}
+          AND A.is_used = 1
+            LIMIT 1
+    </select>
+
+    <!-- ========================= -->
+    <!-- name만 조회 (문서번호 prefix용) -->
+    <!-- ========================= -->
+    <select id="findName" resultType="string">
+        SELECT
+            A.name
+        FROM common_code A
+            INNER JOIN common_code_type B
+                ON A.type_code = B.code
+        WHERE B.code = #{typeCode}
+          AND A.code = #{code}
+          AND A.is_used = 1
+            LIMIT 1
+    </select>
+
+    <!-- ========================= -->
+    <!-- 타입별 코드 목록 조회 -->
+    <!-- ========================= -->
+    <select id="findByType" resultMap="CommonCodeResultMap">
+        SELECT
+            A.code,
+            A.name,
+            A.description,
+            A.sort_order
+        FROM common_code A
+                 INNER JOIN common_code_type B
+                            ON A.type_code = B.code
+        WHERE B.code = #{typeCode}
+          AND A.is_used = 1
+        ORDER BY A.sort_order ASC
+    </select>
+
+</mapper>

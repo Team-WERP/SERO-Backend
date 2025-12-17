@@ -1,0 +1,200 @@
+package com.werp.sero.material.command.application.service;
+
+import com.werp.sero.employee.command.domain.aggregate.Employee;
+import com.werp.sero.employee.command.domain.repository.EmployeeRepository;
+import com.werp.sero.material.command.application.dto.BomCreateRequestDTO;
+import com.werp.sero.material.command.application.dto.BomCreateResponseDTO;
+import com.werp.sero.material.command.application.dto.MaterialCreateRequestDTO;
+import com.werp.sero.material.command.application.dto.MaterialCreateResponseDTO;
+import com.werp.sero.material.command.application.dto.MaterialUpdateRequestDTO;
+import com.werp.sero.material.command.domain.aggregate.Bom;
+import com.werp.sero.material.command.domain.aggregate.Material;
+import com.werp.sero.material.command.domain.repository.BomRepository;
+import com.werp.sero.material.command.domain.repository.MaterialRepository;
+import com.werp.sero.material.exception.BomNotAllowedForNonFinishedGoodsException;
+import com.werp.sero.material.exception.MaterialAlreadyActivatedException;
+import com.werp.sero.material.exception.MaterialAlreadyDeactivatedException;
+import com.werp.sero.material.exception.MaterialCodeDuplicatedException;
+import com.werp.sero.material.exception.MaterialNotFoundException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * 자재 Command Service 구현체
+ */
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class MaterialCommandServiceImpl implements MaterialCommandService {
+
+    private final MaterialRepository materialRepository;
+    private final BomRepository bomRepository;
+    private final EmployeeRepository employeeRepository;
+
+    @Override
+    public MaterialCreateResponseDTO createMaterial(MaterialCreateRequestDTO request, int loginEmployeeId) {
+        // 1. 자재 코드 중복 체크
+        if (materialRepository.existsByMaterialCode(request.getMaterialCode())) {
+            throw new MaterialCodeDuplicatedException();
+        }
+
+        // 2. 담당자 조회
+        Employee manager = employeeRepository.findById(loginEmployeeId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 담당자입니다."));
+
+        // 3. 자재 생성
+        Material material = Material.builder()
+                .name(request.getName())
+                .materialCode(request.getMaterialCode())
+                .spec(request.getSpec())
+                .operationUnit(request.getOperationUnit())
+                .baseUnit(request.getBaseUnit())
+                .moq(request.getMoq())
+                .cycleTime(request.getCycleTime())
+                .unitPrice(request.getUnitPrice() != null ? request.getUnitPrice() : 0)
+                .imageUrl(request.getImageUrl())
+                .conversionRate(request.getConversionRate())
+                .safetyStock(request.getSafetyStock() != null ? request.getSafetyStock() : 1)
+                .rawMaterialCount(null)
+                .type(request.getType())
+                .status(request.getStatus() != null ? request.getStatus() : "MAT_NORMAL")
+                .employee(manager)
+                .createdAt(getCurrentTimestamp())
+                .build();
+
+        // 4. 자재 저장
+        Material savedMaterial = materialRepository.save(material);
+
+        // 5. DTO 변환 및 반환
+        return MaterialCreateResponseDTO.from(savedMaterial);
+    }
+
+    @Override
+    public void updateMaterial(int materialId, MaterialUpdateRequestDTO request) {
+        // 1. 자재 조회
+        Material material = materialRepository.findById(materialId)
+                .orElseThrow(MaterialNotFoundException::new);
+
+        // 2. 자재 정보 수정
+        material.update(
+                request.getName(),
+                request.getSpec(),
+                request.getOperationUnit(),
+                request.getBaseUnit(),
+                request.getMoq(),
+                request.getCycleTime(),
+                request.getUnitPrice(),
+                request.getImageUrl(),
+                request.getConversionRate(),
+                request.getSafetyStock(),
+                request.getStatus()
+        );
+    }
+
+    @Override
+    public void deactivateMaterial(int materialId) {
+        Material material = materialRepository.findById(materialId)
+                .orElseThrow(MaterialNotFoundException::new);
+
+        // 이미 비활성화된 상태인지 확인
+        if ("MAT_STOP".equals(material.getStatus())) {
+            throw new MaterialAlreadyDeactivatedException();
+        }
+
+        material.deactivate();
+    }
+
+    @Override
+    public void activateMaterial(int materialId) {
+        Material material = materialRepository.findById(materialId)
+                .orElseThrow(MaterialNotFoundException::new);
+
+        // 이미 활성화된 상태인지 확인
+        if ("MAT_NORMAL".equals(material.getStatus())) {
+            throw new MaterialAlreadyActivatedException();
+        }
+
+        material.activate();
+    }
+
+    @Override
+    public BomCreateResponseDTO addBom(int materialId, BomCreateRequestDTO request) {
+        // 1. 자재 조회
+        Material material = materialRepository.findById(materialId)
+                .orElseThrow(MaterialNotFoundException::new);
+
+        // 2. 완제품인지 확인
+        if (!"MAT_FG".equals(material.getType())) {
+            throw new BomNotAllowedForNonFinishedGoodsException();
+        }
+
+        // 3. BOM 구성 추가
+        List<Bom> savedBomList = new ArrayList<>();
+        if (request.getBomList() != null) {
+            for (BomCreateRequestDTO.BomItemRequest bomRequest : request.getBomList()) {
+                Material rawMaterial = materialRepository.findById(bomRequest.getRawMaterialId())
+                        .orElseThrow(MaterialNotFoundException::new);
+
+                Bom bom = Bom.builder()
+                        .material(material)
+                        .rawMaterial(rawMaterial)
+                        .requirement(bomRequest.getRequirement())
+                        .note(bomRequest.getNote())
+                        .createdAt(getCurrentTimestamp())
+                        .build();
+
+                savedBomList.add(bomRepository.save(bom));
+            }
+        }
+
+        // 4. DTO 변환 및 반환
+        return BomCreateResponseDTO.from(material, savedBomList);
+    }
+
+    @Override
+    public BomCreateResponseDTO updateBom(int materialId, BomCreateRequestDTO request) {
+        // 1. 자재 조회
+        Material material = materialRepository.findById(materialId)
+                .orElseThrow(MaterialNotFoundException::new);
+
+        // 2. 완제품인지 확인
+        if (!"MAT_FG".equals(material.getType())) {
+            throw new BomNotAllowedForNonFinishedGoodsException();
+        }
+
+        // 3. 기존 BOM 삭제
+        bomRepository.deleteByMaterialId(materialId);
+
+        // 4. 새로운 BOM 목록 생성 및 저장
+        List<Bom> newBomList = new ArrayList<>();
+
+        if (request.getBomList() != null) {
+            for (BomCreateRequestDTO.BomItemRequest bomRequest : request.getBomList()) {
+                Material rawMaterial = materialRepository.findById(bomRequest.getRawMaterialId())
+                        .orElseThrow(MaterialNotFoundException::new);
+
+                Bom bom = Bom.create(
+                        material,
+                        rawMaterial,
+                        bomRequest.getRequirement(),
+                        bomRequest.getNote(),
+                        getCurrentTimestamp()
+                );
+
+                newBomList.add(bomRepository.save(bom));
+            }
+        }
+
+        // 5. DTO 변환 및 반환
+        return BomCreateResponseDTO.from(material, newBomList);
+    }
+
+    private String getCurrentTimestamp() {
+        return java.time.LocalDateTime.now()
+                .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+    }
+}

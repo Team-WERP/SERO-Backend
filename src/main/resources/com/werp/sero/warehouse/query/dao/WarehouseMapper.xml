@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.werp.sero.warehouse.query.dao.WarehouseMapper">
+
+    <resultMap id="warehouseResultMap" type="com.werp.sero.warehouse.command.domain.aggregate.Warehouse">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="address" column="address"/>
+        <result property="latitude" column="latitude"/>
+        <result property="longitude" column="longitude"/>
+        <result property="type" column="type"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <!-- ID로 창고 조회 -->
+    <select id="findById" resultMap="warehouseResultMap">
+        SELECT
+            A.id,
+            A.name,
+            A.address,
+            A.latitude,
+            A.longitude,
+            A.type,
+            A.created_at,
+            A.updated_at
+        FROM warehouse A
+        WHERE A.id = #{id}
+    </select>
+
+    <!-- 창고 ID 존재 여부 확인 -->
+    <select id="existsById" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM warehouse A
+        WHERE A.id = #{id}
+    </select>
+
+</mapper>

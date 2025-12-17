@@ -18,4 +18,8 @@ public class Department {
 
     @Column(name = "dept_name", nullable = false)
     private String deptName;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_dept_id")
+    private Department parentDepartment;
 }
