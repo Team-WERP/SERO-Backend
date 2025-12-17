@@ -4,5 +4,5 @@ import com.werp.sero.common.error.ErrorCode;
 import com.werp.sero.common.error.exception.BusinessException;
 
 public class SalesOrderNotFoundException extends BusinessException {
-    public SalesOrderNotFoundException(String message) { super(ErrorCode.SALES_ORDER_NOT_FOUND, message); }
+    public SalesOrderNotFoundException() { super(ErrorCode.EMPLOYEE_NOT_FOUND); }
 }

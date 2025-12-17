@@ -2,6 +2,7 @@ package com.werp.sero.order.command.application.controller;
 
 import com.werp.sero.order.command.application.dto.SOCancelRequestDTO;
 import com.werp.sero.order.command.application.dto.SODetailResponseDTO;
+import com.werp.sero.order.command.application.dto.SOManagerRequestDTO;
 import com.werp.sero.order.command.application.service.SOCommandService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -35,7 +36,7 @@ public class SOCommandController {
                     @ExampleObject(name = "ORDER_NOT_FOUND", value = """
                             {
                                 "code": "ORDER002",
-                                "message": "Order not found"
+                                "message": "주문을 찾을 수 없습니다."
                             }
                             """)
             }))
@@ -46,6 +47,33 @@ public class SOCommandController {
             @Valid @RequestBody final SOCancelRequestDTO request) {
 
         SODetailResponseDTO response = orderService.cancelOrder(orderId, request);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "주문 담당자 배정")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "주문 담당자 배정", content = @Content(
+                    mediaType = "application/json",
+                    array = @ArraySchema(
+                            schema = @Schema(implementation = SODetailResponseDTO.class)
+                    )
+            )),
+            @ApiResponse(responseCode = "404", content = @Content(mediaType = "application/json", examples = {
+                    @ExampleObject(name = "ORDER_NOT_FOUND", value = """
+                            {
+                                "code": "ORDER002",
+                                "message": "주문을 찾을 수 없습니다."
+                            }
+                            """)
+            }))
+    })
+    @PutMapping("/{orderId}/manager")
+    public ResponseEntity<SODetailResponseDTO> assignOrderManager(
+            @PathVariable("orderId") final int orderId,
+            @Valid @RequestBody final SOManagerRequestDTO request) {
+
+        SODetailResponseDTO response = orderService.assignManager(orderId, request.getEmpId());
 
         return ResponseEntity.ok(response);
     }

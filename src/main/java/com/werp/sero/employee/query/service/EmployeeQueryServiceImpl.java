@@ -59,7 +59,7 @@ public class EmployeeQueryServiceImpl implements EmployeeQueryService {
 
             List<Department> childDepartments = childrenMap.getOrDefault(currentDeptId, List.of());
 
-            // 하위 부서 존재시, 재귀적으로 buildHierarchy를 호출하여 하위 구조를 만든다.
+            // 하위 부서 존재시, 재귀적으로 buildHierarchy를 호출하여 하위 구조 생성
             List<DepartmentWithEmployeesDTO> childrenDtos = List.of();
             if (!childDepartments.isEmpty()) {
                 childrenDtos = buildHierarchy(childDepartments, employeesByDeptId, childrenMap);

@@ -93,4 +93,8 @@ public class SalesOrder {
         this.status = CANCEL_STATUS;
         this.rejectionReason = reason;
     }
+
+    public void updateManager(Employee manager) {
+        this.employee = manager;
+    }
 }

@@ -1,5 +1,8 @@
 package com.werp.sero.order.command.application.service;
 
+import com.werp.sero.employee.command.domain.aggregate.Employee;
+import com.werp.sero.employee.command.domain.repository.EmployeeRepository;
+import com.werp.sero.employee.exception.EmployeeNotFoundException;
 import com.werp.sero.order.command.application.dto.SOCancelRequestDTO;
 import com.werp.sero.order.command.application.dto.SODetailResponseDTO;
 import com.werp.sero.order.command.domain.aggregate.SalesOrder;
@@ -13,15 +16,29 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class SOCommandServiceImpl implements SOCommandService{
     private final SORepository orderRepository;
+    private final EmployeeRepository employeeRepository;
 
     @Transactional
     @Override
-    public SODetailResponseDTO cancelOrder(int orderId, SOCancelRequestDTO request) {
+    public SODetailResponseDTO cancelOrder(final int orderId, final SOCancelRequestDTO request) {
         SalesOrder salesOrder = orderRepository.findById(orderId)
-                .orElseThrow(() -> new SalesOrderNotFoundException("주문을 찾을 수 없습니다."));
+                .orElseThrow(SalesOrderNotFoundException::new);
 
         salesOrder.cancel(request.getRejectionReason());
 
         return SODetailResponseDTO.of(salesOrder);
     }
+
+    @Transactional
+    @Override
+    public SODetailResponseDTO assignManager(final int orderId, final int empId) {
+        SalesOrder salesOrder = orderRepository.findById(orderId)
+                .orElseThrow(SalesOrderNotFoundException::new);
+
+        Employee manager = employeeRepository.findById(empId)
+                .orElseThrow(EmployeeNotFoundException :: new);
+
+        salesOrder.updateManager(manager);
+
+        return SODetailResponseDTO.of(salesOrder);    }
 }
