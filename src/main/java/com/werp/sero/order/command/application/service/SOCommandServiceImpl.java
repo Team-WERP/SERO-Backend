@@ -7,7 +7,9 @@ import com.werp.sero.order.command.application.dto.SOCancelRequestDTO;
 import com.werp.sero.order.command.application.dto.SODetailResponseDTO;
 import com.werp.sero.order.command.domain.aggregate.SalesOrder;
 import com.werp.sero.order.command.domain.repository.SORepository;
+import com.werp.sero.order.exception.OrderCannotBeCanceledException;
 import com.werp.sero.order.exception.SalesOrderNotFoundException;
+import jakarta.persistence.criteria.Order;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +26,11 @@ public class SOCommandServiceImpl implements SOCommandService{
         SalesOrder salesOrder = orderRepository.findById(orderId)
                 .orElseThrow(SalesOrderNotFoundException::new);
 
+        // 주문 검토 및 결재 반려시에만 주문 취소 가능
+        String currentStatus = salesOrder.getStatus();
+        if (!"ORD_RVW".equals(currentStatus) && !"ORD_APPR_RJCT".equals(currentStatus)) {
+            throw new OrderCannotBeCanceledException();
+        }
         salesOrder.cancel(request.getRejectionReason());
 
         return SODetailResponseDTO.of(salesOrder);
@@ -40,5 +47,6 @@ public class SOCommandServiceImpl implements SOCommandService{
 
         salesOrder.updateManager(manager);
 
-        return SODetailResponseDTO.of(salesOrder);    }
+        return SODetailResponseDTO.of(salesOrder);
+    }
 }

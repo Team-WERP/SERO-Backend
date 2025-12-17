@@ -22,39 +22,50 @@
 
     <select id="findAllEmployeesByDeptCode" resultMap="EmployeeResultMap">
         WITH RECURSIVE DeptHierarchy AS (
-            SELECT
-                A.id,
-                A.dept_code,
-                A.dept_name,
-                A.parent_dept_id
-            FROM department A
-            WHERE A.dept_code = #{rootDeptCode}
+        -- Anchor Member
+        SELECT
+        A.id,
+        A.dept_code,
+        A.dept_name,
+        A.parent_dept_id
+        FROM department A
+        <where>
+            <choose>
+                <when test="rootDeptCode != null and rootDeptCode != ''">
+                    AND A.dept_code = #{rootDeptCode}
+                </when>
+                <otherwise>
+                    AND A.parent_dept_id IS NULL
+                </otherwise>
+            </choose>
+        </where>
 
-            UNION ALL
+        UNION ALL
 
-            SELECT
-                B.id,
-                B.dept_code,
-                B.dept_name,
-                B.parent_dept_id
-            FROM department B
-                     INNER JOIN DeptHierarchy E ON B.parent_dept_id = E.id
+        -- Recursive Member
+        SELECT
+        B.id,
+        B.dept_code,
+        B.dept_name,
+        B.parent_dept_id
+        FROM department B
+        INNER JOIN DeptHierarchy E ON B.parent_dept_id = E.id
         )
         SELECT
-            C.id AS emp_id,
-            C.emp_code,
-            C.email,
-            C.name AS emp_name,
-            C.contact,
-            C.status,
-            C.position_code,
-            C.rank_code,
-            C.start_date,
-            D.id AS dept_id,
-            D.dept_code,
-            D.dept_name
+        C.id AS emp_id,
+        C.emp_code,
+        C.email,
+        C.name AS emp_name,
+        C.contact,
+        C.status,
+        C.position_code,
+        C.rank_code,
+        C.start_date,
+        D.id AS dept_id,
+        D.dept_code,
+        D.dept_name
         FROM employee C
-                 JOIN department D ON C.dept_id = D.id
+        JOIN department D ON C.dept_id = D.id
         WHERE D.id IN (SELECT id FROM DeptHierarchy)
         ORDER BY D.parent_dept_id ASC, D.id ASC, C.name ASC
     </select>

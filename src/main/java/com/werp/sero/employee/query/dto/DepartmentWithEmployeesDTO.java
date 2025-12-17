@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 
 import java.util.List;
+import java.util.Optional;
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @Getter
@@ -31,7 +32,6 @@ public class DepartmentWithEmployeesDTO {
                                       String deptCode,
                                       List<EmployeeByDepartmentResponseDTO> directEmployees,
                                       List<DepartmentWithEmployeesDTO> teams) {
-
         this.id = id;
         this.deptName = deptName;
         this.deptCode = deptCode;
@@ -43,15 +43,12 @@ public class DepartmentWithEmployeesDTO {
                                                 final List<EmployeeByDepartmentResponseDTO> employees,
                                                 final List<DepartmentWithEmployeesDTO> children) {
 
-        final List<EmployeeByDepartmentResponseDTO> safeEmployees = employees != null ? employees : List.of();
-        final List<DepartmentWithEmployeesDTO> safeChildren = children != null ? children : List.of();
-
         return new DepartmentWithEmployeesDTO(
                 department.getId(),
                 department.getDeptName(),
                 department.getDeptCode(),
-                safeEmployees,
-                safeChildren
+                Optional.ofNullable(employees).orElseGet(List::of),
+                Optional.ofNullable(children).orElseGet(List::of)
         );
     }
 }

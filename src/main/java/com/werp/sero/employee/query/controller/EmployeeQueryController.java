@@ -47,7 +47,7 @@ public class EmployeeQueryController {
     })
     @GetMapping
     public ResponseEntity<List<DepartmentWithEmployeesDTO>> getEmployeesByDept(
-            @RequestParam(value = "deptCode", required = true) final String deptCode) {
+            @RequestParam(value = "deptCode", required = false) final String deptCode) {
 
         final List<DepartmentWithEmployeesDTO> hierarchy =
                 employeeService.findAllEmployeesByDeptCode(deptCode);
