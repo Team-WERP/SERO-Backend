@@ -6,7 +6,7 @@ import com.werp.sero.client.query.dao.ClientItemPriceHistoryMapper;
 import com.werp.sero.client.query.dto.ClientItemPriceHistoryResponseDTO;
 import com.werp.sero.client.query.dto.ClientItemResponseDTO;
 import com.werp.sero.common.error.ErrorCode;
-import com.werp.sero.client.exception.ClientItemNotFoundException;
+import com.werp.sero.common.error.exception.BusinessException;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,9 +21,9 @@ public class ClientItemQueryServiceImpl implements ClientItemQueryService {
     private final ClientItemPriceHistoryMapper clientItemPriceHistoryMapper;
 
     @Override
-    public List<ClientItemResponseDTO> getClientItems(int clientId, String status, String keyword) {
+    public List<ClientItemResponseDTO> getClientItems(int clientId, String keyword, String status) {
 
-            return clientItemMapper.findByClientId(clientId,keyword,status);
+            return clientItemMapper.findByClientId(clientId, status, keyword);
     }
     
 
