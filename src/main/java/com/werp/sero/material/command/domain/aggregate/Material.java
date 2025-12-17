@@ -2,12 +2,16 @@ package com.werp.sero.material.command.domain.aggregate;
 
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Getter
 @Table(name = "material")
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder
 @Entity
 public class Material {
     @Id
@@ -64,4 +68,39 @@ public class Material {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manager_id", nullable = false)
     private Employee employee;
+
+    // 수정 메서드
+    public void update(String name, String spec, String operationUnit, String baseUnit,
+                       Integer moq, Integer cycleTime, Long unitPrice, String imageUrl,
+                       Integer conversionRate, Integer safetyStock, String status) {
+        this.name = name;
+        this.spec = spec;
+        this.operationUnit = operationUnit;
+        this.baseUnit = baseUnit;
+        this.moq = moq;
+        this.cycleTime = cycleTime;
+        this.unitPrice = unitPrice != null ? unitPrice : 0;
+        this.imageUrl = imageUrl;
+        this.conversionRate = conversionRate;
+        this.safetyStock = safetyStock != null ? safetyStock : 1;
+        this.status = status;
+        this.updatedAt = getCurrentTimestamp();
+    }
+
+    // 비활성화
+    public void deactivate() {
+        this.status = "MAT_STOP";
+        this.updatedAt = getCurrentTimestamp();
+    }
+
+    // 활성화
+    public void activate() {
+        this.status = "MAT_NORMAL";
+        this.updatedAt = getCurrentTimestamp();
+    }
+
+    // 현재 시간 포맷
+    private String getCurrentTimestamp() {
+        return LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+    }
 }

@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.werp.sero.material.query.dao.MaterialMapper">
+
+    <!-- Material ResultMap -->
+    <resultMap id="materialResultMap" type="com.werp.sero.material.command.domain.aggregate.Material">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="materialCode" column="material_code"/>
+        <result property="spec" column="spec"/>
+        <result property="operationUnit" column="operation_unit"/>
+        <result property="baseUnit" column="base_unit"/>
+        <result property="moq" column="moq"/>
+        <result property="cycleTime" column="cycle_time"/>
+        <result property="unitPrice" column="unit_price"/>
+        <result property="imageUrl" column="image_url"/>
+        <result property="conversionRate" column="conversion_rate"/>
+        <result property="safetyStock" column="safety_stock"/>
+        <result property="rawMaterialCount" column="raw_material_count"/>
+        <result property="type" column="type"/>
+        <result property="status" column="status"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <association property="employee" javaType="com.werp.sero.employee.command.domain.aggregate.Employee">
+            <id property="id" column="manager_id"/>
+        </association>
+    </resultMap>
+
+    <!-- Material with BOM ResultMap -->
+    <resultMap id="materialWithBomResultMap" type="com.werp.sero.material.query.dto.MaterialWithBomResponseDTO">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="materialCode" column="material_code"/>
+        <result property="spec" column="spec"/>
+        <result property="operationUnit" column="operation_unit"/>
+        <result property="baseUnit" column="base_unit"/>
+        <result property="moq" column="moq"/>
+        <result property="cycleTime" column="cycle_time"/>
+        <result property="unitPrice" column="unit_price"/>
+        <result property="imageUrl" column="image_url"/>
+        <result property="conversionRate" column="conversion_rate"/>
+        <result property="safetyStock" column="safety_stock"/>
+        <result property="rawMaterialCount" column="raw_material_count"/>
+        <result property="type" column="type"/>
+        <result property="status" column="status"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <association property="employee" javaType="com.werp.sero.employee.command.domain.aggregate.Employee">
+            <id property="id" column="manager_id"/>
+        </association>
+        <collection property="bomList" ofType="com.werp.sero.material.query.dto.MaterialWithBomResponseDTO$BomDTO">
+            <id property="id" column="bom_id"/>
+            <result property="requirement" column="requirement"/>
+            <result property="note" column="bom_note"/>
+            <result property="createdAt" column="bom_created_at"/>
+            <result property="updatedAt" column="bom_updated_at"/>
+            <association property="rawMaterial" javaType="com.werp.sero.material.query.dto.MaterialWithBomResponseDTO$RawMaterialDTO">
+                <id property="id" column="raw_material_id"/>
+                <result property="name" column="raw_material_name"/>
+                <result property="materialCode" column="raw_material_code"/>
+                <result property="spec" column="raw_material_spec"/>
+                <result property="baseUnit" column="raw_material_base_unit"/>
+                <result property="unitPrice" column="raw_material_unit_price"/>
+                <result property="type" column="raw_material_type"/>
+                <result property="status" column="raw_material_status"/>
+            </association>
+        </collection>
+    </resultMap>
+
+    <select id="findByCondition" resultMap="materialResultMap">
+        SELECT
+            A.id,
+            A.name,
+            A.material_code,
+            A.spec,
+            A.operation_unit,
+            A.base_unit,
+            A.moq,
+            A.cycle_time,
+            A.unit_price,
+            A.image_url,
+            A.conversion_rate,
+            A.safety_stock,
+            A.raw_material_count,
+            A.type,
+            A.status,
+            A.created_at,
+            A.updated_at,
+            A.manager_id
+        FROM material A
+        <where>
+            <if test="type != null and type != ''">
+                AND A.type = #{type}
+            </if>
+            <if test="status != null and status != ''">
+                AND A.status = #{status}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    A.name LIKE CONCAT('%', #{keyword}, '%')
+                    OR A.material_code LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+        </where>
+        ORDER BY A.id DESC
+    </select>
+
+    <select id="findByIdWithBom" resultMap="materialWithBomResultMap">
+        SELECT
+            A.id,
+            A.name,
+            A.material_code,
+            A.spec,
+            A.operation_unit,
+            A.base_unit,
+            A.moq,
+            A.cycle_time,
+            A.unit_price,
+            A.image_url,
+            A.conversion_rate,
+            A.safety_stock,
+            A.raw_material_count,
+            A.type,
+            A.status,
+            A.created_at,
+            A.updated_at,
+            A.manager_id,
+            B.id AS bom_id,
+            B.requirement,
+            B.note AS bom_note,
+            B.created_at AS bom_created_at,
+            B.updated_at AS bom_updated_at,
+            C.id AS raw_material_id,
+            C.name AS raw_material_name,
+            C.material_code AS raw_material_code,
+            C.spec AS raw_material_spec,
+            C.base_unit AS raw_material_base_unit,
+            C.unit_price AS raw_material_unit_price,
+            C.type AS raw_material_type,
+            C.status AS raw_material_status
+        FROM material A
+        LEFT JOIN bom B ON A.id = B.material_id
+        LEFT JOIN material C ON B.raw_material_id = C.id
+        WHERE A.id = #{id}
+    </select>
+
+    <select id="findById" resultMap="materialResultMap">
+        SELECT
+            A.id,
+            A.name,
+            A.material_code,
+            A.spec,
+            A.operation_unit,
+            A.base_unit,
+            A.moq,
+            A.cycle_time,
+            A.unit_price,
+            A.image_url,
+            A.conversion_rate,
+            A.safety_stock,
+            A.raw_material_count,
+            A.type,
+            A.status,
+            A.created_at,
+            A.updated_at,
+            A.manager_id
+        FROM material A
+        WHERE A.id = #{id}
+    </select>
+
+</mapper>
