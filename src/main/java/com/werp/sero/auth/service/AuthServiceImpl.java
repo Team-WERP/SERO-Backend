@@ -62,7 +62,7 @@ public class AuthServiceImpl implements AuthService {
 
             cookieUtil.generateRefreshTokenCookie(response, refreshToken);
 
-            return new LoginResponseDTO(accessToken.getToken(), refreshToken.getToken(), GRANT_TYPE,
+            return new LoginResponseDTO(accessToken.getToken(), GRANT_TYPE,
                     accessToken.getAuthorities());
         } catch (InternalAuthenticationServiceException | BadCredentialsException e) {
             throw new LoginFailedException();
