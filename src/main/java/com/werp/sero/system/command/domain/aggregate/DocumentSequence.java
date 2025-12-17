@@ -27,13 +27,14 @@ public class DocumentSequence {
     @Column(name = "current_seq", nullable = false)
     private int currentSeq;
 
-    public DocumentSequence(String prefix, String baseDate, int currentSeq) {
+    public DocumentSequence(String prefix, String baseDate) {
         this.prefix = prefix;
         this.baseDate = baseDate;
-        this.currentSeq = currentSeq;
+        this.currentSeq = 0;
     }
 
-    public void increase() {
+    public int nextSeq() {
         this.currentSeq++;
+        return this.currentSeq;
     }
 }
