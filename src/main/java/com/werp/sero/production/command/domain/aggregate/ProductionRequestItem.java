@@ -16,7 +16,7 @@ public class ProductionRequestItem {
     private int id;
 
     @Column(nullable = false, columnDefinition = "int default 0")
-    private String quantity;
+    private int quantity;
 
     @Column(nullable = false)
     private String status;
@@ -32,4 +32,19 @@ public class ProductionRequestItem {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manager_id", nullable = false)
     private Employee employee;
+
+    public static ProductionRequestItem createDraft(
+            ProductionRequest pr,
+            SalesOrderItem soItem,
+            int quantity,
+            Employee drafter
+    ) {
+        ProductionRequestItem prItem = new ProductionRequestItem();
+        prItem.productionRequest = pr;
+        prItem.salesOrderItem = soItem;
+        prItem.quantity = quantity;
+        prItem.employee = drafter;
+        prItem.status = "PIS_TMP";
+        return prItem;
+    }
 }

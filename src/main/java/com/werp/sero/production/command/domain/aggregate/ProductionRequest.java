@@ -5,6 +5,7 @@ import com.werp.sero.order.command.domain.aggregate.SalesOrder;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.security.core.parameters.P;
 
 @Getter
 @Table(name = "production_request")
@@ -18,13 +19,13 @@ public class ProductionRequest {
     @Column(name = "pr_code", nullable = false)
     private String prCode;
 
-    @Column(nullable = false, columnDefinition = "varchar(100) default 'PR_RVW'")
+    @Column(nullable = false, columnDefinition = "varchar(100) default 'PR_TMP'")
     private String status;
 
     @Column(name = "production_status")
     private String productionStatus;
 
-    @Column(name = "requested_at", nullable = false)
+    @Column(name = "requested_at")
     private String requestedAt;
 
     @Column(name = "due_at", nullable = false)
@@ -52,4 +53,22 @@ public class ProductionRequest {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manager_id")
     private Employee manager;
+
+    public static ProductionRequest createDraft(
+            String prCode,
+            SalesOrder so,
+            Employee drafter,
+            String dueAt,
+            String reason
+    ) {
+        ProductionRequest pr = new ProductionRequest();
+        pr.prCode = prCode;
+        pr.salesOrder = so;
+        pr.drafter = drafter;
+        pr.dueAt = dueAt;
+        pr.reason = reason;
+        pr.status = "PR_TMP";
+        pr.totalQuantity = 0;
+        return pr;
+    }
 }
