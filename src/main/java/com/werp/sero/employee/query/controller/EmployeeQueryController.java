@@ -58,23 +58,4 @@ public class EmployeeQueryController {
         return employeeQueryService.getDepartmentEmployees(departmentId);
     }
 
-    /**
-     * 부서별 사원 목록 조회 (부서명 기준 - 부분 검색 지원)
-     *
-     * GET /employees/departments/name?deptName=영업
-     *
-     * @param deptName 부서명 (부분 검색 가능, 예: "영업" 입력 시 "영업1팀", "영업2팀", "영업부" 등 검색)
-     * @return 부서 정보 (부서코드, 부서명, 사원수) 및 해당 부서의 사원 목록 (이름, 직급, 직책, 이메일, 연락처)
-     */
-    @Operation(
-            summary = "부서별 사원 목록 조회 (부서명 부분 검색)",
-            description = "부서명으로 특정 부서에 소속된 모든 사원 목록을 조회합니다. 부분 검색이 지원되며, 여러 부서가 매칭되는 경우 첫 번째 부서를 반환합니다."
-    )
-    @GetMapping("/departments/name")
-    @RequirePermission(menu = "MM_EMP", authorities = {"AC_SYS", "AC_SAL", "AC_PRO", "AC_WHS"}, accessType = AccessType.READ)
-    public DepartmentWithEmployeesDTO getDepartmentEmployeesByName(
-            @Parameter(description = "부서명 (부분 검색 가능)", example = "영업", required = true)
-            @RequestParam String deptName) {
-        return employeeQueryService.getDepartmentEmployeesByName(deptName);
-    }
 }

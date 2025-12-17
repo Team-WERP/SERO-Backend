@@ -21,11 +21,4 @@ public interface EmployeeQueryService {
      */
     DepartmentWithEmployeesDTO getDepartmentEmployees(int departmentId);
 
-    /**
-     * 부서별 사원 목록 조회 (부서명 기준)
-     *
-     * @param departmentName 부서명
-     * @return 부서 정보 및 사원 목록
-     */
-    DepartmentWithEmployeesDTO getDepartmentEmployeesByName(String departmentName);
 }

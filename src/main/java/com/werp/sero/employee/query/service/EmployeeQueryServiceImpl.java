@@ -62,21 +62,4 @@ public class EmployeeQueryServiceImpl implements EmployeeQueryService {
         return DepartmentWithEmployeesDTO.of(department, employeeDTOs);
     }
 
-    @Override
-    public DepartmentWithEmployeesDTO getDepartmentEmployeesByName(String departmentName) {
-        // 1. 부서명으로 부서 조회
-        Department department = departmentMapper.findByName(departmentName)
-                .orElseThrow(() -> new IllegalArgumentException("부서를 찾을 수 없습니다."));
-
-        // 2. 해당 부서의 사원 목록 조회
-        List<Employee> employees = employeeMapper.findByDepartmentIdWithDepartment(department.getId());
-
-        // 3. DTO 변환
-        List<EmployeeListResponseDTO> employeeDTOs = employees.stream()
-                .map(EmployeeListResponseDTO::from)
-                .collect(Collectors.toList());
-
-        // 4. 부서 정보 및 사원 목록 반환
-        return DepartmentWithEmployeesDTO.of(department, employeeDTOs);
-    }
 }
