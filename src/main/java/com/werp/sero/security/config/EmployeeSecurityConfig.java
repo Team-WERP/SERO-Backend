@@ -75,10 +75,10 @@ public class EmployeeSecurityConfig {
                 .authenticationManager(employeeAuthenticationManager())
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtExceptionFilter, JwtAuthenticationFilter.class)
-                .exceptionHandling(exception -> {
-                    exception.authenticationEntryPoint(customAuthenticationEntryPoint);
-                    exception.accessDeniedHandler(customAccessDeniedHandler);
-                })
+                .exceptionHandling(exception -> exception
+                        .accessDeniedHandler(customAccessDeniedHandler)
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
+                )
         ;
 
         return http.build();

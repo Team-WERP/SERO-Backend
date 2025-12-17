@@ -29,7 +29,7 @@ public class ClientEmployee {
     @Column(nullable = false)
     private String position;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "client_id", nullable = false)
     private Client client;
 }

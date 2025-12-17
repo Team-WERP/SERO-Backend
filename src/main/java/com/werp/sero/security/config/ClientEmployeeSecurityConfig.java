@@ -27,7 +27,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @Configuration
 public class ClientEmployeeSecurityConfig {
-    private static final String AUTHORITY = "AL_CLI";
+    private static final String AUTHORITY = "AC_CLI";
 
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
@@ -63,10 +63,9 @@ public class ClientEmployeeSecurityConfig {
                 .authenticationManager(clientEmployeeAuthenticationManager())
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtExceptionFilter, JwtAuthenticationFilter.class)
-                .exceptionHandling(exception -> {
-                            exception.authenticationEntryPoint(customAuthenticationEntryPoint);
-                            exception.accessDeniedHandler(customAccessDeniedHandler);
-                        }
+                .exceptionHandling(exception -> exception
+                        .accessDeniedHandler(customAccessDeniedHandler)
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
                 )
         ;
 

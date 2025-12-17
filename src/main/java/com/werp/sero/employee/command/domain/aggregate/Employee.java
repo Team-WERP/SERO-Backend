@@ -43,7 +43,7 @@ public class Employee {
     @Column(name = "created_at", nullable = false)
     private String createdAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "dept_id")
     private Department department;
 }
