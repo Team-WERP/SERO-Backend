@@ -14,10 +14,18 @@ public interface EmployeeQueryService {
     OrganizationResponseDTO getOrganization();
 
     /**
-     * 부서별 사원 목록 조회
+     * 부서별 사원 목록 조회 (부서 ID 기준)
      *
      * @param departmentId 부서 ID
      * @return 부서 정보 및 사원 목록
      */
     DepartmentWithEmployeesDTO getDepartmentEmployees(int departmentId);
+
+    /**
+     * 부서별 사원 목록 조회 (부서명 기준)
+     *
+     * @param departmentName 부서명
+     * @return 부서 정보 및 사원 목록
+     */
+    DepartmentWithEmployeesDTO getDepartmentEmployeesByName(String departmentName);
 }

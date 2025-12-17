@@ -29,4 +29,15 @@
         WHERE A.id = #{id}
     </select>
 
+    <!-- Find department by name (부분 검색 지원) -->
+    <select id="findByName" resultMap="departmentResultMap">
+        SELECT
+            A.id,
+            A.dept_code,
+            A.dept_name
+        FROM department A
+        WHERE A.dept_name LIKE CONCAT('%', #{name}, '%')
+        LIMIT 1
+    </select>
+
 </mapper>

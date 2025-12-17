@@ -22,4 +22,9 @@ public interface DepartmentMapper {
      * ID로 부서 조회
      */
     Optional<Department> findById(@Param("id") int id);
+
+    /**
+     * 부서명으로 부서 조회
+     */
+    Optional<Department> findByName(@Param("name") String name);
 }
