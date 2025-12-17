@@ -1,6 +1,12 @@
 package com.werp.sero.client.command.application.service;
 
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
 import com.werp.sero.client.command.application.dto.ClientAddressCreateRequest;
 import com.werp.sero.client.command.application.dto.ClientAddressCreateResponse;
 import com.werp.sero.client.command.application.dto.ClientAddressUpdateRequest;
@@ -11,13 +17,10 @@ import com.werp.sero.client.command.domain.repository.ClientAddressCommandReposi
 import com.werp.sero.client.command.domain.repository.ClientRepository;
 import com.werp.sero.client.exception.ClientAddressNotFoundException;
 import com.werp.sero.client.exception.ClientNotFoundException;
+
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 @Service
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
@@ -32,14 +35,20 @@ public class ClientAddressCommandServiceImpl implements ClientAddressCommandServ
     @Transactional
     public ClientAddressCreateResponse createAddress(int clientId, ClientAddressCreateRequest request) {
 
-        // 1. Client 조회 (임시)
+        // 1. Client 조회
         Client client = clientRepository.findById(clientId)
                 .orElseThrow(ClientNotFoundException::new);
 
-        // 2. 현재 시간
+        // 2. 기본 배송지로 설정하려는 경우 기존 기본 배송지 해제
+        if (request.isDefault()) {
+            List<ClientAddress> existingDefaults = clientAddressCommandRepository.findByClientIdAndIsDefaultTrue(clientId);
+            existingDefaults.forEach(ClientAddress::unsetDefault);
+        }
+
+        // 3. 현재 시간
         String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
-        // 3. ClientAddress 생성
+        // 4. ClientAddress 생성
         ClientAddress clientAddress = ClientAddress.builder()
                 .name(request.getName())
                 .address(request.getAddress())
@@ -52,10 +61,8 @@ public class ClientAddressCommandServiceImpl implements ClientAddressCommandServ
                 .client(client)
                 .build();
 
-
         // 4. 저장
         ClientAddress savedAddress = clientAddressCommandRepository.save(clientAddress);
-
 
         // 5. Response 반환
         return ClientAddressCreateResponse.builder()
@@ -79,10 +86,19 @@ public class ClientAddressCommandServiceImpl implements ClientAddressCommandServ
         ClientAddress clientAddress = clientAddressCommandRepository.findById(addressId)
                 .orElseThrow(ClientAddressNotFoundException::new);
 
-        // 2. 현재 시간
+        // 3. 기본 배송지로 설정하려는 경우, 기존 기본 배송지 해제
+        if (request.isDefault()) {
+            List<ClientAddress> existingDefaults = clientAddressCommandRepository.findByClientIdAndIsDefaultTrue(clientId);
+            // 현재 수정중인 배송지 제외하고 모두 해제
+            existingDefaults.stream()
+                    .filter(addr -> addr.getId() != addressId)
+                    .forEach(ClientAddress::unsetDefault);
+        }
+
+        // 4. 현재 시간
         String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
-        // 3. ClientAddress 업데이트
+        // 5. ClientAddress 업데이트
         clientAddress.update(
                 request.getName(),
                 request.getAddress(),
@@ -92,10 +108,8 @@ public class ClientAddressCommandServiceImpl implements ClientAddressCommandServ
                 now
         );
 
-
         // 4. 저장
         ClientAddress savedAddress = clientAddressCommandRepository.save(clientAddress);
-
 
         // 5. Response 반환
         return ClientAddressUpdateResponse.builder()

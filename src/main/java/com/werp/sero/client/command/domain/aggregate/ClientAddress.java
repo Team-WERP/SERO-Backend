@@ -57,4 +57,9 @@ public class ClientAddress {
         this.updatedAt = updatedAt;
     }
 
+    // 기본 배송지 해제 (다른 배송지가 기본 배송지 체크 되었을때)
+    public void unsetDefault() {
+        this.isDefault = false;
+    }
+
 }
