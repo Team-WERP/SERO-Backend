@@ -1,5 +1,6 @@
 package com.werp.sero.client.command.application.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,5 +14,7 @@ public class ClientAddressCreateRequest {
     private String address;
     private String recipientName;
     private String recipientContact;
+
+    @JsonProperty("isDefault")
     private boolean isDefault;
 }
