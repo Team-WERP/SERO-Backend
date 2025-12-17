@@ -1,7 +1,5 @@
 package com.werp.sero.material.query.dto;
 
-import com.werp.sero.material.command.domain.aggregate.Bom;
-import com.werp.sero.material.command.domain.aggregate.Material;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -38,27 +36,27 @@ public class MaterialDetailResponseDTO {
     private ManagerDTO manager;
     private List<BomDTO> bomList;
 
-    public static MaterialDetailResponseDTO from(Material material) {
+    public static MaterialDetailResponseDTO from(MaterialWithBomResponseDTO materialWithBom) {
         return MaterialDetailResponseDTO.builder()
-                .id(material.getId())
-                .name(material.getName())
-                .materialCode(material.getMaterialCode())
-                .spec(material.getSpec())
-                .operationUnit(material.getOperationUnit())
-                .baseUnit(material.getBaseUnit())
-                .moq(material.getMoq())
-                .cycleTime(material.getCycleTime())
-                .unitPrice(material.getUnitPrice())
-                .imageUrl(material.getImageUrl())
-                .conversionRate(material.getConversionRate())
-                .safetyStock(material.getSafetyStock())
-                .rawMaterialCount(material.getRawMaterialCount())
-                .type(material.getType())
-                .status(material.getStatus())
-                .createdAt(material.getCreatedAt())
-                .updatedAt(material.getUpdatedAt())
-                .manager(ManagerDTO.from(material.getEmployee()))
-                .bomList(material.getBomList().stream()
+                .id(materialWithBom.getId())
+                .name(materialWithBom.getName())
+                .materialCode(materialWithBom.getMaterialCode())
+                .spec(materialWithBom.getSpec())
+                .operationUnit(materialWithBom.getOperationUnit())
+                .baseUnit(materialWithBom.getBaseUnit())
+                .moq(materialWithBom.getMoq())
+                .cycleTime(materialWithBom.getCycleTime())
+                .unitPrice(materialWithBom.getUnitPrice())
+                .imageUrl(materialWithBom.getImageUrl())
+                .conversionRate(materialWithBom.getConversionRate())
+                .safetyStock(materialWithBom.getSafetyStock())
+                .rawMaterialCount(materialWithBom.getRawMaterialCount())
+                .type(materialWithBom.getType())
+                .status(materialWithBom.getStatus())
+                .createdAt(materialWithBom.getCreatedAt())
+                .updatedAt(materialWithBom.getUpdatedAt())
+                .manager(ManagerDTO.from(materialWithBom.getEmployee()))
+                .bomList(materialWithBom.getBomList().stream()
                         .map(BomDTO::from)
                         .toList())
                 .build();
@@ -95,14 +93,14 @@ public class MaterialDetailResponseDTO {
         private String updatedAt;
         private RawMaterialDTO rawMaterial;
 
-        public static BomDTO from(Bom bom) {
+        public static BomDTO from(MaterialWithBomResponseDTO.BomDTO bomDto) {
             return BomDTO.builder()
-                    .id(bom.getId())
-                    .requirement(bom.getRequirement())
-                    .note(bom.getNote())
-                    .createdAt(bom.getCreatedAt())
-                    .updatedAt(bom.getUpdatedAt())
-                    .rawMaterial(RawMaterialDTO.from(bom.getRawMaterial()))
+                    .id(bomDto.getId())
+                    .requirement(bomDto.getRequirement())
+                    .note(bomDto.getNote())
+                    .createdAt(bomDto.getCreatedAt())
+                    .updatedAt(bomDto.getUpdatedAt())
+                    .rawMaterial(RawMaterialDTO.from(bomDto.getRawMaterial()))
                     .build();
         }
     }
@@ -119,15 +117,15 @@ public class MaterialDetailResponseDTO {
         private String baseUnit;
         private Long unitPrice;
 
-        public static RawMaterialDTO from(Material material) {
-            if (material == null) return null;
+        public static RawMaterialDTO from(MaterialWithBomResponseDTO.RawMaterialDTO rawMaterialDto) {
+            if (rawMaterialDto == null) return null;
             return RawMaterialDTO.builder()
-                    .id(material.getId())
-                    .name(material.getName())
-                    .materialCode(material.getMaterialCode())
-                    .spec(material.getSpec())
-                    .baseUnit(material.getBaseUnit())
-                    .unitPrice(material.getUnitPrice())
+                    .id(rawMaterialDto.getId())
+                    .name(rawMaterialDto.getName())
+                    .materialCode(rawMaterialDto.getMaterialCode())
+                    .spec(rawMaterialDto.getSpec())
+                    .baseUnit(rawMaterialDto.getBaseUnit())
+                    .unitPrice(rawMaterialDto.getUnitPrice())
                     .build();
         }
     }

@@ -30,7 +30,7 @@
     </resultMap>
 
     <!-- Material with BOM ResultMap -->
-    <resultMap id="materialWithBomResultMap" type="com.werp.sero.material.command.domain.aggregate.Material">
+    <resultMap id="materialWithBomResultMap" type="com.werp.sero.material.query.dto.MaterialWithBomResponseDTO">
         <id property="id" column="id"/>
         <result property="name" column="name"/>
         <result property="materialCode" column="material_code"/>
@@ -51,17 +51,19 @@
         <association property="employee" javaType="com.werp.sero.employee.command.domain.aggregate.Employee">
             <id property="id" column="manager_id"/>
         </association>
-        <collection property="bomList" ofType="com.werp.sero.material.command.domain.aggregate.Bom">
+        <collection property="bomList" ofType="com.werp.sero.material.query.dto.MaterialWithBomResponseDTO$BomDTO">
             <id property="id" column="bom_id"/>
             <result property="requirement" column="requirement"/>
             <result property="note" column="bom_note"/>
             <result property="createdAt" column="bom_created_at"/>
-            <association property="rawMaterial" javaType="com.werp.sero.material.command.domain.aggregate.Material">
+            <result property="updatedAt" column="bom_updated_at"/>
+            <association property="rawMaterial" javaType="com.werp.sero.material.query.dto.MaterialWithBomResponseDTO$RawMaterialDTO">
                 <id property="id" column="raw_material_id"/>
                 <result property="name" column="raw_material_name"/>
                 <result property="materialCode" column="raw_material_code"/>
                 <result property="spec" column="raw_material_spec"/>
                 <result property="baseUnit" column="raw_material_base_unit"/>
+                <result property="unitPrice" column="raw_material_unit_price"/>
                 <result property="type" column="raw_material_type"/>
                 <result property="status" column="raw_material_status"/>
             </association>
@@ -130,11 +132,13 @@
             B.requirement,
             B.note AS bom_note,
             B.created_at AS bom_created_at,
+            B.updated_at AS bom_updated_at,
             C.id AS raw_material_id,
             C.name AS raw_material_name,
             C.material_code AS raw_material_code,
             C.spec AS raw_material_spec,
             C.base_unit AS raw_material_base_unit,
+            C.unit_price AS raw_material_unit_price,
             C.type AS raw_material_type,
             C.status AS raw_material_status
         FROM material A

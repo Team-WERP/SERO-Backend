@@ -7,6 +7,7 @@ import com.werp.sero.material.exception.MaterialNotFoundException;
 import com.werp.sero.material.query.dao.MaterialMapper;
 import com.werp.sero.material.query.dto.MaterialDetailResponseDTO;
 import com.werp.sero.material.query.dto.MaterialListResponseDTO;
+import com.werp.sero.material.query.dto.MaterialWithBomResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,9 +57,10 @@ public class MaterialQueryServiceImpl implements MaterialQueryService {
     @Override
     public MaterialDetailResponseDTO getMaterialDetail(int materialId) {
 
-        Material material = materialMapper.findByIdWithBom(materialId)
-                .orElseThrow(MaterialNotFoundException::new);
+        MaterialWithBomResponseDTO materialWithBom =
+                materialMapper.findByIdWithBom(materialId)
+                        .orElseThrow(MaterialNotFoundException::new);
 
-        return MaterialDetailResponseDTO.from(material);
+        return MaterialDetailResponseDTO.from(materialWithBom);
     }
 }

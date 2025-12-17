@@ -65,10 +65,10 @@ public class BomCreateResponseDTO {
     }
 
     /**
-     * Material 엔티티를 BomCreateResponseDTO로 변환
+     * Material과 BOM 리스트를 BomCreateResponseDTO로 변환
      */
-    public static BomCreateResponseDTO from(Material material) {
-        List<BomItemResponse> bomItems = material.getBomList().stream()
+    public static BomCreateResponseDTO from(Material material, List<com.werp.sero.material.command.domain.aggregate.Bom> bomList) {
+        List<BomItemResponse> bomItems = bomList.stream()
                 .map(bom -> BomItemResponse.builder()
                         .bomId(bom.getId())
                         .rawMaterialId(bom.getRawMaterial().getId())

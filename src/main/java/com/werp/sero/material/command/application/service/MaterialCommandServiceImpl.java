@@ -124,7 +124,7 @@ public class MaterialCommandServiceImpl implements MaterialCommandService {
     @Override
     public BomCreateResponseDTO addBom(int materialId, BomCreateRequestDTO request) {
         // 1. 자재 조회
-        Material material = materialRepository.findByIdWithBom(materialId)
+        Material material = materialRepository.findById(materialId)
                 .orElseThrow(MaterialNotFoundException::new);
 
         // 2. 완제품인지 확인
@@ -133,6 +133,7 @@ public class MaterialCommandServiceImpl implements MaterialCommandService {
         }
 
         // 3. BOM 구성 추가
+        List<Bom> savedBomList = new ArrayList<>();
         if (request.getBomList() != null) {
             for (BomCreateRequestDTO.BomItemRequest bomRequest : request.getBomList()) {
                 Material rawMaterial = materialRepository.findById(bomRequest.getRawMaterialId())
@@ -146,18 +147,18 @@ public class MaterialCommandServiceImpl implements MaterialCommandService {
                         .createdAt(getCurrentTimestamp())
                         .build();
 
-                material.addBom(bom);
+                savedBomList.add(bomRepository.save(bom));
             }
         }
 
         // 4. DTO 변환 및 반환
-        return BomCreateResponseDTO.from(material);
+        return BomCreateResponseDTO.from(material, savedBomList);
     }
 
     @Override
     public BomCreateResponseDTO updateBom(int materialId, BomCreateRequestDTO request) {
         // 1. 자재 조회
-        Material material = materialRepository.findByIdWithBom(materialId)
+        Material material = materialRepository.findById(materialId)
                 .orElseThrow(MaterialNotFoundException::new);
 
         // 2. 완제품인지 확인
@@ -165,7 +166,10 @@ public class MaterialCommandServiceImpl implements MaterialCommandService {
             throw new BomNotAllowedForNonFinishedGoodsException();
         }
 
-        // 3. 새로운 BOM 목록 생성
+        // 3. 기존 BOM 삭제
+        bomRepository.deleteByMaterialId(materialId);
+
+        // 4. 새로운 BOM 목록 생성 및 저장
         List<Bom> newBomList = new ArrayList<>();
 
         if (request.getBomList() != null) {
@@ -181,15 +185,12 @@ public class MaterialCommandServiceImpl implements MaterialCommandService {
                         getCurrentTimestamp()
                 );
 
-                newBomList.add(bom);
+                newBomList.add(bomRepository.save(bom));
             }
         }
 
-        // 4. 기존 BOM 교체
-        material.replaceBomList(newBomList);
-
         // 5. DTO 변환 및 반환
-        return BomCreateResponseDTO.from(material);
+        return BomCreateResponseDTO.from(material, newBomList);
     }
 
     private String getCurrentTimestamp() {

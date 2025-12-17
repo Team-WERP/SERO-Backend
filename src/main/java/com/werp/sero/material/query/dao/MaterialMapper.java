@@ -1,6 +1,7 @@
 package com.werp.sero.material.query.dao;
 
 import com.werp.sero.material.command.domain.aggregate.Material;
+import com.werp.sero.material.query.dto.MaterialWithBomResponseDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -25,7 +26,7 @@ public interface MaterialMapper {
     /**
      * ID로 자재 조회 (BOM 포함)
      */
-    Optional<Material> findByIdWithBom(@Param("id") int id);
+    Optional<MaterialWithBomResponseDTO> findByIdWithBom(@Param("id") int id);
 
     /**
      * ID로 자재 조회

@@ -6,8 +6,6 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @Table(name = "material")
@@ -71,10 +69,6 @@ public class Material {
     @JoinColumn(name = "manager_id", nullable = false)
     private Employee employee;
 
-    @OneToMany(mappedBy = "material", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<Bom> bomList = new ArrayList<>();
-
     // 수정 메서드
     public void update(String name, String spec, String operationUnit, String baseUnit,
                        Integer moq, Integer cycleTime, Long unitPrice, String imageUrl,
@@ -102,21 +96,6 @@ public class Material {
     // 활성화
     public void activate() {
         this.status = "MAT_NORMAL";
-        this.updatedAt = getCurrentTimestamp();
-    }
-
-    // BOM 추가
-    public void addBom(Bom bom) {
-        this.bomList.add(bom);
-        this.rawMaterialCount = this.bomList.size();
-        this.updatedAt = getCurrentTimestamp();
-    }
-
-    // BOM 목록 교체
-    public void replaceBomList(List<Bom> newBomList) {
-        this.bomList.clear();
-        this.bomList.addAll(newBomList);
-        this.rawMaterialCount = this.bomList.size();
         this.updatedAt = getCurrentTimestamp();
     }
 
