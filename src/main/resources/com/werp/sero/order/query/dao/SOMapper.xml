@@ -2,115 +2,88 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.werp.sero.order.query.dao.SOMapper">
-    <resultMap id="SOResultMap" type="com.werp.sero.order.query.dto.SOResponseDTO">
-        <id property="id" column="order_id"/>
-        <result property="soCode" column="so_code"/>
-        <result property="clientName" column="client_name"/>
+
+    <resultMap id="SODetailResultMap" type="com.werp.sero.order.query.dto.SODetailsResponseDTO">
+        <id property="orderId" column="order_id"/>
+        <result property="orderCode" column="so_code"/>
         <result property="orderedAt" column="ordered_at"/>
         <result property="shippedAt" column="shipped_at"/>
-        <result property="poCode" column="po_code"/>
         <result property="totalQuantity" column="total_quantity"/>
-        <result property="totalItemCount" column="total_item_count"/>
-        <result property="totalPrice" column="total_price"/>
-        <result property="soUrl" column="so_url"/>
-        <result property="rejectionReason" column="rejection_reason"/>
-        <result property="mainItemName" column="main_item_name"/>
-        <result property="note" column="note"/>
+        <result property="orderUrl" column="so_url"/>
         <result property="approvalCode" column="approval_code"/>
-        <result property="status" column="status"/>
-        <result property="shippingName" column="shipping_name"/>
-        <result property="address" column="address"/>
-        <result property="latitude" column="latitude"/>
-        <result property="longitude" column="longitude"/>
-        <result property="recipientName" column="recipient_name"/>
-        <result property="recipientContact" column="recipient_contact"/>
-        <result property="clientId" column="client_id"/>
-        <result property="clientManagerId" column="client_manager_id"/>
+        <result property="note" column="note"/>
+        <result property="clientName" column="company_name"/>
+        <result property="clientManagerName" column="client_manager_name"/>
+        <result property="clientManagerContact" column="client_manager_contact"/>
         <result property="managerName" column="manager_name"/>
+        <result property="creditLimit" column="credit_limit"/>
+        <result property="availablePrice" column="available_price"/>
+        <result property="totalPrice" column="total_price"/>
+        <result property="remainingAmount" column="remaining_amount"/>
+
+        <collection property="items" ofType="com.werp.sero.order.query.dto.SOItemResponseDTO">
+            <id property="id" column="item_id"/>
+            <result property="itemCode" column="item_code"/>
+            <result property="itemName" column="item_name"/>
+            <result property="spec" column="spec"/>
+            <result property="quantity" column="quantity"/>
+            <result property="availableStock" column="available_stock"/>
+            <result property="productionRequest" column="production_request"/>
+            <result property="unit" column="unit"/>
+            <result property="unitPrice" column="unit_price"/>
+            <result property="totalPrice" column="item_total_price"/>
+            <result property="salesOrderId" column="order_id"/>
+        </collection>
     </resultMap>
 
-    <select id="selectAllSalesOrders" resultMap="SOResultMap">
+    <select id="selectOrderDetailWithItems" resultMap="SODetailResultMap">
         SELECT
-        A.id AS order_id,
-        A.so_code,
-        A.client_id,
-        A.client_manager_id,
-        A.manager_id, A.client_name,
-        A.ordered_at,
-        A.shipped_at,
-        A.po_code,
-        A.status,
-        A.total_quantity,
-        A.total_item_count,
-        A.total_price,
-        A.so_url,
-        A.rejection_reason,
-        A.main_item_name,
-        A.note,
-        A.approval_code,
-        A.shipping_name,
-        A.address,
-        A.recipient_name,
-        A.recipient_contact,
-        B.name AS manager_name
-        FROM sales_order A
-        LEFT JOIN employee B ON A.manager_id = B.id
-
-        <where>
-            <if test="statusType != null and statusType != ''">
-                <choose>
-                    <when test='statusType.equals("ORD_PEND")'>
-                        AND A.status IN ('ORD_RED', 'ORD_REV')
-                    </when>
-                    <otherwise>
-                        AND A.status = #{statusType}
-                    </otherwise>
-                </choose>
-            </if>
-
-            <if test="dateField != null and dateField != '' and startDate != null and endDate != null">
-                AND A.${dateField} BETWEEN CONCAT(#{startDate}, ' 00:00:00') AND CONCAT(#{endDate}, ' 23:59:59')
-            </if>
-
-            <if test="managerName != null and managerName != ''">
-                AND B.name LIKE CONCAT('%', #{managerName}, '%')
-            </if>
-
-            <if test="clientName != null and clientName != ''">
-                AND A.client_name LIKE CONCAT('%', #{clientName}, '%')
-            </if>
-
-            <if test="searchKeyword != null and searchKeyword != ''">
-                AND (
-                A.so_code LIKE CONCAT('%', #{searchKeyword}, '%')
-                OR A.main_item_name LIKE CONCAT('%', #{searchKeyword}, '%')
-                )
-            </if>
-        </where>
-
-        ORDER BY A.ordered_at DESC
-
-        <if test="limit != null and offset != null">
-            LIMIT #{limit} OFFSET #{offset}
-        </if>
-    </select>
-
-    <select id="selectOrderDetailById" resultType="com.werp.sero.order.query.dto.SODetailsResponseDTO">
-        SELECT
-            A.id AS orderId,
-            A.ordered_at AS orderedAt,
-            A.shipped_at AS shippedAt,
+            A.id AS order_id,
+            A.so_code,
+            A.ordered_at,
+            A.shipped_at,
+            A.total_quantity,
+            A.so_url,
+            A.approval_code,
             A.note,
-            B.company_name AS clientName,
-            C.name AS clientManagerName,
-            C.contact AS clientManagerContact,
-            B.credit_limit AS creditLimit,
-            (B.credit_limit - B.receivables) AS availablePrice,
-            A.total_price AS totalPrice,
-            ((B.credit_limit - B.receivables) - A.total_price) AS remainingAmount
+            A.total_price,
+
+            B.company_name,
+            B.credit_limit,
+            (B.credit_limit - B.receivables) AS available_price,
+            ((B.credit_limit - B.receivables) - A.total_price) AS remaining_amount,
+
+            C.name AS client_manager_name,
+            C.contact AS client_manager_contact,
+
+            G.name AS manager_name,
+
+            D.id AS item_id,
+            D.item_code,
+            D.item_name,
+            D.spec,
+            D.quantity,
+            D.unit,
+            D.unit_price,
+            D.total_price AS item_total_price,
+
+            /* E, F: 재고 계산 서브쿼리 */
+            (SELECT IFNULL(SUM(F.available_stock), 0)
+             FROM warehouse_stock F
+                      INNER JOIN material E ON F.material_id = E.id
+             WHERE E.material_code = D.item_code) AS available_stock,
+
+            GREATEST(D.quantity - (SELECT IFNULL(SUM(F.available_stock), 0)
+                                   FROM warehouse_stock F
+                                            INNER JOIN material E ON F.material_id = E.id
+                                   WHERE E.material_code = D.item_code), 0) AS production_request
+
         FROM sales_order A
                  INNER JOIN client B ON A.client_id = B.id
                  INNER JOIN client_employee C ON A.client_manager_id = C.id
+                 LEFT JOIN employee G ON A.manager_id = G.id
+                 LEFT JOIN sales_order_item D ON A.id = D.so_id
         WHERE A.id = #{orderId}
+        ORDER BY D.id ASC
     </select>
 </mapper>

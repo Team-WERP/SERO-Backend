@@ -48,7 +48,7 @@ public class SOServiceImpl implements SOQueryService {
 
     @Override
     public SODetailsResponseDTO findOrderDetailsById(int orderId) {
-        SODetailsResponseDTO orderDetails = soMapper.selectOrderDetailById(orderId);
+        SODetailsResponseDTO orderDetails = soMapper.selectOrderDetailWithItems(orderId);
         if (orderDetails == null) {
             throw new SalesOrderNotFoundException();
         }

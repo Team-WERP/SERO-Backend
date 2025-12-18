@@ -27,7 +27,7 @@ public class SOItemResponseDTO {
     private int quantity;
 
     @Schema(description = "가용재고")
-    private int available_stock;
+    private int availableStock;
 
     @Schema(description = "생산 필요량")
     private int productionRequest;

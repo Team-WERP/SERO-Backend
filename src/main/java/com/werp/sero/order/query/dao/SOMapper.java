@@ -11,5 +11,5 @@ import java.util.Map;
 public interface SOMapper {
     List<SOResponseDTO> selectAllSalesOrders(Map<String, Object> params);
 
-    SODetailsResponseDTO selectOrderDetailById(final int orderId);
+    SODetailsResponseDTO selectOrderDetailWithItems(final int orderId);
 }
