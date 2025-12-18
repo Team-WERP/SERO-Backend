@@ -1,6 +1,8 @@
 package com.werp.sero.production.command.domain.aggregate;
 
+import com.werp.sero.common.util.DateTimeUtils;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
+import com.werp.sero.material.command.application.service.MaterialCommandServiceImpl;
 import com.werp.sero.order.command.domain.aggregate.SalesOrder;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -27,6 +29,9 @@ public class ProductionRequest {
 
     @Column(name = "requested_at")
     private String requestedAt;
+
+    @Column(name = "created_at")
+    private String createdAt;
 
     @Column(name = "due_at", nullable = false)
     private String dueAt;
@@ -69,6 +74,8 @@ public class ProductionRequest {
         pr.reason = reason;
         pr.status = "PR_TMP";
         pr.totalQuantity = 0;
+        pr.createdAt = DateTimeUtils.nowDateTime();
         return pr;
     }
+
 }
