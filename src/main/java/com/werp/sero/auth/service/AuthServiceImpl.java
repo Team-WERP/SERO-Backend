@@ -7,7 +7,10 @@ import com.werp.sero.security.dto.JwtToken;
 import com.werp.sero.security.enums.Type;
 import com.werp.sero.security.jwt.JwtTokenProvider;
 import com.werp.sero.util.CookieUtil;
+import com.werp.sero.util.HeaderUtil;
 import com.werp.sero.util.RedisUtil;
+import io.jsonwebtoken.JwtException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -66,6 +69,32 @@ public class AuthServiceImpl implements AuthService {
                     accessToken.getAuthorities());
         } catch (InternalAuthenticationServiceException | BadCredentialsException e) {
             throw new LoginFailedException();
+        }
+    }
+
+    @Transactional
+    @Override
+    public void logout(final HttpServletRequest request, final HttpServletResponse response) {
+        try {
+            final String accessToken = HeaderUtil.extractAccessTokenFromHeader(request);
+
+            jwtTokenProvider.validateToken(accessToken);
+
+            final String email = jwtTokenProvider.extractEmail(accessToken);
+
+            final String refreshToken = redisUtil.getData(REFRESH_TOKEN_PREFIX + email);
+
+            if (refreshToken != null) {
+                redisUtil.deleteData(REFRESH_TOKEN_PREFIX + email);
+
+                cookieUtil.deleteRefreshTokenCookie(response);
+            }
+
+            final long expirationTime = jwtTokenProvider.getExpirationTime(accessToken) - System.currentTimeMillis();
+
+            redisUtil.setData(accessToken, "logout", expirationTime, TimeUnit.MILLISECONDS);
+        } catch (JwtException e) {
+            throw new JwtException(e.getMessage());
         }
     }
 
