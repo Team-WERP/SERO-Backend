@@ -1,6 +1,5 @@
 package com.werp.sero.material.query.dto;
 
-import com.werp.sero.employee.command.domain.aggregate.Employee;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -35,9 +34,19 @@ public class MaterialWithBomResponseDTO {
     private String status;
     private String createdAt;
     private String updatedAt;
-    private Employee employee;
+    private ManagerDTO manager;
     @Builder.Default
     private List<BomDTO> bomList = new ArrayList<>();
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class ManagerDTO {
+        private int id;
+        private String name;
+        private String empCode;
+    }
 
     /**
      * BOM 조회 전용 DTO

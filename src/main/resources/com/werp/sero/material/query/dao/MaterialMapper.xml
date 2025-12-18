@@ -39,8 +39,10 @@
         <result property="status" column="status"/>
         <result property="createdAt" column="created_at"/>
         <result property="updatedAt" column="updated_at"/>
-        <association property="employee" javaType="com.werp.sero.employee.command.domain.aggregate.Employee">
+        <association property="manager" javaType="com.werp.sero.material.query.dto.MaterialWithBomResponseDTO$ManagerDTO">
             <id property="id" column="manager_id"/>
+            <result property="name" column="manager_name"/>
+            <result property="empCode" column="manager_emp_code"/>
         </association>
         <collection property="bomList" ofType="com.werp.sero.material.query.dto.MaterialWithBomResponseDTO$BomDTO">
             <id property="id" column="bom_id"/>
@@ -118,7 +120,9 @@
             A.status,
             A.created_at,
             A.updated_at,
-            A.manager_id,
+            D.id AS manager_id,
+            D.name AS manager_name,
+            D.emp_code AS manager_emp_code,
             B.id AS bom_id,
             B.requirement,
             B.note AS bom_note,
@@ -133,6 +137,7 @@
             C.type AS raw_material_type,
             C.status AS raw_material_status
         FROM material A
+        LEFT JOIN employee D ON A.manager_id = D.id
         LEFT JOIN bom B ON A.id = B.material_id
         LEFT JOIN material C ON B.raw_material_id = C.id
         WHERE A.id = #{id}
