@@ -4,6 +4,7 @@ import com.werp.sero.common.util.DateTimeUtils;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.material.command.application.service.MaterialCommandServiceImpl;
 import com.werp.sero.order.command.domain.aggregate.SalesOrder;
+import com.werp.sero.order.command.domain.aggregate.SalesOrderItem;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -76,6 +77,15 @@ public class ProductionRequest {
         pr.totalQuantity = 0;
         pr.createdAt = DateTimeUtils.nowDateTime();
         return pr;
+    }
+
+    public ProductionRequestItem addItem(SalesOrderItem soItem, int quantity) {
+        ProductionRequestItem item =
+                ProductionRequestItem.createDraft(this, soItem, quantity);
+
+        this.totalQuantity += quantity;
+
+        return item;
     }
 
 }

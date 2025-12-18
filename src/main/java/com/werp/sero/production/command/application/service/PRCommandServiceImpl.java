@@ -48,11 +48,8 @@ public class PRCommandServiceImpl implements PRCommandService {
             for(PRItemCreateRequestDTO itemDto : dto.getItems()) {
                 SalesOrderItem soItem = soItemRepository.findById(itemDto.getSoItemId())
                         .orElseThrow(() -> new IllegalArgumentException("수주 품목이 없습니다."));
-                ProductionRequestItem item = ProductionRequestItem.createDraft(
-                        pr,
-                        soItem,
-                        itemDto.getQuantity()
-                );
+                ProductionRequestItem item =
+                        pr.addItem(soItem, itemDto.getQuantity());
                 prtItemRepository.save(item);
             }
         }
