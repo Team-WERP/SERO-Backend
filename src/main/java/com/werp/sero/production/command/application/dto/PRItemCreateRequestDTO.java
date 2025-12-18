@@ -5,7 +5,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class ProductionRequestItemCreateRequestDTO {
+public class PRItemCreateRequestDTO {
     private int soItemId;
     private int quantity;
 }

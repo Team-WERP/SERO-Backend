@@ -1,7 +1,9 @@
 package com.werp.sero.production.command.application.controller;
 
-import com.werp.sero.production.command.application.dto.ProductionRequestDraftCreateRequestDTO;
-import com.werp.sero.production.command.application.service.ProductionRequestCommandService;
+import com.werp.sero.employee.command.domain.aggregate.Employee;
+import com.werp.sero.production.command.application.dto.PRDraftCreateRequestDTO;
+import com.werp.sero.production.command.application.service.PRCommandService;
+import com.werp.sero.security.annotation.CurrentUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -19,8 +21,8 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/production-requests")
 @RequiredArgsConstructor
-public class ProductionRequestCommandController {
-    private final ProductionRequestCommandService productionRequestCommandService;
+public class PRCommandController {
+    private final PRCommandService PRCommandService;
 
     @Operation(
             summary = "생산요청 임시저장 생성",
@@ -48,9 +50,10 @@ public class ProductionRequestCommandController {
     })
     @PostMapping("/draft")
     public ResponseEntity<Integer> createDraft(
-            @RequestBody ProductionRequestDraftCreateRequestDTO dto
-    ) {
-        int prId = productionRequestCommandService.createDraft(dto);
+            @RequestBody PRDraftCreateRequestDTO dto,
+            @CurrentUser Employee currentEmployee
+            ) {
+        int prId = PRCommandService.createDraft(dto, currentEmployee);
         return ResponseEntity.ok(prId);
     }
 }

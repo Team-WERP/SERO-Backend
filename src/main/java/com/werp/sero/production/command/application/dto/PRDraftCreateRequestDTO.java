@@ -7,9 +7,9 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor
-public class ProductionRequestDraftCreateRequestDTO {
+public class PRDraftCreateRequestDTO {
     private int soId;
     private String dueAt;
     private String reason;
-    List<ProductionRequestItemCreateRequestDTO> items;
+    List<PRItemCreateRequestDTO> items;
 }

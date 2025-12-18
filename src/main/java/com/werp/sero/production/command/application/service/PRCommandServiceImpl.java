@@ -5,38 +5,33 @@ import com.werp.sero.employee.command.domain.repository.EmployeeRepository;
 import com.werp.sero.order.command.domain.aggregate.SalesOrder;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItem;
 import com.werp.sero.order.command.domain.repository.SORepository;
-import com.werp.sero.order.command.domain.repository.SalesOrderItemRepository;
-import com.werp.sero.production.command.application.dto.ProductionRequestDraftCreateRequestDTO;
-import com.werp.sero.production.command.application.dto.ProductionRequestItemCreateRequestDTO;
+import com.werp.sero.order.command.domain.repository.SOItemRepository;
+import com.werp.sero.production.command.application.dto.PRDraftCreateRequestDTO;
+import com.werp.sero.production.command.application.dto.PRItemCreateRequestDTO;
 import com.werp.sero.production.command.domain.aggregate.ProductionRequest;
 import com.werp.sero.production.command.domain.aggregate.ProductionRequestItem;
-import com.werp.sero.production.command.domain.repository.ProductionRequestItemRepository;
-import com.werp.sero.production.command.domain.repository.ProductionRequestRepository;
+import com.werp.sero.production.command.domain.repository.PRItemRepository;
+import com.werp.sero.production.command.domain.repository.PRRepository;
 import com.werp.sero.system.command.application.service.DocumentSequenceCommandService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class ProductionRequestCommandServiceImpl implements ProductionRequestCommandService{
-    private final ProductionRequestRepository prRepository;
-    private final ProductionRequestItemRepository prtItemRepository;
+public class PRCommandServiceImpl implements PRCommandService {
+    private final PRRepository prRepository;
+    private final PRItemRepository prtItemRepository;
     private final SORepository soRepository;
-    private final SalesOrderItemRepository soItemRepository;
+    private final SOItemRepository soItemRepository;
     private final EmployeeRepository employeeRepository;
     private final DocumentSequenceCommandService documentSequenceCommandService;
 
     @Override
     @Transactional
-    public int createDraft(ProductionRequestDraftCreateRequestDTO dto) {
+    public int createDraft(PRDraftCreateRequestDTO dto, Employee drafter) {
         SalesOrder so = soRepository.findById(dto.getSoId())
                 .orElseThrow(() -> new IllegalArgumentException("수주 정보가 없습니다."));
-
-        // TODO: 로그인한 사용자로 변경
-        Employee drafter = employeeRepository.findById(3)
-                .orElseThrow(() -> new IllegalArgumentException("직원 정보가 없습니다."));
 
         String prCode = documentSequenceCommandService.generateDocumentCode("DOC_PR");
 
@@ -51,7 +46,7 @@ public class ProductionRequestCommandServiceImpl implements ProductionRequestCom
         prRepository.save(pr);
 
         if(dto.getItems() != null) {
-            for(ProductionRequestItemCreateRequestDTO itemDto : dto.getItems()) {
+            for(PRItemCreateRequestDTO itemDto : dto.getItems()) {
                 SalesOrderItem soItem = soItemRepository.findById(itemDto.getSoItemId())
                         .orElseThrow(() -> new IllegalArgumentException("수주 품목이 없습니다."));
                 ProductionRequestItem item = ProductionRequestItem.createDraft(
