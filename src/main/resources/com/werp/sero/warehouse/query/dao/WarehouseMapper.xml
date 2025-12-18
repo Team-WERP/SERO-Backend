@@ -3,7 +3,7 @@
 
 <mapper namespace="com.werp.sero.warehouse.query.dao.WarehouseMapper">
 
-    <resultMap id="warehouseResultMap" type="com.werp.sero.warehouse.command.domain.aggregate.Warehouse">
+    <resultMap id="warehouseResultMap" type="com.werp.sero.warehouse.query.dto.WarehouseDetailDTO">
         <id property="id" column="id"/>
         <result property="name" column="name"/>
         <result property="address" column="address"/>
@@ -12,6 +12,13 @@
         <result property="type" column="type"/>
         <result property="createdAt" column="created_at"/>
         <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <resultMap id="warehouseListResultMap"
+               type="com.werp.sero.warehouse.query.dto.WarehouseListResponseDTO">
+        <id property="id" column="id"/>
+        <result property="warehouseName" column="name"/>
+        <result property="warehouseType" column="type"/>
     </resultMap>
 
     <!-- ID로 창고 조회 -->
@@ -34,6 +41,17 @@
         SELECT COUNT(*) > 0
         FROM warehouse A
         WHERE A.id = #{id}
+    </select>
+
+    <!-- 모든 창고 목록 조회 -->
+    <select id="findAll" resultMap="warehouseListResultMap">
+        SELECT
+            A.id,
+            A.name,
+            A.type
+        FROM warehouse A
+        WHERE A.type = 'WHS_WH'
+        ORDER BY A.id
     </select>
 
 </mapper>
