@@ -20,7 +20,7 @@ import java.util.List;
  */
 @Tag(name = "창고 관리", description = "창고 조회 API")
 @RestController
-@RequestMapping("/warehouse/warehouses")
+@RequestMapping("/warehouses")
 @RequiredArgsConstructor
 public class WarehouseQueryController {
 
