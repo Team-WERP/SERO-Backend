@@ -9,6 +9,8 @@
         <result property="itemName" column="item_name"/>
         <result property="spec" column="spec"/>
         <result property="quantity" column="quantity"/>
+        <result property="available_quantity" column="available_quantity"/>
+        <result property="productionRequest" column="production_request"/>
         <result property="unit" column="unit"/>
         <result property="unitPrice" column="unit_price"/>
         <result property="totalPrice" column="total_price"/>
@@ -22,12 +24,18 @@
             A.item_name,
             A.spec,
             A.quantity,
+            IFNULL(SUM(WS.available_stock), 0) AS available_quantity,
+            GREATEST(A.quantity - IFNULL(SUM(WS.available_stock), 0), 0) AS production_request,
             A.unit,
             A.unit_price,
             A.total_price,
             A.so_id
         FROM sales_order_item A
+                 LEFT JOIN material M ON A.item_code = M.material_code
+                 LEFT JOIN warehouse_stock WS ON M.id = WS.material_id
         WHERE A.so_id = #{orderId}
+        GROUP BY
+            A.id, A.item_code, A.item_name, A.spec, A.quantity, A.unit, A.unit_price, A.total_price, A.so_id
         ORDER BY A.id ASC
     </select>
 

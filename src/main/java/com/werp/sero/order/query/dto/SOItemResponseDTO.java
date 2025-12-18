@@ -2,13 +2,13 @@ package com.werp.sero.order.query.dto;
 
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItem;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Setter
 public class SOItemResponseDTO {
 
     @Schema(description = "주문 품목 ID")
@@ -26,6 +26,12 @@ public class SOItemResponseDTO {
     @Schema(description = "수량")
     private int quantity;
 
+    @Schema(description = "가용재고")
+    private int available_stock;
+
+    @Schema(description = "생산 필요량")
+    private int productionRequest;
+
     @Schema(description = "단위")
     private String unit;
 
@@ -38,18 +44,17 @@ public class SOItemResponseDTO {
     @Schema(description = "주문 ID")
     private int salesOrderId;
 
-
     public static SOItemResponseDTO of(final SalesOrderItem salesOrderItem) {
-        return new SOItemResponseDTO(
-                salesOrderItem.getId(),
-                salesOrderItem.getItemCode(),
-                salesOrderItem.getItemName(),
-                salesOrderItem.getSpec(),
-                salesOrderItem.getQuantity(),
-                salesOrderItem.getUnit(),
-                salesOrderItem.getUnitPrice(),
-                salesOrderItem.getTotalPrice(),
-                salesOrderItem.getSalesOrder().getId()
-        );
+        return SOItemResponseDTO.builder()
+                .id(salesOrderItem.getId())
+                .itemCode(salesOrderItem.getItemCode())
+                .itemName(salesOrderItem.getItemName())
+                .spec(salesOrderItem.getSpec())
+                .quantity(salesOrderItem.getQuantity())
+                .unit(salesOrderItem.getUnit())
+                .unitPrice(salesOrderItem.getUnitPrice())
+                .totalPrice(salesOrderItem.getTotalPrice())
+                .salesOrderId(salesOrderItem.getSalesOrder().getId())
+                .build();
     }
 }
