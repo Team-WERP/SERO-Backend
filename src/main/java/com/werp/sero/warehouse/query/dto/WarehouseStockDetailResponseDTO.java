@@ -1,7 +1,6 @@
 package com.werp.sero.warehouse.query.dto;
 
 import com.werp.sero.warehouse.command.domain.aggregate.WarehouseStock;
-import com.werp.sero.warehouse.command.domain.aggregate.WarehouseStockHistory;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,7 +28,7 @@ public class WarehouseStockDetailResponseDTO {
 
     public static WarehouseStockDetailResponseDTO from(
             WarehouseStock warehouseStock,
-            List<WarehouseStockHistory> histories
+            List<StockHistoryDTO> histories
     ) {
         String stockStatus = determineStockStatus(
                 warehouseStock.getCurrentStock(),
@@ -44,9 +43,7 @@ public class WarehouseStockDetailResponseDTO {
                 .currentStock(warehouseStock.getCurrentStock())
                 .availableStock(warehouseStock.getAvailableStock())
                 .stockStatus(stockStatus)
-                .stockHistory(histories.stream()
-                        .map(StockHistoryDTO::from)
-                        .toList())
+                .stockHistory(histories)
                 .build();
     }
 
@@ -107,17 +104,6 @@ public class WarehouseStockDetailResponseDTO {
         private int changedQuantity;
         private int currentStock;
         private String createdAt;
-
-        public static StockHistoryDTO from(WarehouseStockHistory history) {
-            return StockHistoryDTO.builder()
-                    .id(history.getId())
-                    .type(history.getType())
-                    .reason(history.getReason())
-                    .changedQuantity(history.getChangedQuantity())
-                    .currentStock(history.getCurrentStock())
-                    .createdAt(history.getCreatedAt())
-                    .build();
-        }
     }
 
     private static String determineStockStatus(int currentStock, int safetyStock) {

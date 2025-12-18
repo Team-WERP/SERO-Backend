@@ -33,6 +33,7 @@ public class EmployeeSecurityConfig {
             "/swagger-ui/**",
             "/swagger-resources/**",
             "/auth/login",
+
     };
 
     private static final String[] AUTHORITY_LIST = {

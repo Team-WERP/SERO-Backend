@@ -3,9 +3,8 @@
 
 <mapper namespace="com.werp.sero.warehouse.query.dao.WarehouseStockHistoryMapper">
 
-    <resultMap id="warehouseStockHistoryResultMap" type="com.werp.sero.warehouse.command.domain.aggregate.WarehouseStockHistory">
+    <resultMap id="warehouseStockHistoryResultMap" type="com.werp.sero.warehouse.query.dto.WarehouseStockDetailResponseDTO$StockHistoryDTO">
         <id property="id" column="id"/>
-        <result property="warehouseStockId" column="warehouse_stock_id"/>
         <result property="type" column="type"/>
         <result property="reason" column="reason"/>
         <result property="changedQuantity" column="changed_quantity"/>

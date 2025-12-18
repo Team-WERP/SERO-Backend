@@ -1,6 +1,6 @@
 package com.werp.sero.warehouse.query.dao;
 
-import com.werp.sero.warehouse.command.domain.aggregate.WarehouseStockHistory;
+import com.werp.sero.warehouse.query.dto.WarehouseStockDetailResponseDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -15,5 +15,5 @@ public interface WarehouseStockHistoryMapper {
     /**
      * 특정 재고의 변동 이력 조회 (최신순)
      */
-    List<WarehouseStockHistory> findByWarehouseStockId(@Param("warehouseStockId") int warehouseStockId);
+    List<WarehouseStockDetailResponseDTO.StockHistoryDTO> findByWarehouseStockId(@Param("warehouseStockId") int warehouseStockId);
 }

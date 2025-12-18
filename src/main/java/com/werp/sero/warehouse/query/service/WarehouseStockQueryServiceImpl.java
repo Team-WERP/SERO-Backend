@@ -5,7 +5,6 @@ import com.werp.sero.warehouse.exception.InvalidStockStatusException;
 import com.werp.sero.warehouse.exception.WarehouseNotFoundException;
 import com.werp.sero.warehouse.exception.WarehouseStockNotFoundException;
 import com.werp.sero.warehouse.command.domain.aggregate.WarehouseStock;
-import com.werp.sero.warehouse.command.domain.aggregate.WarehouseStockHistory;
 import com.werp.sero.warehouse.query.dao.WarehouseMapper;
 import com.werp.sero.warehouse.query.dao.WarehouseStockHistoryMapper;
 import com.werp.sero.warehouse.query.dao.WarehouseStockMapper;
@@ -75,7 +74,7 @@ public class WarehouseStockQueryServiceImpl implements WarehouseStockQueryServic
                 .orElseThrow(WarehouseStockNotFoundException::new);
 
         // 2. 변동 이력 조회
-        List<WarehouseStockHistory> histories =
+        List<WarehouseStockDetailResponseDTO.StockHistoryDTO> histories =
                 warehouseStockHistoryMapper.findByWarehouseStockId(stockId);
 
         return WarehouseStockDetailResponseDTO.from(stock, histories);
