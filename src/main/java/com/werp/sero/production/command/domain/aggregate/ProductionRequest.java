@@ -19,7 +19,7 @@ public class ProductionRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(name = "pr_code", nullable = false)
+    @Column(name = "pr_code")
     private String prCode;
 
     @Column(nullable = false, columnDefinition = "varchar(100) default 'PR_TMP'")
@@ -61,14 +61,12 @@ public class ProductionRequest {
     private Employee manager;
 
     public static ProductionRequest createDraft(
-            String prCode,
             SalesOrder so,
             Employee drafter,
             String dueAt,
             String reason
     ) {
         ProductionRequest pr = new ProductionRequest();
-        pr.prCode = prCode;
         pr.salesOrder = so;
         pr.drafter = drafter;
         pr.dueAt = dueAt;

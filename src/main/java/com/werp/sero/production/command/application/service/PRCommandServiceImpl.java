@@ -33,11 +33,8 @@ public class PRCommandServiceImpl implements PRCommandService {
     public int createDraft(PRDraftCreateRequestDTO dto, Employee drafter) {
         SalesOrder so = soRepository.findById(dto.getSoId())
                 .orElseThrow(SalesOrderNotFoundException::new);
-
-        String prCode = documentSequenceCommandService.generateDocumentCode("DOC_PR");
-
+        
         ProductionRequest pr = ProductionRequest.createDraft(
-                prCode,
                 so,
                 drafter,
                 dto.getDueAt(),
