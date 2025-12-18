@@ -3,6 +3,7 @@ package com.werp.sero.common.util;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+
 public class DateTimeUtils {
     private static final DateTimeFormatter DATE_FORMATTER
             = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -15,4 +16,5 @@ public class DateTimeUtils {
     public static String nowDateTime() {
         return LocalDateTime.now().format(DATE_TIME_FORMATTER);
     }
+
 }
