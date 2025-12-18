@@ -55,7 +55,7 @@ public class MaterialDetailResponseDTO {
                 .status(materialWithBom.getStatus())
                 .createdAt(materialWithBom.getCreatedAt())
                 .updatedAt(materialWithBom.getUpdatedAt())
-                .manager(ManagerDTO.from(materialWithBom.getEmployee()))
+                .manager(ManagerDTO.from(materialWithBom.getManager()))
                 .bomList(materialWithBom.getBomList().stream()
                         .map(BomDTO::from)
                         .toList())
@@ -71,12 +71,12 @@ public class MaterialDetailResponseDTO {
         private String name;
         private String empCode;
 
-        public static ManagerDTO from(com.werp.sero.employee.command.domain.aggregate.Employee employee) {
-            if (employee == null) return null;
+        public static ManagerDTO from(MaterialWithBomResponseDTO.ManagerDTO manager) {
+            if (manager == null) return null;
             return ManagerDTO.builder()
-                    .id(employee.getId())
-                    .name(employee.getName())
-                    .empCode(employee.getEmpCode())
+                    .id(manager.getId())
+                    .name(manager.getName())
+                    .empCode(manager.getEmpCode())
                     .build();
         }
     }

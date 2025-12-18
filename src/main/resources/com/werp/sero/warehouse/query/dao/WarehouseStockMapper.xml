@@ -5,38 +5,64 @@
 
 <mapper namespace="com.werp.sero.warehouse.query.dao.WarehouseStockMapper">
 
-    <resultMap id="warehouseStockResultMap"
-               type="com.werp.sero.warehouse.command.domain.aggregate.WarehouseStock">
+    <resultMap id="warehouseStockListResultMap"
+               type="com.werp.sero.warehouse.query.dto.WarehouseStockListResponseDTO">
+        <id property="id" column="id"/>
+        <result property="warehouseId" column="warehouse_id"/>
+        <result property="warehouseName" column="warehouse_name"/>
+        <result property="warehouseType" column="warehouse_type"/>
+        <result property="materialId" column="material_id"/>
+        <result property="materialName" column="material_name"/>
+        <result property="materialCode" column="material_code"/>
+        <result property="materialSpec" column="material_spec"/>
+        <result property="materialType" column="material_type"/>
+        <result property="baseUnit" column="material_base_unit"/>
+        <result property="safetyStock" column="safety_stock"/>
+        <result property="currentStock" column="current_stock"/>
+        <result property="availableStock" column="available_stock"/>
+        <result property="stockStatus" column="stock_status"/>
+    </resultMap>
+
+    <resultMap id="warehouseStockDetailResultMap"
+               type="com.werp.sero.warehouse.query.dto.WarehouseStockDetailResponseDTO">
         <id property="id" column="id"/>
         <result property="safetyStock" column="safety_stock"/>
         <result property="currentStock" column="current_stock"/>
         <result property="availableStock" column="available_stock"/>
+        <result property="stockStatus" column="stock_status"/>
 
         <association property="warehouse"
-                     javaType="com.werp.sero.warehouse.command.domain.aggregate.Warehouse">
+                     javaType="com.werp.sero.warehouse.query.dto.WarehouseStockDetailResponseDTO$WarehouseDTO">
             <id property="id" column="warehouse_id"/>
             <result property="name" column="warehouse_name"/>
+            <result property="address" column="warehouse_address"/>
             <result property="type" column="warehouse_type"/>
         </association>
 
         <association property="material"
-                     javaType="com.werp.sero.material.command.domain.aggregate.Material">
+                     javaType="com.werp.sero.warehouse.query.dto.WarehouseStockDetailResponseDTO$MaterialDTO">
             <id property="id" column="material_id"/>
             <result property="name" column="material_name"/>
             <result property="materialCode" column="material_code"/>
             <result property="spec" column="material_spec"/>
             <result property="type" column="material_type"/>
             <result property="baseUnit" column="material_base_unit"/>
+            <result property="unitPrice" column="material_unit_price"/>
         </association>
     </resultMap>
 
     <!-- 창고별 재고 조건 조회 -->
-    <select id="findByCondition" resultMap="warehouseStockResultMap">
+    <select id="findByCondition" resultMap="warehouseStockListResultMap">
         SELECT
         A.id,
         A.safety_stock,
         A.current_stock,
         A.available_stock,
+        CASE
+            WHEN A.current_stock &lt;= 0 THEN 'OUT_OF_STOCK'
+            WHEN A.current_stock &lt; A.safety_stock THEN 'LOW'
+            ELSE 'NORMAL'
+        END AS stock_status,
         B.id   AS warehouse_id,
         B.name AS warehouse_name,
         B.type AS warehouse_type,
@@ -84,21 +110,28 @@
     </select>
 
     <!-- 재고 상세 조회 -->
-    <select id="findByIdWithDetails" resultMap="warehouseStockResultMap">
+    <select id="findByIdWithDetails" resultMap="warehouseStockDetailResultMap">
         SELECT
             A.id,
             A.safety_stock,
             A.current_stock,
             A.available_stock,
+            CASE
+                WHEN A.current_stock &lt;= 0 THEN 'OUT_OF_STOCK'
+                WHEN A.current_stock &lt; A.safety_stock THEN 'LOW'
+                ELSE 'NORMAL'
+            END AS stock_status,
             B.id   AS warehouse_id,
             B.name AS warehouse_name,
+            B.address AS warehouse_address,
             B.type AS warehouse_type,
             C.id   AS material_id,
             C.name AS material_name,
             C.material_code,
             C.spec AS material_spec,
             C.type AS material_type,
-            C.base_unit AS material_base_unit
+            C.base_unit AS material_base_unit,
+            C.unit_price AS material_unit_price
         FROM warehouse_stock A
                  INNER JOIN warehouse B ON A.warehouse_id = B.id
                  INNER JOIN material  C ON A.material_id  = C.id
@@ -107,21 +140,28 @@
 
     <!-- 창고 + 자재 단건 조회 -->
     <select id="findByWarehouseIdAndMaterialId"
-            resultMap="warehouseStockResultMap">
+            resultMap="warehouseStockDetailResultMap">
         SELECT
             A.id,
             A.safety_stock,
             A.current_stock,
             A.available_stock,
+            CASE
+                WHEN A.current_stock &lt;= 0 THEN 'OUT_OF_STOCK'
+                WHEN A.current_stock &lt; A.safety_stock THEN 'LOW'
+                ELSE 'NORMAL'
+            END AS stock_status,
             B.id   AS warehouse_id,
             B.name AS warehouse_name,
+            B.address AS warehouse_address,
             B.type AS warehouse_type,
             C.id   AS material_id,
             C.name AS material_name,
             C.material_code,
             C.spec AS material_spec,
             C.type AS material_type,
-            C.base_unit AS material_base_unit
+            C.base_unit AS material_base_unit,
+            C.unit_price AS material_unit_price
         FROM warehouse_stock A
                  INNER JOIN warehouse B ON A.warehouse_id = B.id
                  INNER JOIN material  C ON A.material_id  = C.id

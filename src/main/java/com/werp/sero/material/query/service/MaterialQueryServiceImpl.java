@@ -1,6 +1,5 @@
 package com.werp.sero.material.query.service;
 
-import com.werp.sero.material.command.domain.aggregate.Material;
 import com.werp.sero.material.exception.InvalidMaterialStatusException;
 import com.werp.sero.material.exception.InvalidMaterialTypeException;
 import com.werp.sero.material.exception.MaterialNotFoundException;
@@ -46,12 +45,7 @@ public class MaterialQueryServiceImpl implements MaterialQueryService {
         }
 
         // 3. 자재 목록 조회
-        List<Material> materials =
-                materialMapper.findByCondition(type, status, keyword);
-
-        return materials.stream()
-                .map(MaterialListResponseDTO::from)
-                .toList();
+        return materialMapper.findByCondition(type, status, keyword);
     }
 
     @Override
