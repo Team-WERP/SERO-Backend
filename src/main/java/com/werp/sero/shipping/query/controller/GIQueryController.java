@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @Tag(name = "출고지시", description = "출고지시 관련 API (Query)")
-@RequestMapping("/goods-issues")
+@RequestMapping("/goods/issues")
 @RequiredArgsConstructor
 @RestController
 public class GIQueryController {
