@@ -2,7 +2,7 @@ package com.werp.sero.order.query.controller;
 
 
 import com.werp.sero.order.query.dto.SOFilterDTO;
-import com.werp.sero.order.query.dto.SOItemResponseDTO;
+import com.werp.sero.order.query.dto.SODetailsResponseDTO;
 import com.werp.sero.order.query.dto.SOResponseDTO;
 import com.werp.sero.order.query.service.SOQueryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -52,5 +52,34 @@ public class SOQueryController {
 
         return ResponseEntity.ok(response);
     }
+
+
+    @Operation(summary = "주문 상세 정보 조회")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "주문 상세 정보 조회", content = @Content(
+                    mediaType = "application/json",
+                    array = @ArraySchema(
+                            schema = @Schema(implementation = SODetailsResponseDTO.class)
+                    )
+            )),
+            @ApiResponse(responseCode = "404", content = @Content(mediaType = "application/json", examples = {
+                    @ExampleObject(name = "SALES_ORDER_NOT_FOUND", value = """
+                            {
+                                "code": "ORDER002",
+                                "message": "주문을 찾을 수 없습니다."
+                            }
+                            """)
+            }))
+    })
+    @GetMapping("/{orderId}")
+    public ResponseEntity<SODetailsResponseDTO> findOrderDetails(
+            @PathVariable("orderId") final int orderId) {
+
+        final SODetailsResponseDTO response = orderService.findOrderDetailsById(orderId);
+
+        return ResponseEntity.ok(response);
+    }
+
+
 
 }

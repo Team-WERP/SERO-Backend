@@ -94,4 +94,23 @@
             LIMIT #{limit} OFFSET #{offset}
         </if>
     </select>
+
+    <select id="selectOrderDetailById" resultType="com.werp.sero.order.query.dto.SODetailsResponseDTO">
+        SELECT
+            A.id AS orderId,
+            A.ordered_at AS orderedAt,
+            A.shipped_at AS shippedAt,
+            A.note,
+            B.company_name AS clientName,
+            C.name AS clientManagerName,
+            C.contact AS clientManagerContact,
+            B.credit_limit AS creditLimit,
+            (B.credit_limit - B.receivables) AS availablePrice,
+            A.total_price AS totalPrice,
+            ((B.credit_limit - B.receivables) - A.total_price) AS remainingAmount
+        FROM sales_order A
+                 INNER JOIN client B ON A.client_id = B.id
+                 INNER JOIN client_employee C ON A.client_manager_id = C.id
+        WHERE A.id = #{orderId}
+    </select>
 </mapper>
