@@ -31,6 +31,6 @@ public class SOFilterDTO {
     @Schema(description = "고객사 이름", example = "에스엘(주)")
     private String  clientName;
 
-    @Schema(description = "브레이크")
+    @Schema(description = "검색어(대표 품목명 / SO번호)", example = "브레이크")
     private String searchKeyword;
 }
