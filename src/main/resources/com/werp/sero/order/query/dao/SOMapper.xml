@@ -67,7 +67,6 @@
             D.unit_price,
             D.total_price AS item_total_price,
 
-            /* E, F: 재고 계산 서브쿼리 */
             (SELECT IFNULL(SUM(F.available_stock), 0)
              FROM warehouse_stock F
                       INNER JOIN material E ON F.material_id = E.id
