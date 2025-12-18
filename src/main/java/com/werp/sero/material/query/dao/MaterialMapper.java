@@ -1,6 +1,6 @@
 package com.werp.sero.material.query.dao;
 
-import com.werp.sero.material.command.domain.aggregate.Material;
+import com.werp.sero.material.query.dto.MaterialListResponseDTO;
 import com.werp.sero.material.query.dto.MaterialWithBomResponseDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -17,7 +17,7 @@ public interface MaterialMapper {
     /**
      * 조건별 자재 목록 조회
      */
-    List<Material> findByCondition(
+    List<MaterialListResponseDTO> findByCondition(
             @Param("type") String type,
             @Param("status") String status,
             @Param("keyword") String keyword
@@ -31,5 +31,5 @@ public interface MaterialMapper {
     /**
      * ID로 자재 조회
      */
-    Optional<Material> findById(@Param("id") int id);
+    Optional<MaterialListResponseDTO> findById(@Param("id") int id);
 }

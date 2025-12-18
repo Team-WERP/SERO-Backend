@@ -5,28 +5,19 @@
 
 <mapper namespace="com.werp.sero.material.query.dao.MaterialMapper">
 
-    <!-- Material ResultMap -->
-    <resultMap id="materialResultMap" type="com.werp.sero.material.command.domain.aggregate.Material">
+    <!-- Material List/Basic ResultMap -->
+    <resultMap id="materialResultMap" type="com.werp.sero.material.query.dto.MaterialListResponseDTO">
         <id property="id" column="id"/>
         <result property="name" column="name"/>
         <result property="materialCode" column="material_code"/>
         <result property="spec" column="spec"/>
-        <result property="operationUnit" column="operation_unit"/>
         <result property="baseUnit" column="base_unit"/>
-        <result property="moq" column="moq"/>
-        <result property="cycleTime" column="cycle_time"/>
         <result property="unitPrice" column="unit_price"/>
-        <result property="imageUrl" column="image_url"/>
-        <result property="conversionRate" column="conversion_rate"/>
         <result property="safetyStock" column="safety_stock"/>
         <result property="rawMaterialCount" column="raw_material_count"/>
         <result property="type" column="type"/>
         <result property="status" column="status"/>
         <result property="createdAt" column="created_at"/>
-        <result property="updatedAt" column="updated_at"/>
-        <association property="employee" javaType="com.werp.sero.employee.command.domain.aggregate.Employee">
-            <id property="id" column="manager_id"/>
-        </association>
     </resultMap>
 
     <!-- Material with BOM ResultMap -->

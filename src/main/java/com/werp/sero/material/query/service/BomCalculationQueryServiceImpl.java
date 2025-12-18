@@ -2,12 +2,12 @@ package com.werp.sero.material.query.service;
 
 import com.werp.sero.material.exception.InvalidMaterialTypeException;
 import com.werp.sero.material.exception.MaterialNotFoundException;
-import com.werp.sero.material.command.domain.aggregate.Material;
 import com.werp.sero.material.query.dao.BomMapper;
 import com.werp.sero.material.query.dao.MaterialMapper;
 import com.werp.sero.material.query.dto.BomExplosionRequestDTO;
 import com.werp.sero.material.query.dto.BomExplosionResponseDTO;
 import com.werp.sero.material.query.dto.BomImplosionResponseDTO;
+import com.werp.sero.material.query.dto.MaterialListResponseDTO;
 import com.werp.sero.material.query.dto.MaterialSearchResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -35,17 +35,25 @@ public class BomCalculationQueryServiceImpl implements BomCalculationQueryServic
         }
 
         // 2. 자재 검색
-        List<Material> materials = materialMapper.findByCondition(type, null, keyword);
+        List<MaterialListResponseDTO> materials = materialMapper.findByCondition(type, null, keyword);
 
         return materials.stream()
-                .map(MaterialSearchResponseDTO::from)
+                .map(m -> MaterialSearchResponseDTO.builder()
+                        .id(m.getId())
+                        .name(m.getName())
+                        .materialCode(m.getMaterialCode())
+                        .spec(m.getSpec())
+                        .type(m.getType())
+                        .baseUnit(m.getBaseUnit())
+                        .rawMaterialCount(m.getRawMaterialCount() != null ? m.getRawMaterialCount() : 0)
+                        .build())
                 .toList();
     }
 
     @Override
     public BomExplosionResponseDTO calculateExplosion(BomExplosionRequestDTO request) {
         // 1. 완제품 정보 조회
-        Material finishedGood = materialMapper.findById(request.getMaterialId())
+        MaterialListResponseDTO finishedGood = materialMapper.findById(request.getMaterialId())
                 .orElseThrow(MaterialNotFoundException::new);
 
         // 2. BOM 조회 (완제품에 필요한 원부자재 목록)
@@ -95,7 +103,7 @@ public class BomCalculationQueryServiceImpl implements BomCalculationQueryServic
     @Override
     public BomImplosionResponseDTO calculateImplosion(int rawMaterialId) {
         // 1. 원부자재 정보 조회
-        Material rawMaterial = materialMapper.findById(rawMaterialId)
+        MaterialListResponseDTO rawMaterial = materialMapper.findById(rawMaterialId)
                 .orElseThrow(MaterialNotFoundException::new);
 
         // 2. 해당 원자재를 사용하는 완제품 BOM 조회
