@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.werp.sero.order.query.dao.SOClientMapper">
+
+    <resultMap id="SOClientHistoryResultMap" type="com.werp.sero.order.query.dto.SOClientResponseDTO">
+        <id property="soCode" column="so_code"/>
+        <result property="mainItemName" column="main_item_name"/>
+        <result property="totalQuantity" column="total_quantity"/>
+        <result property="totalPrice" column="total_price"/>
+        <result property="orderedAt" column="ordered_at"/>
+
+        <collection property="items" ofType="com.werp.sero.order.query.dto.SOClientItemResponseDTO">
+            <id property="id" column="item_id"/>
+            <result property="itemCode" column="item_code"/>
+            <result property="itemName" column="item_name"/>
+            <result property="spec" column="spec"/>
+            <result property="quantity" column="quantity"/>
+            <result property="unit" column="unit"/>
+            <result property="unitPrice" column="unit_price"/>
+            <result property="totalPrice" column="item_total_price"/>
+        </collection>
+    </resultMap>
+
+    <select id="selectOrderHistory" resultMap="SOClientHistoryResultMap">
+        SELECT
+            A.so_code,
+            A.main_item_name,
+            A.total_quantity,
+            A.total_price,
+            A.ordered_at,
+            B.id AS item_id,
+            B.item_code,
+            B.item_name,
+            B.spec,
+            B.quantity,
+            B.unit,
+            B.unit_price,
+            B.total_price AS item_total_price
+        FROM sales_order A
+                 LEFT JOIN sales_order_item B ON A.id = B.so_id
+        WHERE A.client_id = #{clientId}
+        ORDER BY A.ordered_at DESC
+    </select>
+</mapper>
