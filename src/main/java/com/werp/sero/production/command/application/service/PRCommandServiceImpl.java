@@ -6,6 +6,7 @@ import com.werp.sero.order.command.domain.aggregate.SalesOrder;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItem;
 import com.werp.sero.order.command.domain.repository.SORepository;
 import com.werp.sero.order.command.domain.repository.SOItemRepository;
+import com.werp.sero.order.exception.SalesOrderItemNotFoundException;
 import com.werp.sero.production.command.application.dto.PRDraftCreateRequestDTO;
 import com.werp.sero.production.command.application.dto.PRItemCreateRequestDTO;
 import com.werp.sero.production.command.domain.aggregate.ProductionRequest;
@@ -30,7 +31,7 @@ public class PRCommandServiceImpl implements PRCommandService {
     @Transactional
     public int createDraft(PRDraftCreateRequestDTO dto, Employee drafter) {
         SalesOrder so = soRepository.findById(dto.getSoId())
-                .orElseThrow(() -> new IllegalArgumentException("수주 정보가 없습니다."));
+                .orElseThrow(SalesOrderItemNotFoundException::new);
 
         String prCode = documentSequenceCommandService.generateDocumentCode("DOC_PR");
 
@@ -47,7 +48,7 @@ public class PRCommandServiceImpl implements PRCommandService {
         if(dto.getItems() != null) {
             for(PRItemCreateRequestDTO itemDto : dto.getItems()) {
                 SalesOrderItem soItem = soItemRepository.findById(itemDto.getSoItemId())
-                        .orElseThrow(() -> new IllegalArgumentException("수주 품목이 없습니다."));
+                        .orElseThrow(SalesOrderItemNotFoundException::new);
                 ProductionRequestItem item =
                         pr.addItem(soItem, itemDto.getQuantity());
                 prtItemRepository.save(item);
