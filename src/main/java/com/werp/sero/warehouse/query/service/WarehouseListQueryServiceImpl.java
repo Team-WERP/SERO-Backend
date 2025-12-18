@@ -17,9 +17,6 @@ public class WarehouseListQueryServiceImpl implements WarehouseListQueryService 
 
     @Override
     public List<WarehouseListResponseDTO> getAllWarehouseList() {
-        return warehouseMapper.findAll()
-                .stream()
-                .map(WarehouseListResponseDTO::from)
-                .toList();
+        return warehouseMapper.findAll();
     }
 }

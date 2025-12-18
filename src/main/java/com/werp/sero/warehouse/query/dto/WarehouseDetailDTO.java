@@ -9,10 +9,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class WarehouseListResponseDTO {
+public class WarehouseDetailDTO {
 
     private int id;
-    private String warehouseName;
-    private String warehouseType;
-
+    private String name;
+    private String address;
+    private Double latitude;
+    private Double longitude;
+    private String type;
+    private String createdAt;
+    private String updatedAt;
 }
+

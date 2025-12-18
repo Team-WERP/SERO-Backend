@@ -3,7 +3,7 @@
 
 <mapper namespace="com.werp.sero.warehouse.query.dao.WarehouseMapper">
 
-    <resultMap id="warehouseResultMap" type="com.werp.sero.warehouse.command.domain.aggregate.Warehouse">
+    <resultMap id="warehouseResultMap" type="com.werp.sero.warehouse.query.dto.WarehouseDetailDTO">
         <id property="id" column="id"/>
         <result property="name" column="name"/>
         <result property="address" column="address"/>
@@ -15,10 +15,10 @@
     </resultMap>
 
     <resultMap id="warehouseListResultMap"
-               type="com.werp.sero.warehouse.command.domain.aggregate.Warehouse">
+               type="com.werp.sero.warehouse.query.dto.WarehouseListResponseDTO">
         <id property="id" column="id"/>
-        <result property="name" column="name"/>
-        <result property="type" column="type"/>
+        <result property="warehouseName" column="name"/>
+        <result property="warehouseType" column="type"/>
     </resultMap>
 
     <!-- ID로 창고 조회 -->
