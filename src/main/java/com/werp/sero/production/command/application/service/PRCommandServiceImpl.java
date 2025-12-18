@@ -7,6 +7,7 @@ import com.werp.sero.order.command.domain.aggregate.SalesOrderItem;
 import com.werp.sero.order.command.domain.repository.SORepository;
 import com.werp.sero.order.command.domain.repository.SOItemRepository;
 import com.werp.sero.order.exception.SalesOrderItemNotFoundException;
+import com.werp.sero.order.exception.SalesOrderNotFoundException;
 import com.werp.sero.production.command.application.dto.PRDraftCreateRequestDTO;
 import com.werp.sero.production.command.application.dto.PRItemCreateRequestDTO;
 import com.werp.sero.production.command.domain.aggregate.ProductionRequest;
@@ -31,7 +32,7 @@ public class PRCommandServiceImpl implements PRCommandService {
     @Transactional
     public int createDraft(PRDraftCreateRequestDTO dto, Employee drafter) {
         SalesOrder so = soRepository.findById(dto.getSoId())
-                .orElseThrow(SalesOrderItemNotFoundException::new);
+                .orElseThrow(SalesOrderNotFoundException::new);
 
         String prCode = documentSequenceCommandService.generateDocumentCode("DOC_PR");
 
