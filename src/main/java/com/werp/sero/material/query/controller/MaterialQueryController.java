@@ -22,16 +22,6 @@ public class MaterialQueryController {
 
     private final MaterialQueryService materialQueryService;
 
-    /**
-     * 자재 목록 조회 (필터링 및 검색 지원)
-     *
-     * GET /materials?type=MAT_FG&status=MAT_NORMAL&keyword=브레이크
-     *
-     * @param type 자재 유형 (선택) - MAT_FG(완제품), MAT_RM(원부자재), null(전체)
-     * @param status 자재 상태 (선택) - MAT_NORMAL(정상), MAT_STOP(중단), null(전체)
-     * @param keyword 검색어 (선택) - 자재명 또는 자재코드로 검색
-     * @return 조건에 맞는 자재 목록 (자재 정보, 단가, 상태 정보 포함)
-     */
     @Operation(
             summary = "자재 목록 조회",
             description = "조건에 따라 자재 목록을 조회합니다."
@@ -51,14 +41,6 @@ public class MaterialQueryController {
         return materialQueryService.getMaterialList(type, status, keyword);
     }
 
-    /**
-     * 자재 상세 조회
-     *
-     * GET /materials/{id}
-     *
-     * @param id 자재 ID (예: 7)
-     * @return 자재 상세 정보 (기본 정보, 단가, 상태, BOM 관계, 재고 정보 등)
-     */
     @Operation(summary = "자재 상세 조회", description = "자재 ID 기준으로 상세 정보를 조회합니다.")
     @ApiErrorResponses.MaterialNotFound
     @GetMapping("/{id}")
