@@ -30,7 +30,6 @@ public class PRCommandController {
                     수주(SO)를 기준으로 생산요청을 임시저장(PR_TMP) 상태로 생성합니다.
                             
                     - 최초 생성 시 상태는 PR_TMP(임시저장)
-                    - requested_at 은 NULL
                     - 품목 정보는 선택 사항
                     """
     )

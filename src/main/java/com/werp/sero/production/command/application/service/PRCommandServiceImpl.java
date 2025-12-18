@@ -24,7 +24,6 @@ public class PRCommandServiceImpl implements PRCommandService {
     private final PRItemRepository prtItemRepository;
     private final SORepository soRepository;
     private final SOItemRepository soItemRepository;
-    private final EmployeeRepository employeeRepository;
     private final DocumentSequenceCommandService documentSequenceCommandService;
 
     @Override
@@ -52,8 +51,7 @@ public class PRCommandServiceImpl implements PRCommandService {
                 ProductionRequestItem item = ProductionRequestItem.createDraft(
                         pr,
                         soItem,
-                        itemDto.getQuantity(),
-                        drafter // 추후 삭제? 고민해보기
+                        itemDto.getQuantity()
                 );
                 prtItemRepository.save(item);
             }
