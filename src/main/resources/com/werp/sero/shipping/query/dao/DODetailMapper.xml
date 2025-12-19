@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.werp.sero.shipping.query.dao.DODetailMapper">
+
+    <!-- 납품서 상세 조회용 ResultMap -->
+    <resultMap id="DODetailResultMap" type="com.werp.sero.shipping.query.dto.DODetailResponseDTO">
+        <result property="doCode" column="do_code"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="recipient" column="recipient"/>
+        <result property="companyName" column="company_name"/>
+        <result property="ceoName" column="ceo_name"/>
+        <result property="businessNo" column="business_no"/>
+        <result property="companyContact" column="company_contact"/>
+        <result property="address" column="address"/>
+        <result property="businessType" column="business_type"/>
+        <result property="businessItem" column="business_item"/>
+        <result property="totalAmount" column="total_amount"/>
+        <result property="deliveryDeadline" column="delivery_deadline"/>
+        <result property="deliveryLocation" column="delivery_location"/>
+        <result property="note" column="note"/>
+
+        <!-- 납품서 품목 목록 (Collection) -->
+        <collection property="items" ofType="com.werp.sero.shipping.query.dto.DODetailResponseDTO$DODetailItemDTO">
+            <result property="itemName" column="item_name"/>
+            <result property="spec" column="spec"/>
+            <result property="quantity" column="quantity"/>
+            <result property="unitPrice" column="unit_price"/>
+            <result property="amount" column="amount"/>
+        </collection>
+    </resultMap>
+
+    <!-- 납품서 상세 조회 -->
+    <select id="findByDoCode" resultMap="DODetailResultMap">
+        SELECT
+            /* 납품서 기본 정보 */
+            A.do_code,
+            DATE_FORMAT(STR_TO_DATE(A.created_at, '%Y-%m-%d %H:%i:%s'), '%Y-%m-%d') AS created_at,
+            A.note,
+
+            /* 고객사 정보 */
+            CONCAT(C.company_name, ' ', CE.position, ' ', CE.name) AS recipient,
+            C.company_name,
+            C.ceo_name,
+            C.business_no,
+            C.company_contact,
+            B.address,
+            C.business_type,
+            C.business_item,
+
+            /* 주문 정보 */
+            DATE_FORMAT(STR_TO_DATE(B.shipped_at, '%Y-%m-%d %H:%i:%s'), '%Y-%m-%d') AS delivery_deadline,
+            B.address AS delivery_location,
+
+            /* 품목 정보 (sales_order_item에서 직접 가져오기) */
+            SOI.item_name,
+            SOI.spec,
+            DOI.do_quantity AS quantity,
+            SOI.unit_price,
+            (DOI.do_quantity * SOI.unit_price) AS amount,
+
+            /* 합계 금액 (서브쿼리) */
+            (SELECT SUM(DOI2.do_quantity * SOI2.unit_price)
+             FROM delivery_order_item DOI2
+             INNER JOIN sales_order_item SOI2 ON DOI2.so_item_id = SOI2.id
+             WHERE DOI2.do_id = A.id) AS total_amount
+
+        FROM delivery_order A
+        INNER JOIN sales_order B ON A.so_id = B.id
+        INNER JOIN client C ON B.client_id = C.id
+        LEFT JOIN client_employee CE ON B.client_manager_id = CE.id
+        INNER JOIN delivery_order_item DOI ON A.id = DOI.do_id
+        INNER JOIN sales_order_item SOI ON DOI.so_item_id = SOI.id
+
+        WHERE A.do_code = #{doCode}
+        ORDER BY DOI.id
+    </select>
+
+</mapper>
