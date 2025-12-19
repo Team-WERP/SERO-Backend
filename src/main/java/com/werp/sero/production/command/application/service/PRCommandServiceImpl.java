@@ -117,7 +117,6 @@ public class PRCommandServiceImpl implements PRCommandService {
             }
         }
         pr.changeTotalQuantity(total);
-        prRepository.save(pr);
     }
 
     @Override
