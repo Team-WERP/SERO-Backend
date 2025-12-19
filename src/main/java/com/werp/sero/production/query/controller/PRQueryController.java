@@ -1,6 +1,7 @@
 package com.werp.sero.production.query.controller;
 
 import com.werp.sero.employee.command.domain.aggregate.Employee;
+import com.werp.sero.production.query.dto.PRDraftDetailResponseDTO;
 import com.werp.sero.production.query.dto.PRDraftListResponseDTO;
 import com.werp.sero.production.query.service.PRQueryService;
 import com.werp.sero.security.annotation.CurrentUser;
@@ -8,10 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -23,6 +21,7 @@ import java.util.List;
 @RequestMapping("/production-requests")
 @RequiredArgsConstructor
 public class PRQueryController {
+
     private final PRQueryService prQueryService;
 
     @Operation(
@@ -38,4 +37,19 @@ public class PRQueryController {
                 prQueryService.getDraftsByDrafter(employee.getId(), soId);
         return ResponseEntity.ok(result);
     }
+
+    @Operation(
+            summary = "임시 저장된 생산요청 상세 조회",
+            description = "현재 로그인한 사용자가 작성한 임시 저장(PR_TMP) 상태의 생산요청 상세 정보를 조회합니다."
+    )
+    @GetMapping("/drafts/{prId}")
+    public ResponseEntity<PRDraftDetailResponseDTO> getDraftDetail(
+            @PathVariable int prId,
+            @CurrentUser Employee employee
+    ) {
+        return ResponseEntity.ok(
+                prQueryService.getDraftDetail(prId, employee.getId())
+        );
+    }
+
 }
