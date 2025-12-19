@@ -6,6 +6,7 @@ import com.werp.sero.security.jwt.JwtAuthenticationFilter;
 import com.werp.sero.security.jwt.JwtExceptionFilter;
 import com.werp.sero.security.jwt.JwtTokenProvider;
 import com.werp.sero.security.service.EmployeeUserDetailsService;
+import com.werp.sero.util.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,6 +44,7 @@ public class EmployeeSecurityConfig {
             "AC_WHS"
     };
 
+    private final RedisUtil redisUtil;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtExceptionFilter jwtExceptionFilter;
@@ -74,7 +76,7 @@ public class EmployeeSecurityConfig {
                         .anyRequest().hasAnyAuthority(AUTHORITY_LIST)
                 )
                 .authenticationManager(employeeAuthenticationManager())
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisUtil), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtExceptionFilter, JwtAuthenticationFilter.class)
                 .exceptionHandling(exception -> exception
                         .accessDeniedHandler(customAccessDeniedHandler)
