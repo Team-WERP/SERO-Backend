@@ -38,7 +38,7 @@ public class DeadLineQueryServiceImpl implements DeadLineQueryService {
             // 1. LineMaterial 조회
             DeadLineMapper.LineMaterialInfo lineMaterial = deadLineMapper
                     .findLineMaterialByMaterialCode(item.getMaterialCode())
-                    .orElseThrow(() -> new RuntimeException("해당 자재를 생산할 수 있는 라인이 없습니다."));
+                    .get();
 
             // 2. 최신 생산계획 종료일 조회
             String latestEndDateStr = deadLineMapper

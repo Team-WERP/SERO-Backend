@@ -21,7 +21,7 @@
              , B.line_name           AS production_line_name
              , B.status              AS production_line_status
           FROM line_material A
-         INNER JOIN production_line B ON A.production_line_id = B.id
+         INNER JOIN production_line B ON A.line_id = B.id
          INNER JOIN material C ON A.material_id = C.id
          WHERE C.material_code = #{materialCode}
          LIMIT 1
