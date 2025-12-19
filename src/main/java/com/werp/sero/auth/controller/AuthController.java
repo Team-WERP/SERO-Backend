@@ -3,30 +3,25 @@ package com.werp.sero.auth.controller;
 import com.werp.sero.auth.dto.LoginRequestDTO;
 import com.werp.sero.auth.dto.LoginResponseDTO;
 import com.werp.sero.auth.service.AuthService;
-import com.werp.sero.employee.command.domain.aggregate.ClientEmployee;
-import com.werp.sero.employee.command.domain.aggregate.Department;
-import com.werp.sero.employee.command.domain.aggregate.Employee;
-import com.werp.sero.security.annotation.CurrentUser;
 import com.werp.sero.security.enums.Type;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "Auth - 인증")
+@Tag(name = "인증", description = "인증 관련 API")
 @RequiredArgsConstructor
 @RestController
 public class AuthController {
     private final AuthService authService;
 
-    @Operation(summary = "본사 직원용 로그인")
+    @Operation(summary = "본사 직원용 로그인", description = "- email : admin@werp.com\n- password : kang")
     @PostMapping("/auth/login")
     public ResponseEntity<LoginResponseDTO> loginEmployee(@Valid @RequestBody final LoginRequestDTO requestDTO,
                                                           final HttpServletResponse response) {
@@ -35,7 +30,7 @@ public class AuthController {
         return ResponseEntity.ok(responseDTO);
     }
 
-    @Operation(summary = "고객사 직원용 로그인")
+    @Operation(summary = "고객사 직원용 로그인", description = "- email : sl_buyer@sl.com\n- password : kang")
     @PostMapping("/clients/auth/login")
     public ResponseEntity<LoginResponseDTO> loginClientEmployee(@Valid @RequestBody final LoginRequestDTO requestDTO,
                                                                 final HttpServletResponse response) {
@@ -44,21 +39,19 @@ public class AuthController {
         return ResponseEntity.ok(responseDTO);
     }
 
-    @Operation(summary = "로그인한 본사 직원용 정보 확인 임시 API")
-    @GetMapping("/me")
-    public ResponseEntity<String> employeeTest(@CurrentUser final Employee employee) {
-        final Department department = employee.getDepartment();
+    @Operation(summary = "본사 직원용 로그아웃")
+    @PostMapping("/auth/logout")
+    public ResponseEntity<Void> logoutEmployee(final HttpServletRequest request, final HttpServletResponse response) {
+        authService.logout(request, response);
 
-        if (department == null) {
-            return ResponseEntity.ok("본사직원: " + employee.getEmail());
-        } else {
-            return ResponseEntity.ok("본사직원: " + employee.getDepartment().getDeptName() + " " + employee.getEmail());
-        }
+        return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "로그인한 고객사 직원용 정보 확인 임시 API")
-    @GetMapping("/clients/me")
-    public ResponseEntity<String> testEmployee(@CurrentUser final ClientEmployee clientEmployee) {
-        return ResponseEntity.ok("고객사 직원: " + clientEmployee.getClient().getCompanyName() + " " + clientEmployee.getEmail());
+    @Operation(summary = "고객사 직원용 로그아웃")
+    @PostMapping("/clients/auth/logout")
+    public ResponseEntity<Void> logoutClientEmployee(final HttpServletRequest request, final HttpServletResponse response) {
+        authService.logout(request, response);
+
+        return ResponseEntity.noContent().build();
     }
 }

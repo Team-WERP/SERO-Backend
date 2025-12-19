@@ -13,12 +13,24 @@ public class CookieUtil {
     private final String COOKIE_NAME = "refreshToken";
 
     public void generateRefreshTokenCookie(final HttpServletResponse response, final JwtToken token) {
-        ResponseCookie responseCookie = ResponseCookie.from(COOKIE_NAME, token.getToken())
+        final ResponseCookie responseCookie = ResponseCookie.from(COOKIE_NAME, token.getToken())
                 .httpOnly(true)
                 .sameSite("None")
                 .path("/")
                 .secure(true)
                 .maxAge(token.getExpirationTime() / 1000)
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
+    }
+
+    public void deleteRefreshTokenCookie(final HttpServletResponse response) {
+        final ResponseCookie responseCookie = ResponseCookie.from(COOKIE_NAME, null)
+                .httpOnly(true)
+                .sameSite("None")
+                .path("/")
+                .secure(true)
+                .maxAge(0)
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
