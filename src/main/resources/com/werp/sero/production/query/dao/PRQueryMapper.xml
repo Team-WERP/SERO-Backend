@@ -42,6 +42,10 @@
             AND A.so_id = #{soId}
         </if>
 
+        <if test="soCode != null and soCode != ''">
+            AND B.so_code LIKE CONCAT('%', #{soCode}, '%')
+        </if>
+
         ORDER BY A.created_at DESC
 
     </select>

@@ -6,7 +6,7 @@ import com.werp.sero.production.query.dto.PRDraftListResponseDTO;
 import java.util.List;
 
 public interface PRQueryService {
-    List<PRDraftListResponseDTO> getDraftsByDrafter(int drafterId, Integer soId);
+    List<PRDraftListResponseDTO> getDraftsByDrafter(int drafterId, Integer soId, String soCode);
 
     PRDraftDetailResponseDTO getDraftDetail(int prId, int drafterId);
 }

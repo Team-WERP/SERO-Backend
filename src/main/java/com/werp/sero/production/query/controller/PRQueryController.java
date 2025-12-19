@@ -31,10 +31,11 @@ public class PRQueryController {
     @GetMapping("/drafts")
     public ResponseEntity<List<PRDraftListResponseDTO>> getDrafts(
             @CurrentUser Employee employee,
-            @RequestParam(required = false) Integer soId
+            @RequestParam(required = false) Integer soId,
+            @RequestParam(required = false) String soCode
     ) {
         List<PRDraftListResponseDTO> result =
-                prQueryService.getDraftsByDrafter(employee.getId(), soId);
+                prQueryService.getDraftsByDrafter(employee.getId(), soId, soCode);
         return ResponseEntity.ok(result);
     }
 
