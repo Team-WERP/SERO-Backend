@@ -76,6 +76,8 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void logout(final HttpServletRequest request, final HttpServletResponse response) {
         try {
+            cookieUtil.deleteRefreshTokenCookie(response);
+
             final String accessToken = HeaderUtil.extractAccessTokenFromHeader(request);
 
             jwtTokenProvider.validateToken(accessToken);
@@ -86,8 +88,6 @@ public class AuthServiceImpl implements AuthService {
 
             if (refreshToken != null) {
                 redisUtil.deleteData(REFRESH_TOKEN_PREFIX + email);
-
-                cookieUtil.deleteRefreshTokenCookie(response);
             }
 
             final long expirationTime = jwtTokenProvider.getExpirationTime(accessToken) - System.currentTimeMillis();
