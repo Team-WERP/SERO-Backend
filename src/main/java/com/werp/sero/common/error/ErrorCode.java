@@ -54,7 +54,10 @@ public enum ErrorCode {
     DEPARTMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "EMPLOYEE002", "부서 정보를 찾을 수 없습니다."),
 
     /* SALES ORDER ITEM */
-    SALES_ORDER_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER004", "주문 품목 정보를 찾을 수 없습니다.");
+    SALES_ORDER_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER004", "주문 품목 정보를 찾을 수 없습니다."),
+
+    /* PRODUCTION */
+    PR_DRAFT_NOT_FOUND(HttpStatus.NOT_FOUND,"PRODUCTION001", "임시 저장된 생산요청을 찾을 수 없습니다.");
 
     private final HttpStatus status;
     private final String code;
