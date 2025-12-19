@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.werp.sero.shipping.query.dao.GIListMapper">
+
+    <!-- 출고지시 목록 조회용 ResultMap (DTO 사용) -->
+    <resultMap id="GIListResultMap" type="com.werp.sero.shipping.query.dto.GIListResponseDTO">
+        <id property="id" column="gi_id"/>
+        <result property="giCode" column="gi_code"/>
+        <result property="soCode" column="so_code"/>
+        <result property="doCode" column="do_code"/>
+        <result property="itemName" column="item_name"/>
+        <result property="itemCount" column="item_count"/>
+        <result property="warehouseName" column="warehouse_name"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="shippedAt" column="shipped_at"/>
+        <result property="requesterName" column="requester_name"/>
+        <result property="managerName" column="manager_name"/>
+        <result property="status" column="status"/>
+    </resultMap>
+
+
+    <!-- 출고지시 목록 조회 -->
+    <select id="selectAllGoodsIssues" resultMap="GIListResultMap">
+        SELECT
+            A.id AS gi_id,
+            A.gi_code,
+            B.so_code,
+            A.do_code,
+            (SELECT G.item_name
+             FROM goods_issue_item F
+             INNER JOIN sales_order_item G ON F.so_item_id = G.id
+             WHERE F.gi_id = A.id
+             ORDER BY F.id
+             LIMIT 1) AS item_name,
+            (SELECT COUNT(*)
+             FROM goods_issue_item F
+             WHERE F.gi_id = A.id) AS item_count,
+            C.name AS warehouse_name,
+            A.created_at,
+            B.shipped_at,
+            D.name AS requester_name,
+            E.name AS manager_name,
+            A.status
+        FROM goods_issue A
+        INNER JOIN sales_order B ON A.so_id = B.id
+        INNER JOIN warehouse C ON A.warehouse_id = C.id
+        LEFT JOIN employee D ON A.drafter_id = D.id
+        LEFT JOIN employee E ON A.gi_manager_id = E.id
+        <where>
+            <if test="warehouseId != null and warehouseId > 0">
+                AND A.warehouse_id = #{warehouseId}
+            </if>
+            <if test="status != null and status != ''">
+                AND A.status = #{status}
+            </if>
+            <if test="startDate != null and endDate != null">
+                AND B.shipped_at BETWEEN #{startDate} AND #{endDate}
+            </if>
+            <if test="searchKeyword != null and searchKeyword != ''">
+                AND A.gi_code LIKE CONCAT('%', #{searchKeyword}, '%')
+            </if>
+        </where>
+        ORDER BY A.created_at DESC
+        <if test="limit != null and offset != null">
+            LIMIT #{limit} OFFSET #{offset}
+        </if>
+    </select>
+
+</mapper>
