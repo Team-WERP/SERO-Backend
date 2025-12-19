@@ -62,4 +62,22 @@ public class PRCommandController {
         return ResponseEntity.ok().build();
     }
 
+    @Operation(
+            summary = "임시 저장된 생산요청 요청",
+            description = """
+                임시 저장(PR_TMP) 상태의 생산요청을 실제 생산요청으로 확정합니다.
+
+                - 작성자 본인만 요청 가능
+                - 임시 저장 상태(PR_TMP)에서만 요청 가능
+                - 생산요청 수량(totalQuantity)이 0 초과여야 합니다.
+                """
+    )
+    @PostMapping("/{prId}/request")
+    public ResponseEntity<Void> requestProduction(
+            @PathVariable int prId,
+            @CurrentUser Employee employee
+    ) {
+        PRCommandService.request(prId, employee);
+        return ResponseEntity.ok().build();
+    }
 }

@@ -93,4 +93,9 @@ public class ProductionRequest {
         this.totalQuantity = totalQuantity;
     }
 
+    public void request(String prCode) {
+        this.prCode = prCode;
+        this.status = "PR_RVW";
+        this.requestedAt = DateTimeUtils.nowDateTime();
+    }
 }

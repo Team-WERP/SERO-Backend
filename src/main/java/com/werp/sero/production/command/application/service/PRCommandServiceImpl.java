@@ -17,10 +17,7 @@ import com.werp.sero.production.command.domain.aggregate.ProductionRequest;
 import com.werp.sero.production.command.domain.aggregate.ProductionRequestItem;
 import com.werp.sero.production.command.domain.repository.PRItemRepository;
 import com.werp.sero.production.command.domain.repository.PRRepository;
-import com.werp.sero.production.exception.ProductionDraftNotFoundException;
-import com.werp.sero.production.exception.ProductionItemNotInSalesOrderException;
-import com.werp.sero.production.exception.ProductionItemQuantityInvalidException;
-import com.werp.sero.production.exception.ProductionNotDraftException;
+import com.werp.sero.production.exception.*;
 import com.werp.sero.system.command.application.service.DocumentSequenceCommandService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -120,6 +117,28 @@ public class PRCommandServiceImpl implements PRCommandService {
             }
         }
         pr.changeTotalQuantity(total);
+        prRepository.save(pr);
+    }
+
+    @Override
+    @Transactional
+    public void request(int prId, Employee employee) {
+        ProductionRequest pr = prRepository.findById(prId)
+                .orElseThrow(ProductionDraftNotFoundException::new);
+
+        // 검증 (상태, 작성자, 수량)
+        if (!"PR_TMP".equals(pr.getStatus())) {
+            throw new ProductionNotDraftException();
+        }
+        if (pr.getDrafter().getId() != employee.getId()) {
+            throw new ProductionDraftNotFoundException();
+        }
+        if (pr.getTotalQuantity() <= 0) {
+            throw new ProductionRequestEmptyException();
+        }
+
+        String prCode = documentSequenceCommandService.generateDocumentCode("DOC_PR");
+        pr.request(prCode);
         prRepository.save(pr);
     }
 }

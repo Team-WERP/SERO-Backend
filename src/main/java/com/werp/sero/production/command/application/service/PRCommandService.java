@@ -8,4 +8,6 @@ public interface PRCommandService {
     int createDraft(PRDraftCreateRequestDTO dto, Employee drafter);
 
     void updateDraft(int prId, PRDraftUpdateRequestDTO dto, Employee employee);
+
+    void request(int prId, Employee employee);
 }
