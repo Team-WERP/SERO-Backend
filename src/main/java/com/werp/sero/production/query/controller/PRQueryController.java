@@ -5,6 +5,7 @@ import com.werp.sero.production.query.dto.*;
 import com.werp.sero.production.query.service.PRQueryService;
 import com.werp.sero.security.annotation.CurrentUser;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -58,11 +59,40 @@ public class PRQueryController {
     )
     @GetMapping
     public ResponseEntity<List<PRListResponseDTO>> getList(
-            @RequestParam(required = false) String requestedDate,
-            @RequestParam(required = false) String dueDate,
-            @RequestParam(required = false) Integer managerId,
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) String keyword
+            @Parameter(
+                    description = "생산요청일 (YYYY-MM-DD)",
+                    example = "2025-12-19"
+            )
+            @RequestParam(required = false)
+            String requestedDate,
+
+            @Parameter(
+                    description = "생산마감일 (YYYY-MM-DD)",
+                    example = "2026-01-08"
+            )
+            @RequestParam(required = false)
+            String dueDate,
+
+            @Parameter(
+                    description = "담당자 ID",
+                    example = "1"
+            )
+            @RequestParam(required = false)
+            Integer managerId,
+
+            @Parameter(
+                    description = "생산요청 상태 코드",
+                    example = "PR_RVW"
+            )
+            @RequestParam(required = false)
+            String status,
+
+            @Parameter(
+                    description = "검색 키워드 (PR코드 / SO코드 / 품목명)",
+                    example = "스티어링"
+            )
+            @RequestParam(required = false)
+            String keyword
     ) {
         PRListSearchCondition condition = PRListSearchCondition.builder()
                 .requestedDate(requestedDate)
