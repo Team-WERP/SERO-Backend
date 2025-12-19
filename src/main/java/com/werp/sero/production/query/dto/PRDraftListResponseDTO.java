@@ -10,4 +10,6 @@ public class PRDraftListResponseDTO {
     private int totalQuantity;
     private String dueAt;
     private String createdAt;
+    private String representativeItemName;
+    private int itemTypeCount;
 }

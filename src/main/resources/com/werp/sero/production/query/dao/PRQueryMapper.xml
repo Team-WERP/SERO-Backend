@@ -6,7 +6,6 @@
 <mapper namespace="com.werp.sero.production.query.dao.PRQueryMapper">
 
     <select id="findDraftsByDrafter"
-            parameterType="int"
             resultType="com.werp.sero.production.query.dto.PRDraftListResponseDTO">
 
         SELECT
@@ -15,7 +14,25 @@
             B.client_name    AS clientName,
             A.total_quantity AS totalQuantity,
             A.due_at         AS dueAt,
-            A.created_at     AS createdAt
+            A.created_at     AS createdAt,
+
+            /* 대표 품목명 */
+            (
+            SELECT C.item_name
+            FROM production_request_item D
+            JOIN sales_order_item C ON D.so_item_id = C.id
+            WHERE D.pr_id = A.id
+            ORDER BY D.id ASC
+            LIMIT 1
+            ) AS representativeItemName,
+
+            /* 품목 종류 수 */
+            (
+            SELECT COUNT(*)
+            FROM production_request_item D
+            WHERE D.pr_id = A.id
+            ) AS itemTypeCount
+
         FROM production_request A
                  JOIN sales_order B ON A.so_id = B.id
         WHERE A.status = 'PR_TMP'
