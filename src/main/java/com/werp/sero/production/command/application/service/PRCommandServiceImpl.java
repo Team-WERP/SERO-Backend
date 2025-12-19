@@ -91,8 +91,8 @@ public class PRCommandServiceImpl implements PRCommandService {
         }
 
         // 품목 수량 수정
-        int total = 0;
         if (dto.getItems() != null) {
+            int total = 0;
             for (PRItemDraftUpdateDTO itemDto : dto.getItems()) {
 
                 if (itemDto.getQuantity() < 0) {
@@ -115,8 +115,8 @@ public class PRCommandServiceImpl implements PRCommandService {
                 
                 total += itemDto.getQuantity();
             }
+            pr.changeTotalQuantity(total);
         }
-        pr.changeTotalQuantity(total);
     }
 
     @Override
