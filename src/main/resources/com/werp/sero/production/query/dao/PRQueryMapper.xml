@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.werp.sero.production.query.dao.PRQueryMapper">
+
+    <select id="findDraftsByDrafter"
+            parameterType="int"
+            resultType="com.werp.sero.production.query.dto.PRDraftListResponseDTO">
+
+        SELECT
+            A.id             AS prId,
+            B.so_code        AS soCode,
+            B.client_name    AS clientName,
+            A.total_quantity AS totalQuantity,
+            A.due_at         AS dueAt,
+            A.created_at     AS createdAt
+        FROM production_request A
+                 JOIN sales_order B ON A.so_id = B.id
+        WHERE A.status = 'PR_TMP'
+          AND A.drafter_id = #{drafterId}
+        ORDER BY A.created_at DESC
+
+    </select>
+
+</mapper>
