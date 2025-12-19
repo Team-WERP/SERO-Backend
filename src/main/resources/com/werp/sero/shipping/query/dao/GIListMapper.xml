@@ -38,7 +38,7 @@
         FROM goods_issue A
         INNER JOIN sales_order B ON A.so_id = B.id
         INNER JOIN warehouse C ON A.warehouse_id = C.id
-        LEFT JOIN employee D ON B.manager_id = D.id
+        LEFT JOIN employee D ON A.drafter_id = D.id
         LEFT JOIN employee E ON A.gi_manager_id = E.id
         <where>
             <if test="warehouseId != null and warehouseId > 0">

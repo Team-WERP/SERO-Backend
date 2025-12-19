@@ -41,8 +41,12 @@ public class GoodsIssue {
     private SalesOrder salesOrder;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "drafter_id", nullable = false)
+    private Employee drafter;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "gi_manager_id", nullable = false)
-    private Employee employee;
+    private Employee manager;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "warehouse_id", nullable = false)
