@@ -84,12 +84,23 @@ public class DeliveryOrderCommandServiceImpl implements DeliveryOrderCommandServ
     }
 
     /**
-     * 납품서 코드 생성 (DO-YYYYMMDD-XXX)
+     * 납품서 코드 생성 (DO-YYYYMMDD-XX)
+     * 예: DO-20251219-01, DO-20251219-02, ..., DO-20251219-99, DO-20251219-100
      */
     private String generateDeliveryOrderCode() {
         String today = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        // TODO: 시퀀스 번호 관리 (현재는 간단히 timestamp 사용)
-        String sequence = String.format("%03d", System.currentTimeMillis() % 1000);
+
+        // 오늘 날짜로 생성된 납품서 개수 조회
+        long count = deliveryOrderRepository.countByToday(today);
+
+        // 다음 순번 (1부터 시작)
+        int nextSequence = (int) (count + 1);
+
+        // 01~99는 2자리, 100 이상은 그대로 표시
+        String sequence = nextSequence < 100
+            ? String.format("%02d", nextSequence)
+            : String.valueOf(nextSequence);
+
         return String.format("DO-%s-%s", today, sequence);
     }
 }
