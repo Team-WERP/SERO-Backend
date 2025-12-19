@@ -196,9 +196,9 @@
 
         WHERE A.status NOT IN ('PR_TMP')
 
-        <trim prefix="" prefixOverrides="AND |OR ">
+        <trim prefix="AND" prefixOverrides="AND |OR ">
             <if test="status != null and status != ''">
-                AND A.status = #{status}
+                A.status = #{status}
             </if>
 
             <if test="managerId != null">
@@ -208,6 +208,7 @@
             <if test="requestedFrom != null and requestedFrom != ''">
                 AND A.requested_at &gt;= #{requestedFrom}
             </if>
+
             <if test="requestedTo != null and requestedTo != ''">
                 AND A.requested_at &lt;= #{requestedTo}
             </if>
@@ -215,6 +216,7 @@
             <if test="dueFrom != null and dueFrom != ''">
                 AND A.due_at &gt;= #{dueFrom}
             </if>
+
             <if test="dueTo != null and dueTo != ''">
                 AND A.due_at &lt;= #{dueTo}
             </if>
