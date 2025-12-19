@@ -5,8 +5,11 @@ import com.werp.sero.common.error.exception.BusinessException;
 import com.werp.sero.production.query.dao.PRQueryMapper;
 import com.werp.sero.production.query.dto.PRDraftDetailResponseDTO;
 import com.werp.sero.production.query.dto.PRDraftListResponseDTO;
+import com.werp.sero.production.query.dto.PRListResponseDTO;
+import com.werp.sero.production.query.dto.PRListSearchCondition;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,5 +29,11 @@ public class PRQueryServiceImpl implements PRQueryService{
         return Optional.ofNullable(
                 prQueryMapper.findDraftDetail(prId, drafterId)
         ).orElseThrow(() -> new BusinessException(ErrorCode.PR_DRAFT_NOT_FOUND));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PRListResponseDTO> getPRList(PRListSearchCondition condition) {
+        return prQueryMapper.selectPRList(condition);
     }
 }

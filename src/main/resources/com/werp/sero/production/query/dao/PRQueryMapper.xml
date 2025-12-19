@@ -144,4 +144,78 @@
         ORDER BY C.id ASC
     </select>
 
+    <select id="selectPRList"
+            parameterType="com.werp.sero.production.query.dto.PRListSearchCondition"
+            resultType="com.werp.sero.production.query.dto.PRListResponseDTO">
+
+        SELECT
+        A.id              AS prId,
+        A.pr_code         AS prCode,
+        B.so_code         AS soCode,
+
+        /* 대표 품목명 */
+        (
+        SELECT C.item_name
+        FROM production_request_item D
+        JOIN sales_order_item C ON D.so_item_id = C.id
+        WHERE D.pr_id = A.id
+        ORDER BY D.id ASC
+        LIMIT 1
+        ) AS mainItemName,
+
+        /* 품목 종류 수 */
+        (
+        SELECT COUNT(*)
+        FROM production_request_item D
+        WHERE D.pr_id = A.id
+        ) AS itemTypeCount,
+
+        A.total_quantity  AS totalQuantity,
+        A.requested_at    AS requestedAt,
+        A.due_at          AS dueAt,
+        C.name            AS drafterName,
+        D.name            AS managerName,
+        A.status          AS status
+
+        FROM production_request A
+        JOIN sales_order B ON A.so_id = B.id
+        JOIN employee C ON A.drafter_id = C.id
+        LEFT JOIN employee D ON A.manager_id = D.id
+
+        WHERE A.status NOT IN ('PR_TMP')
+
+        <trim prefix="" prefixOverrides="AND |OR ">
+            <if test="status != null and status != ''">
+                AND A.status = #{status}
+            </if>
+
+            <if test="managerId != null">
+                AND A.manager_id = #{managerId}
+            </if>
+
+            <if test="requestedFrom != null and requestedFrom != ''">
+                AND A.requested_at &gt;= #{requestedFrom}
+            </if>
+            <if test="requestedTo != null and requestedTo != ''">
+                AND A.requested_at &lt;= #{requestedTo}
+            </if>
+
+            <if test="dueFrom != null and dueFrom != ''">
+                AND A.due_at &gt;= #{dueFrom}
+            </if>
+            <if test="dueTo != null and dueTo != ''">
+                AND A.due_at &lt;= #{dueTo}
+            </if>
+
+            <if test="keyword != null and keyword != ''">
+                AND (
+                A.pr_code LIKE CONCAT('%', #{keyword}, '%')
+                OR B.so_code LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+        </trim>
+
+        ORDER BY A.created_at DESC
+    </select>
+
 </mapper>
