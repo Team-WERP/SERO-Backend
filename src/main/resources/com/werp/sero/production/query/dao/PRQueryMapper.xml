@@ -205,20 +205,12 @@
                 AND A.manager_id = #{managerId}
             </if>
 
-            <if test="requestedFrom != null and requestedFrom != ''">
-                AND A.requested_at &gt;= #{requestedFrom}
+            <if test="requestedDate != null and requestedDate != ''">
+                AND DATE(A.requested_at) = #{requestedDate}
             </if>
 
-            <if test="requestedTo != null and requestedTo != ''">
-                AND A.requested_at &lt;= #{requestedTo}
-            </if>
-
-            <if test="dueFrom != null and dueFrom != ''">
-                AND A.due_at &gt;= #{dueFrom}
-            </if>
-
-            <if test="dueTo != null and dueTo != ''">
-                AND A.due_at &lt;= #{dueTo}
+            <if test="dueDate != null and dueDate != ''">
+                AND DATE(A.due_at) = #{dueDate}
             </if>
 
             <if test="keyword != null and keyword != ''">

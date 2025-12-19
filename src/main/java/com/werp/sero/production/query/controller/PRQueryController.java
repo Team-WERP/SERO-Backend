@@ -58,19 +58,15 @@ public class PRQueryController {
     )
     @GetMapping
     public ResponseEntity<List<PRListResponseDTO>> getList(
-            @RequestParam(required = false) String requestedFrom,
-            @RequestParam(required = false) String requestedTo,
-            @RequestParam(required = false) String dueFrom,
-            @RequestParam(required = false) String dueTo,
+            @RequestParam(required = false) String requestedDate,
+            @RequestParam(required = false) String dueDate,
             @RequestParam(required = false) Integer managerId,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String keyword
     ) {
         PRListSearchCondition condition = PRListSearchCondition.builder()
-                .requestedFrom(requestedFrom)
-                .requestedTo(requestedTo)
-                .dueFrom(dueFrom)
-                .dueTo(dueTo)
+                .requestedDate(requestedDate)
+                .dueDate(dueDate)
                 .managerId(managerId)
                 .status(status)
                 .keyword(keyword)

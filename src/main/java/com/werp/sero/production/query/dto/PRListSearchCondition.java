@@ -9,17 +9,11 @@ import lombok.Getter;
 @Schema(name = "PRListSearchCondition")
 public class PRListSearchCondition {
 
-    @Schema(description = "생산요청일 시작", example = "2025-01-01")
-    private String requestedFrom;
+    @Schema(description = "생산요청일", example = "2025-01-01")
+    private String requestedDate;
 
-    @Schema(description = "생산요청일 종료", example = "2025-01-31")
-    private String requestedTo;
-
-    @Schema(description = "생산마감일 시작", example = "2025-01-10")
-    private String dueFrom;
-
-    @Schema(description = "생산마감일 종료", example = "2025-01-20")
-    private String dueTo;
+    @Schema(description = "생산마감일", example = "2025-01-20")
+    private String dueDate;
 
     @Schema(description = "담당자 ID", example = "5")
     private Integer managerId;
