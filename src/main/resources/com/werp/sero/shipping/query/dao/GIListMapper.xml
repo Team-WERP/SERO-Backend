@@ -12,6 +12,7 @@
         <result property="soCode" column="so_code"/>
         <result property="doCode" column="do_code"/>
         <result property="itemName" column="item_name"/>
+        <result property="itemCount" column="item_count"/>
         <result property="warehouseName" column="warehouse_name"/>
         <result property="createdAt" column="created_at"/>
         <result property="shippedAt" column="shipped_at"/>
@@ -28,7 +29,15 @@
             A.gi_code,
             B.so_code,
             A.do_code,
-            B.main_item_name AS item_name,
+            (SELECT G.item_name
+             FROM goods_issue_item F
+             INNER JOIN sales_order_item G ON F.so_item_id = G.id
+             WHERE F.gi_id = A.id
+             ORDER BY F.id
+             LIMIT 1) AS item_name,
+            (SELECT COUNT(*)
+             FROM goods_issue_item F
+             WHERE F.gi_id = A.id) AS item_count,
             C.name AS warehouse_name,
             A.created_at,
             B.shipped_at,

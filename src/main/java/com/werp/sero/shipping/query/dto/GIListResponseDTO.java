@@ -23,8 +23,11 @@ public class GIListResponseDTO {
     @Schema(description = "납품서 번호")
     private String doCode;
 
-    @Schema(description = "품목명")
+    @Schema(description = "품목명 (첫번째 품목)")
     private String itemName;
+
+    @Schema(description = "품목 개수")
+    private int itemCount;
 
     @Schema(description = "창고명")
     private String warehouseName;
