@@ -6,7 +6,6 @@ import lombok.Setter;
 import java.util.List;
 
 @Getter
-@Setter
 public class PRDraftDetailResponseDTO {
     private int prId;
     private int soId;
