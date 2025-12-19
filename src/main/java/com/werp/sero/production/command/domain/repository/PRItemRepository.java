@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface PRItemRepository extends JpaRepository<ProductionRequestItem, Integer> {
-    Optional<ProductionRequestItem> findByPrIdAndSoItemId(int prId, int soItemId);
+    Optional<ProductionRequestItem> findByProductionRequestIdAndSalesOrderItemId(int prId, int soItemId);
 }

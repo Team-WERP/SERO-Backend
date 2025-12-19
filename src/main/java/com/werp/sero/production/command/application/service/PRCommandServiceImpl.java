@@ -110,7 +110,7 @@ public class PRCommandServiceImpl implements PRCommandService {
                 }
 
                 ProductionRequestItem prItem = prtItemRepository
-                        .findByPrIdAndSoItemId(prId, soItem.getId())
+                        .findByProductionRequestIdAndSalesOrderItemId(prId, soItem.getId())
                         .orElseGet(() -> pr.addItem(soItem, 0));
 
                 prItem.changeQuantity(itemDto.getQuantity());
