@@ -2,7 +2,6 @@ package com.werp.sero.shipping.command.application.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,8 +24,7 @@ public class DOCreateRequestDTO {
     @Schema(description = "특이사항", example = "파손 주의")
     private String note;
 
-    @NotEmpty
     @Valid
-    @Schema(description = "납품 품목 목록")
+    @Schema(description = "납품 품목 목록 (null이면 주문의 모든 품목을 자동 포함)")
     private List<DOItemRequestDTO> items;
 }

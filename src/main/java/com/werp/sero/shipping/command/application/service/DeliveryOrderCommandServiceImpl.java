@@ -62,19 +62,34 @@ public class DeliveryOrderCommandServiceImpl implements DeliveryOrderCommandServ
 
         // 6. 납품서 품목 저장
         List<DeliveryOrderItem> deliveryOrderItems = new ArrayList<>();
-        for (DOItemRequestDTO itemDTO : requestDTO.getItems()) {
-            // 주문 품목 조회
-            SalesOrderItem salesOrderItem = soItemRepository.findById(itemDTO.getSoItemId())
-                    .orElseThrow(SalesOrderItemNotFoundException::new);
 
-            // 납품서 품목 생성
-            DeliveryOrderItem deliveryOrderItem = DeliveryOrderItem.builder()
-                    .doQuantity(itemDTO.getDoQuantity())
-                    .deliveryOrder(savedDeliveryOrder)
-                    .salesOrderItem(salesOrderItem)
-                    .build();
+        // items가 null이거나 비어있으면 주문의 모든 품목을 자동으로 포함
+        if (requestDTO.getItems() == null || requestDTO.getItems().isEmpty()) {
+            List<SalesOrderItem> allOrderItems = soItemRepository.findBySalesOrderId(requestDTO.getSoId());
 
-            deliveryOrderItems.add(deliveryOrderItem);
+            for (SalesOrderItem salesOrderItem : allOrderItems) {
+                DeliveryOrderItem deliveryOrderItem = DeliveryOrderItem.builder()
+                        .doQuantity(salesOrderItem.getQuantity()) // 주문 수량 그대로 사용
+                        .deliveryOrder(savedDeliveryOrder)
+                        .salesOrderItem(salesOrderItem)
+                        .build();
+
+                deliveryOrderItems.add(deliveryOrderItem);
+            }
+        } else {
+            // items가 있으면 지정된 품목만 포함
+            for (DOItemRequestDTO itemDTO : requestDTO.getItems()) {
+                SalesOrderItem salesOrderItem = soItemRepository.findById(itemDTO.getSoItemId())
+                        .orElseThrow(SalesOrderItemNotFoundException::new);
+
+                DeliveryOrderItem deliveryOrderItem = DeliveryOrderItem.builder()
+                        .doQuantity(itemDTO.getDoQuantity())
+                        .deliveryOrder(savedDeliveryOrder)
+                        .salesOrderItem(salesOrderItem)
+                        .build();
+
+                deliveryOrderItems.add(deliveryOrderItem);
+            }
         }
 
         // 7. 납품서 품목 일괄 저장
