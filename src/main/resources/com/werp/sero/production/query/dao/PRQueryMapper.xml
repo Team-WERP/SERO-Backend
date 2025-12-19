@@ -5,6 +5,9 @@
 
 <mapper namespace="com.werp.sero.production.query.dao.PRQueryMapper">
 
+    <!-- ===================================================== -->
+    <!-- PR 임시저장 목록 조회 (작성자 기준)                     -->
+    <!-- ===================================================== -->
     <select id="findDraftsByDrafter"
             resultType="com.werp.sero.production.query.dto.PRDraftListResponseDTO">
 
@@ -50,6 +53,9 @@
 
     </select>
 
+    <!-- ===================================================== -->
+    <!-- PR 임시저장 상세 ResultMap                             -->
+    <!-- ===================================================== -->
     <resultMap id="PRDraftDetailResultMap"
                type="com.werp.sero.production.query.dto.PRDraftDetailResponseDTO">
 
@@ -84,6 +90,9 @@
         </collection>
     </resultMap>
 
+    <!-- ===================================================== -->
+    <!-- PR 임시저장 상세 조회                                  -->
+    <!-- ===================================================== -->
     <select id="findDraftDetail"
             resultMap="PRDraftDetailResultMap">
 
@@ -144,6 +153,9 @@
         ORDER BY C.id ASC
     </select>
 
+    <!-- ===================================================== -->
+    <!-- PR 목록 조회 (임시저장 제외)                            -->
+    <!-- ===================================================== -->
     <select id="selectPRList"
             parameterType="com.werp.sero.production.query.dto.PRListSearchCondition"
             resultType="com.werp.sero.production.query.dto.PRListResponseDTO">
@@ -218,6 +230,9 @@
         ORDER BY A.created_at DESC
     </select>
 
+    <!-- ===================================================== -->
+    <!-- PR 확정 상세 ResultMap                                 -->
+    <!-- ===================================================== -->
     <resultMap id="PRDetailResultMap"
                type="com.werp.sero.production.query.dto.PRDetailResponseDTO">
 
@@ -252,6 +267,9 @@
 
     </resultMap>
 
+    <!-- ===================================================== -->
+    <!-- PR 확정 상세 조회                                      -->
+    <!-- ===================================================== -->
     <select id="selectPRDetail"
             parameterType="int"
             resultMap="PRDetailResultMap">
