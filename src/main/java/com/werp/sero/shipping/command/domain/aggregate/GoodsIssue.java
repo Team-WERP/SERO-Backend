@@ -30,13 +30,23 @@ public class GoodsIssue {
 
     private String note;
 
+    @Column(name = "do_code", nullable = false, unique = true)
+    private String doCode;
+
+    @Column(name = "created_at")
+    private String createdAt;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "so_id", nullable = false)
     private SalesOrder salesOrder;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "manager_id", nullable = false)
-    private Employee employee;
+    @JoinColumn(name = "drafter_id", nullable = false)
+    private Employee drafter;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "gi_manager_id", nullable = false)
+    private Employee manager;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "warehouse_id", nullable = false)
