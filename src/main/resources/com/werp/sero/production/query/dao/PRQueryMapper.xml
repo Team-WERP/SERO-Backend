@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.werp.sero.production.query.dao.PRQueryMapper">
+
+    <select id="findDraftsByDrafter"
+            resultType="com.werp.sero.production.query.dto.PRDraftListResponseDTO">
+
+        SELECT
+            A.id             AS prId,
+            B.so_code        AS soCode,
+            B.client_name    AS clientName,
+            A.total_quantity AS totalQuantity,
+            A.due_at         AS dueAt,
+            A.created_at     AS createdAt,
+
+            /* 대표 품목명 */
+            (
+            SELECT C.item_name
+            FROM production_request_item D
+            JOIN sales_order_item C ON D.so_item_id = C.id
+            WHERE D.pr_id = A.id
+            ORDER BY D.id ASC
+            LIMIT 1
+            ) AS representativeItemName,
+
+            /* 품목 종류 수 */
+            (
+            SELECT COUNT(*)
+            FROM production_request_item D
+            WHERE D.pr_id = A.id
+            ) AS itemTypeCount
+
+        FROM production_request A
+                 JOIN sales_order B ON A.so_id = B.id
+        WHERE A.status = 'PR_TMP'
+          AND A.drafter_id = #{drafterId}
+
+        <if test="soId != null">
+            AND A.so_id = #{soId}
+        </if>
+
+        <if test="soCode != null and soCode != ''">
+            AND B.so_code LIKE CONCAT('%', #{soCode}, '%')
+        </if>
+
+        ORDER BY A.created_at DESC
+
+    </select>
+
+    <resultMap id="PRDraftDetailResultMap"
+               type="com.werp.sero.production.query.dto.PRDraftDetailResponseDTO">
+
+        <id property="prId" column="pr_id"/>
+
+        <result property="soId" column="so_id"/>
+        <result property="soCode" column="so_code"/>
+
+        <result property="status" column="pr_status"/>
+        <result property="dueAt" column="due_at"/>
+        <result property="reason" column="reason"/>
+        <result property="totalQuantity" column="pr_total_quantity"/>
+        <result property="createdAt" column="created_at"/>
+
+        <collection property="items"
+                    ofType="com.werp.sero.production.query.dto.PRDraftItemResponseDTO">
+            <id property="soItemId" column="so_item_id"/>
+
+            <result property="itemCode" column="item_code"/>
+            <result property="itemName" column="item_name"/>
+            <result property="spec" column="spec"/>
+
+            <result property="orderQuantity" column="order_quantity"/>
+            <result property="unit" column="unit"/>
+
+            <result property="unitPrice" column="unit_price"/>
+            <result property="totalPrice" column="item_total_price"/>
+
+            <result property="availableStock" column="available_stock"/>
+            <result property="requiredQuantity" column="required_quantity"/>
+            <result property="requestedQuantity" column="requested_quantity"/>
+        </collection>
+    </resultMap>
+
+    <select id="findDraftDetail"
+            resultMap="PRDraftDetailResultMap">
+
+        SELECT
+            A.id              AS pr_id,
+            A.so_id           AS so_id,
+            B.so_code         AS so_code,
+
+            A.status          AS pr_status,
+            A.due_at          AS due_at,
+            A.reason          AS reason,
+            A.total_quantity  AS pr_total_quantity,
+            A.created_at      AS created_at,
+
+            C.id              AS so_item_id,
+            C.item_code       AS item_code,
+            C.item_name       AS item_name,
+            C.spec            AS spec,
+            C.quantity        AS order_quantity,
+            C.unit            AS unit,
+            C.unit_price      AS unit_price,
+            C.total_price     AS item_total_price,
+
+            /* 가용 재고 */
+            (
+                SELECT IFNULL(SUM(E.available_stock), 0)
+                FROM warehouse_stock E
+                         JOIN material F ON E.material_id = F.id
+                WHERE F.material_code = C.item_code
+            ) AS available_stock,
+
+            /* 생산 필요 수량 */
+            GREATEST(
+                        C.quantity -
+                        (
+                            SELECT IFNULL(SUM(E.available_stock), 0)
+                            FROM warehouse_stock E
+                                     JOIN material F ON E.material_id = F.id
+                            WHERE F.material_code = C.item_code
+                        ),
+                        0
+                ) AS required_quantity,
+
+            /* 임시 저장된 생산요청 수량 */
+            IFNULL(D.quantity, 0) AS requested_quantity
+
+        FROM production_request A
+                 JOIN sales_order B ON A.so_id = B.id
+                 LEFT JOIN sales_order_item C ON B.id = C.so_id
+                 LEFT JOIN production_request_item D
+                           ON D.pr_id = A.id
+                               AND D.so_item_id = C.id
+
+        WHERE A.id = #{prId}
+          AND A.status = 'PR_TMP'
+          AND A.drafter_id = #{drafterId}
+
+        ORDER BY C.id ASC
+    </select>
+
+</mapper>
