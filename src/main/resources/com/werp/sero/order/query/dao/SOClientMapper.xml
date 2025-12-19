@@ -41,5 +41,6 @@
                  LEFT JOIN sales_order_item B ON A.id = B.so_id
         WHERE A.client_id = #{clientId}
         ORDER BY A.ordered_at DESC
+        LIMIT 5
     </select>
 </mapper>

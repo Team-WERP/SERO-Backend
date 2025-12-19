@@ -10,7 +10,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Service
-public class SOClientServiceImpl implements SOClientService {
+public class SOClientQueryServiceImpl implements SOClientQueryService {
 
     private final SOClientMapper soClientMapper;
 
