@@ -1,5 +1,8 @@
 package com.werp.sero.order.command.application.service;
 
+import com.werp.sero.client.command.domain.aggregate.Client;
+import com.werp.sero.client.command.domain.repository.ClientRepository;
+import com.werp.sero.client.exception.ClientNotFoundException;
 import com.werp.sero.client.query.dto.ClientAddressResponseDTO;
 import com.werp.sero.common.util.DateTimeUtils;
 import com.werp.sero.employee.command.domain.aggregate.ClientEmployee;
@@ -24,6 +27,7 @@ public class SOClientCommandServiceImpl implements SOClientCommandService {
 
     private final SORepository orderRepository;
     private final SOItemRepository orderItemRepository;
+    private final ClientRepository  clientRepository;
 
     private final DocumentSequenceCommandService documentSequenceCommandService;
 
@@ -35,12 +39,15 @@ public class SOClientCommandServiceImpl implements SOClientCommandService {
 
         long totalOrderPrice = request.getItems().stream()
                 .mapToLong(SOClientItemResponseDTO::getTotalPrice).sum();
+
         int totalOrderQuantity = request.getItems().stream()
                 .mapToInt(SOClientItemResponseDTO::getQuantity).sum();
-        String mainItemName = request.getItems().isEmpty() ? "" : request.getItems().get(0).getItemName();
+        
+        String mainItemName = request.getItems().get(0).getItemName();
 
         ClientAddressResponseDTO address = request.getAddress();
 
+        // 주문 정보 추가
         SalesOrder salesOrder = SalesOrder.builder()
                 .soCode(generatedSoCode)
                 .poCode(request.getPoCode())
@@ -65,6 +72,7 @@ public class SOClientCommandServiceImpl implements SOClientCommandService {
 
         SalesOrder savedOrder = orderRepository.save(salesOrder);
 
+        // 주문 품목 추가
         List<SalesOrderItem> orderItems = request.getItems().stream()
                 .map(itemDto -> SalesOrderItem.builder()
                         .salesOrder(savedOrder)
@@ -79,6 +87,12 @@ public class SOClientCommandServiceImpl implements SOClientCommandService {
                 .collect(Collectors.toList());
 
         orderItemRepository.saveAll(orderItems);
+
+        Client client = clientRepository.findById(clientEmployee.getClient().getId())
+                .orElseThrow(ClientNotFoundException::new);
+
+        // 미수금 추가
+        client.addReceivables(totalOrderPrice);
 
         return SODetailResponseDTO.of(savedOrder);
     }
