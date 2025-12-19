@@ -218,4 +218,82 @@
         ORDER BY A.created_at DESC
     </select>
 
+    <resultMap id="PRDetailResultMap"
+               type="com.werp.sero.production.query.dto.PRDetailResponseDTO">
+
+        <!-- 부모 식별자 필수 -->
+        <id property="header.prId" column="pr_id"/>
+
+        <association property="header"
+                     javaType="com.werp.sero.production.query.dto.PRDetailResponseDTO$Header">
+            <result property="prId" column="pr_id"/>
+            <result property="prCode" column="pr_code"/>
+            <result property="soCode" column="so_code"/>
+            <result property="status" column="pr_status"/>
+            <result property="requestedAt" column="requested_at"/>
+            <result property="dueAt" column="due_at"/>
+            <result property="drafterName" column="drafter_name"/>
+            <result property="managerName" column="manager_name"/>
+            <result property="totalQuantity" column="total_quantity"/>
+        </association>
+
+        <collection property="items"
+                    ofType="com.werp.sero.production.query.dto.PRDetailResponseDTO$Item">
+            <id property="prItemId" column="pr_item_id"/>
+            <result property="soItemId" column="so_item_id"/>
+
+            <result property="itemCode" column="item_code"/>
+            <result property="itemName" column="item_name"/>
+            <result property="spec" column="spec"/>
+
+            <result property="requestedQuantity" column="requested_quantity"/>
+            <result property="status" column="pr_item_status"/>
+        </collection>
+
+    </resultMap>
+
+    <select id="selectPRDetail"
+            parameterType="int"
+            resultMap="PRDetailResultMap">
+
+        SELECT
+        A.id             AS pr_id,
+        A.pr_code        AS pr_code,
+        B.so_code        AS so_code,
+        A.status         AS pr_status,
+        A.requested_at   AS requested_at,
+        A.due_at         AS due_at,
+        A.total_quantity AS total_quantity,
+
+        C.name           AS drafter_name,
+        D.name           AS manager_name,
+
+        E.id             AS pr_item_id,
+        E.so_item_id     AS so_item_id,
+        E.quantity       AS requested_quantity,
+        E.status         AS pr_item_status,
+
+        F.item_code      AS item_code,
+        F.item_name      AS item_name,
+        F.spec           AS spec
+
+        FROM production_request A
+        JOIN sales_order B
+        ON A.so_id = B.id
+        JOIN employee C
+        ON A.drafter_id = C.id
+        LEFT JOIN employee D
+        ON A.manager_id = D.id
+
+        JOIN production_request_item E
+        ON E.pr_id = A.id
+        JOIN sales_order_item F
+        ON F.id = E.so_item_id
+
+        WHERE A.id = #{prId}
+        AND A.status NOT IN ('PR_TMP')
+
+        ORDER BY E.id ASC
+    </select>
+
 </mapper>

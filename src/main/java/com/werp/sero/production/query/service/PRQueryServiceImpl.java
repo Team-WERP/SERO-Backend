@@ -2,11 +2,9 @@ package com.werp.sero.production.query.service;
 
 import com.werp.sero.common.error.ErrorCode;
 import com.werp.sero.common.error.exception.BusinessException;
+import com.werp.sero.production.exception.ProductionNotFoundException;
 import com.werp.sero.production.query.dao.PRQueryMapper;
-import com.werp.sero.production.query.dto.PRDraftDetailResponseDTO;
-import com.werp.sero.production.query.dto.PRDraftListResponseDTO;
-import com.werp.sero.production.query.dto.PRListResponseDTO;
-import com.werp.sero.production.query.dto.PRListSearchCondition;
+import com.werp.sero.production.query.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,5 +33,15 @@ public class PRQueryServiceImpl implements PRQueryService{
     @Transactional(readOnly = true)
     public List<PRListResponseDTO> getPRList(PRListSearchCondition condition) {
         return prQueryMapper.selectPRList(condition);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PRDetailResponseDTO getDetail(int prId) {
+        List<PRDetailResponseDTO> list = prQueryMapper.selectPRDetail(prId);
+
+        return list.stream()
+                .findFirst()
+                .orElseThrow(ProductionNotFoundException::new);
     }
 }

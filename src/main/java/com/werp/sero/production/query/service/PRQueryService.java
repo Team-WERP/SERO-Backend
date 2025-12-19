@@ -1,9 +1,6 @@
 package com.werp.sero.production.query.service;
 
-import com.werp.sero.production.query.dto.PRDraftDetailResponseDTO;
-import com.werp.sero.production.query.dto.PRDraftListResponseDTO;
-import com.werp.sero.production.query.dto.PRListResponseDTO;
-import com.werp.sero.production.query.dto.PRListSearchCondition;
+import com.werp.sero.production.query.dto.*;
 
 import java.util.List;
 
@@ -13,4 +10,6 @@ public interface PRQueryService {
     PRDraftDetailResponseDTO getDraftDetail(int prId, int drafterId);
 
     List<PRListResponseDTO> getPRList(PRListSearchCondition condition);
+
+    PRDetailResponseDTO getDetail(int prId);
 }

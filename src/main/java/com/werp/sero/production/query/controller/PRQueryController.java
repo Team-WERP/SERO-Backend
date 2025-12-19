@@ -1,10 +1,7 @@
 package com.werp.sero.production.query.controller;
 
 import com.werp.sero.employee.command.domain.aggregate.Employee;
-import com.werp.sero.production.query.dto.PRDraftDetailResponseDTO;
-import com.werp.sero.production.query.dto.PRDraftListResponseDTO;
-import com.werp.sero.production.query.dto.PRListResponseDTO;
-import com.werp.sero.production.query.dto.PRListSearchCondition;
+import com.werp.sero.production.query.dto.*;
 import com.werp.sero.production.query.service.PRQueryService;
 import com.werp.sero.security.annotation.CurrentUser;
 import io.swagger.v3.oas.annotations.Operation;
@@ -80,6 +77,17 @@ public class PRQueryController {
                 .build();
 
         return ResponseEntity.ok(prQueryService.getPRList(condition));
+    }
+
+    @Operation(
+            summary = "생산요청 상세 조회",
+            description = "임시저장을 제외한 생산요청 상세 정보를 조회합니다."
+    )
+    @GetMapping("/{prId}")
+    public ResponseEntity<PRDetailResponseDTO> getDetail(
+            @PathVariable int prId
+    ) {
+        return ResponseEntity.ok(prQueryService.getDetail(prId));
     }
 
 }
