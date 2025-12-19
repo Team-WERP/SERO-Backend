@@ -20,6 +20,11 @@
                  JOIN sales_order B ON A.so_id = B.id
         WHERE A.status = 'PR_TMP'
           AND A.drafter_id = #{drafterId}
+
+        <if test="soId != null">
+            AND A.so_id = #{soId}
+        </if>
+
         ORDER BY A.created_at DESC
 
     </select>

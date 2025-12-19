@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -30,10 +31,11 @@ public class PRQueryController {
     )
     @GetMapping("/drafts")
     public ResponseEntity<List<PRDraftListResponseDTO>> getDrafts(
-            @CurrentUser Employee employee
+            @CurrentUser Employee employee,
+            @RequestParam(required = false) Integer soId
     ) {
         List<PRDraftListResponseDTO> result =
-                prQueryService.getDraftsByDrafter(employee.getId());
+                prQueryService.getDraftsByDrafter(employee.getId(), soId);
         return ResponseEntity.ok(result);
     }
 }

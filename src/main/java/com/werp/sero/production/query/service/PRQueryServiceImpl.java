@@ -13,7 +13,7 @@ public class PRQueryServiceImpl implements PRQueryService{
     private final PRQueryMapper prQueryMapper;
 
     @Override
-    public List<PRDraftListResponseDTO> getDraftsByDrafter(int drafterId) {
-        return prQueryMapper.findDraftsByDrafter(drafterId);
+    public List<PRDraftListResponseDTO> getDraftsByDrafter(int drafterId, Integer soId) {
+        return prQueryMapper.findDraftsByDrafter(drafterId, soId);
     }
 }

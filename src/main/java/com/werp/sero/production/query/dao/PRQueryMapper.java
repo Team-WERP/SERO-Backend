@@ -7,5 +7,5 @@ import java.util.List;
 
 @Mapper
 public interface PRQueryMapper {
-    List<PRDraftListResponseDTO> findDraftsByDrafter(int drafterId);
+    List<PRDraftListResponseDTO> findDraftsByDrafter(int drafterId, Integer soId);
 }
