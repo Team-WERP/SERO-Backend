@@ -24,6 +24,7 @@
          INNER JOIN production_line B ON A.production_line_id = B.id
          INNER JOIN material C ON A.material_id = C.id
          WHERE C.material_code = #{materialCode}
+         LIMIT 1
     </select>
 
 <!-- 특정 생산라인의 최신 생산계획 종료일 조회 -->
@@ -35,4 +36,4 @@
          LIMIT 1
     </select>
 
-
+</mapper>
