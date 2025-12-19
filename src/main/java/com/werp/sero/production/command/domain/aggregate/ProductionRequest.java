@@ -86,4 +86,11 @@ public class ProductionRequest {
         return item;
     }
 
+    public void changeDueAt(String dueAt) { this.dueAt = dueAt; }
+    public void changeReason(String reason) { this.reason = reason; }
+
+    public void changeTotalQuantity(int totalQuantity) {
+        this.totalQuantity = totalQuantity;
+    }
+
 }

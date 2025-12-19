@@ -57,7 +57,11 @@ public enum ErrorCode {
     SALES_ORDER_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER004", "주문 품목 정보를 찾을 수 없습니다."),
 
     /* PRODUCTION */
-    PR_DRAFT_NOT_FOUND(HttpStatus.NOT_FOUND,"PRODUCTION001", "임시 저장된 생산요청을 찾을 수 없습니다.");
+    PR_DRAFT_NOT_FOUND(HttpStatus.NOT_FOUND, "PRODUCTION001", "임시 저장된 생산요청을 찾을 수 없습니다."),
+    PR_NOT_DRAFT(HttpStatus.BAD_REQUEST, "PRODUCTION002", "임시 저장 상태의 생산요청만 처리할 수 있습니다."),
+    PR_ITEM_QUANTITY_INVALID(HttpStatus.BAD_REQUEST, "PRODUCTION003", "생산요청 수량은 0 이상이어야 합니다."),
+    PR_ITEM_NOT_IN_SALES_ORDER(HttpStatus.BAD_REQUEST, "PRODUCTION004", "해당 주문에 속하지 않은 품목입니다."),
+    PR_REQUEST_EMPTY(HttpStatus.BAD_REQUEST, "PRODUCTION005", "생산요청 수량이 없어 요청할 수 없습니다.");
 
     private final HttpStatus status;
     private final String code;
