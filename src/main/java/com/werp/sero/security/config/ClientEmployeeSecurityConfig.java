@@ -57,7 +57,6 @@ public class ClientEmployeeSecurityConfig {
                 .securityMatcher("/clients/**")
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/clients/auth/login").permitAll()
-                        .requestMatchers("/clients/*/check-availability").permitAll()
                         .requestMatchers("/clients/**").hasAuthority(AUTHORITY)
                         .anyRequest().authenticated()
                 )
