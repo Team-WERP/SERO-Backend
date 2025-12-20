@@ -17,8 +17,9 @@ public class ApprovalLine {
     @Column(name = "line_type", nullable = false)
     private String lineType;
 
-    @Column(nullable = false)
-    private int sequence;
+//    @Column(nullable = false)
+//    수신 또는 참조인 경우 순서가 필요 없으므로 null 허용
+    private Integer sequence;
 
     @Column(nullable = false, columnDefinition = "varchar(100) default 'ALS_PEND'")
     private String status;
@@ -38,4 +39,14 @@ public class ApprovalLine {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "approver_id", nullable = false)
     private Employee employee;
+
+    public ApprovalLine(final String lineType, final Integer sequence, final String note, final Approval approval,
+                        final Employee employee) {
+        this.lineType = lineType;
+        this.sequence = sequence;
+        this.status = "ALS_PEND";
+        this.note = note;
+        this.approval = approval;
+        this.employee = employee;
+    }
 }

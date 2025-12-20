@@ -98,4 +98,9 @@ public class ProductionRequest {
         this.status = "PR_RVW";
         this.requestedAt = DateTimeUtils.nowDateTime();
     }
+
+    public void updateApprovalInfo(final String approvalCode, final String status) {
+        this.approvalCode = approvalCode;
+        this.status = status;
+    }
 }

@@ -64,7 +64,10 @@ public enum ErrorCode {
     PR_REQUEST_EMPTY(HttpStatus.BAD_REQUEST, "PRODUCTION005", "생산요청 수량이 없어 요청할 수 없습니다."),
 
     /* GOODS ISSUE */
-    GOODS_ISSUE_NOT_FOUND(HttpStatus.NOT_FOUND, "SHIPPING001", "출고지시 정보를 찾을 수 없습니다.");
+    GOODS_ISSUE_NOT_FOUND(HttpStatus.NOT_FOUND, "SHIPPING001", "출고지시 정보를 찾을 수 없습니다."),
+
+    /* APPROVAL */
+    INVALID_APPROVAL_TARGET_TYPE(HttpStatus.NOT_FOUND, "APPROVAL001", "지원하지 않는 결재 타입입니다.");
 
     private final HttpStatus status;
     private final String code;

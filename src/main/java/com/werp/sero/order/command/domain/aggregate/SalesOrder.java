@@ -97,4 +97,9 @@ public class SalesOrder {
     public void updateManager(Employee manager) {
         this.employee = manager;
     }
+
+    public void updateApprovalInfo(final String approvalCode, final String status) {
+        this.approvalCode = approvalCode;
+        this.status = status;
+    }
 }
