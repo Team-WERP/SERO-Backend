@@ -24,6 +24,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 @RequiredArgsConstructor
 @EnableWebSecurity
@@ -51,6 +52,7 @@ public class EmployeeSecurityConfig {
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private final EmployeeUserDetailsService employeeUserDetailsService;
+    private final CorsConfigurationSource corsConfigurationSource;
 
     @Primary
     @Bean
@@ -66,6 +68,7 @@ public class EmployeeSecurityConfig {
     @Bean
     public SecurityFilterChain employeeFilterChain(final HttpSecurity http) throws Exception {
         http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .csrf(CsrfConfigurer::disable)
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

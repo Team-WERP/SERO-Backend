@@ -45,4 +45,8 @@ public class ProductionRequestItem {
         prItem.status = "PIS_TMP";
         return prItem;
     }
+
+    public void changeQuantity(int quantity) {
+        this.quantity = quantity;
+    }
 }
