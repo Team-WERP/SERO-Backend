@@ -11,6 +11,8 @@ public class PRDraftDetailResponseDTO {
     private int soId;
     private String soCode;
 
+    private String clientName;
+
     private String status;
     private String dueAt;
     private String reason;

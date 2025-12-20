@@ -64,6 +64,7 @@
         <result property="soId" column="so_id"/>
         <result property="soCode" column="so_code"/>
 
+        <result property="clientName" column="client_name"/>
         <result property="status" column="pr_status"/>
         <result property="dueAt" column="due_at"/>
         <result property="reason" column="reason"/>
@@ -101,6 +102,7 @@
             A.so_id           AS so_id,
             B.so_code         AS so_code,
 
+            B.client_name     AS client_name,
             A.status          AS pr_status,
             A.due_at          AS due_at,
             A.reason          AS reason,
