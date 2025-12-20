@@ -21,6 +21,10 @@ public class DOCreateRequestDTO {
     @Schema(description = "주문 ID", example = "1")
     private Integer soId;
 
+    @NotNull
+    @Schema(description = "납기일시", example = "2025-12-25 14:00:00")
+    private String shippedAt;
+
     @Schema(description = "특이사항", example = "파손 주의")
     private String note;
 
