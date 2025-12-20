@@ -1,7 +1,7 @@
 package com.werp.sero.order.command.application.controller;
 
 import com.werp.sero.employee.command.domain.aggregate.ClientEmployee;
-import com.werp.sero.order.command.application.dto.SOClientOrderRequestDTO;
+import com.werp.sero.order.command.application.dto.SOClientOrderDTO;
 import com.werp.sero.order.command.application.dto.SODetailResponseDTO;
 import com.werp.sero.order.command.application.service.SOClientCommandService;
 import com.werp.sero.security.annotation.CurrentUser;
@@ -44,11 +44,11 @@ public class SOClientCommandController {
             }))
     })
     @PostMapping
-    public ResponseEntity<SODetailResponseDTO> assignOrderManager(
+    public ResponseEntity<SOClientOrderDTO> createOrder(
             @CurrentUser final ClientEmployee clientEmployee,
-            @Valid @RequestBody final SOClientOrderRequestDTO request) {
+            @Valid @RequestBody final SOClientOrderDTO request) {
 
-        SODetailResponseDTO response = orderClientService.createOrder(clientEmployee,request);
+        SOClientOrderDTO response = orderClientService.createOrder(clientEmployee,request);
 
         return ResponseEntity.ok(response);
     }

@@ -3,11 +3,9 @@ package com.werp.sero.order.command.application.service;
 import com.werp.sero.client.command.domain.aggregate.Client;
 import com.werp.sero.client.command.domain.repository.ClientRepository;
 import com.werp.sero.client.exception.ClientNotFoundException;
-import com.werp.sero.client.query.dto.ClientAddressResponseDTO;
 import com.werp.sero.common.util.DateTimeUtils;
 import com.werp.sero.employee.command.domain.aggregate.ClientEmployee;
-import com.werp.sero.order.command.application.dto.SOClientOrderRequestDTO;
-import com.werp.sero.order.command.application.dto.SODetailResponseDTO;
+import com.werp.sero.order.command.application.dto.SOClientOrderDTO;
 import com.werp.sero.order.command.domain.aggregate.SalesOrder;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItem;
 import com.werp.sero.order.command.domain.repository.SOItemRepository;
@@ -33,8 +31,9 @@ public class SOClientCommandServiceImpl implements SOClientCommandService {
 
     @Transactional
     @Override
-    public SODetailResponseDTO createOrder(final ClientEmployee clientEmployee, final SOClientOrderRequestDTO request) {
+    public SOClientOrderDTO createOrder(final ClientEmployee clientEmployee, final SOClientOrderDTO request) {
 
+        // 주문 번호 생성
         String generatedSoCode = documentSequenceCommandService.generateDocumentCode("DOC_SO");
 
         long totalOrderPrice = request.getItems().stream()
@@ -42,18 +41,18 @@ public class SOClientCommandServiceImpl implements SOClientCommandService {
 
         int totalOrderQuantity = request.getItems().stream()
                 .mapToInt(SOClientItemResponseDTO::getQuantity).sum();
-        
+
         String mainItemName = request.getItems().get(0).getItemName();
 
-        ClientAddressResponseDTO address = request.getAddress();
-
-        // 주문 정보 추가
+        // 주문 정보 저장
         SalesOrder salesOrder = SalesOrder.builder()
                 .soCode(generatedSoCode)
                 .poCode(request.getPoCode())
+                .soUrl(request.getSoUrl())
                 .client(clientEmployee.getClient())
                 .clientEmployee(clientEmployee)
                 .clientName(clientEmployee.getClient().getCompanyName())
+
                 .orderedAt(DateTimeUtils.nowDateTime())
                 .shippedAt(request.getShipped_at())
                 .totalPrice(totalOrderPrice)
@@ -61,18 +60,17 @@ public class SOClientCommandServiceImpl implements SOClientCommandService {
                 .totalItemCount(request.getItems().size())
                 .mainItemName(mainItemName)
 
-                .shippingName(address.getName())
-                .address(address.getAddress())
-                .recipientName(address.getRecipientName())
-                .recipientContact(address.getRecipientContact())
+                .shippingName(request.getShippingName())
+                .address(request.getAddress())
+                .recipientName(request.getRecipientName())
+                .recipientContact(request.getRecipientContact())
 
                 .status("ORD_RED")
                 .note(request.getNote())
                 .build();
 
         SalesOrder savedOrder = orderRepository.save(salesOrder);
-
-        // 주문 품목 추가
+        // 주문 품목 저장
         List<SalesOrderItem> orderItems = request.getItems().stream()
                 .map(itemDto -> SalesOrderItem.builder()
                         .salesOrder(savedOrder)
@@ -86,14 +84,13 @@ public class SOClientCommandServiceImpl implements SOClientCommandService {
                         .build())
                 .collect(Collectors.toList());
 
-        orderItemRepository.saveAll(orderItems);
+        List<SalesOrderItem> savedItems = orderItemRepository.saveAll(orderItems);
 
+        // 미수금 반영
         Client client = clientRepository.findById(clientEmployee.getClient().getId())
                 .orElseThrow(ClientNotFoundException::new);
-
-        // 미수금 추가
         client.addReceivables(totalOrderPrice);
 
-        return SODetailResponseDTO.of(savedOrder);
+        return SOClientOrderDTO.of(savedOrder, savedItems);
     }
 }

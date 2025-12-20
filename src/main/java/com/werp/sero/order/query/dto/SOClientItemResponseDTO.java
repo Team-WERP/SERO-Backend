@@ -1,11 +1,14 @@
 package com.werp.sero.order.query.dto;
 
+import com.fasterxml.jackson.core.JsonToken;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItem;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 public class SOClientItemResponseDTO {
 
     @Schema(description = "주문 품목 ID")
@@ -34,5 +37,19 @@ public class SOClientItemResponseDTO {
 
     @Schema(description = "주문 ID")
     private int salesOrderId;
+
+    public static SOClientItemResponseDTO fromEntity(SalesOrderItem entity) {
+        return SOClientItemResponseDTO.builder()
+                .id(entity.getId())
+                .itemCode(entity.getItemCode())
+                .itemName(entity.getItemName())
+                .spec(entity.getSpec())
+                .quantity(entity.getQuantity())
+                .unit(entity.getUnit())
+                .unitPrice(entity.getUnitPrice())
+                .totalPrice(entity.getTotalPrice())
+                .salesOrderId(entity.getSalesOrder().getId())
+                .build();
+    }
 
 }

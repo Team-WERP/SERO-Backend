@@ -11,6 +11,9 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class SOClientResponseDTO {
 
+    @Schema(description = "주문 id")
+    private int orderId;
+
     @Schema(description = "주문 번호")
     private String soCode;
 
@@ -28,5 +31,29 @@ public class SOClientResponseDTO {
 
     @Schema(description = "주문 품목 목록")
     private List<SOClientItemResponseDTO> items;
+
+    @Schema(description = "배송지명")
+    private String shippingName;
+
+    @Schema(description = "배송지 주소")
+    private String address;
+
+    @Schema(description = "수령인 이름")
+    private String recipientName;
+
+    @Schema(description = "수령인 연락처")
+    private String recipientContact;
+
+    @Schema(description = "고객사 담당자명")
+    private String clientManagerName;
+
+    @Schema(description = "고객사 담당자 연락처")
+    private String clientManagerContact;
+
+    @Schema(description = "고객사 ID")
+    private int clientId;
+
+    @Schema(description = "고객사 담당자 ID")
+    private int clientManagerId;
 
 }
