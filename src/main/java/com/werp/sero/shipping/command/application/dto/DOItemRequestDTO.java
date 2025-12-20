@@ -19,8 +19,7 @@ public class DOItemRequestDTO {
     @Schema(description = "주문 품목 ID", example = "1")
     private Integer soItemId;
 
-    @NotNull
     @Min(value = 1, message = "신규출고요청 수량은 1 이상이어야 합니다")
     @Schema(description = "신규출고요청 수량", example = "100")
-    private Integer doQuantity;
+    private int doQuantity;
 }

@@ -32,7 +32,7 @@ public class DeliveryOrderCommandController {
             @Valid @RequestBody DOCreateRequestDTO requestDTO,
             @CurrentUser Employee currentEmployee
     ) {
-        String doCode = deliveryOrderCommandService.createDeliveryOrder(requestDTO, currentEmployee.getId());
+        String doCode = deliveryOrderCommandService.createDeliveryOrder(requestDTO, currentEmployee);
 
         Map<String, String> response = new HashMap<>();
         response.put("message", "납품서가 생성되었습니다.");

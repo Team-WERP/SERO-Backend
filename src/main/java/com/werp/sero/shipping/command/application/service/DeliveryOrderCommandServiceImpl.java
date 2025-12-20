@@ -1,7 +1,6 @@
 package com.werp.sero.shipping.command.application.service;
 
 import com.werp.sero.employee.command.domain.aggregate.Employee;
-import com.werp.sero.employee.command.domain.repository.EmployeeRepository;
 import com.werp.sero.order.command.domain.aggregate.SalesOrder;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItem;
 import com.werp.sero.order.command.domain.repository.SOItemRepository;
@@ -14,6 +13,7 @@ import com.werp.sero.shipping.command.domain.aggregate.DeliveryOrder;
 import com.werp.sero.shipping.command.domain.aggregate.DeliveryOrderItem;
 import com.werp.sero.shipping.command.domain.repository.DeliveryOrderItemRepository;
 import com.werp.sero.shipping.command.domain.repository.DeliveryOrderRepository;
+import com.werp.sero.system.command.application.service.DocumentSequenceCommandService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,23 +31,19 @@ public class DeliveryOrderCommandServiceImpl implements DeliveryOrderCommandServ
     private final DeliveryOrderItemRepository deliveryOrderItemRepository;
     private final SORepository soRepository;
     private final SOItemRepository soItemRepository;
-    private final EmployeeRepository employeeRepository;
+    private final DocumentSequenceCommandService documentSequenceCommandService;
 
     @Override
     @Transactional
-    public String createDeliveryOrder(DOCreateRequestDTO requestDTO, int managerId) {
+    public String createDeliveryOrder(DOCreateRequestDTO requestDTO, Employee manager) {
         // 1. 주문 조회
         SalesOrder salesOrder = soRepository.findById(requestDTO.getSoId())
                 .orElseThrow(SalesOrderNotFoundException::new);
 
-        // 2. 작성자 (영업팀 직원) 조회
-        Employee manager = employeeRepository.findById(managerId)
-                .orElseThrow(() -> new RuntimeException("직원을 찾을 수 없습니다."));
+        // 2. 납품서 코드 생성 (DO-YYYYMMDD-XXX 형식)
+        String doCode = documentSequenceCommandService.generateDocumentCode("DOC_DO");
 
-        // 3. 납품서 코드 생성 (DO-YYYYMMDD-XXX 형식)
-        String doCode = generateDeliveryOrderCode();
-
-        // 4. 납품서 엔티티 생성
+        // 3. 납품서 엔티티 생성
         DeliveryOrder deliveryOrder = DeliveryOrder.builder()
                 .doCode(doCode)
                 .doUrl("") // TODO: 문서 URL은 추후 처리
@@ -57,10 +53,10 @@ public class DeliveryOrderCommandServiceImpl implements DeliveryOrderCommandServ
                 .manager(manager)
                 .build();
 
-        // 5. 납품서 저장
+        // 4. 납품서 저장
         DeliveryOrder savedDeliveryOrder = deliveryOrderRepository.save(deliveryOrder);
 
-        // 6. 납품서 품목 저장
+        // 5. 납품서 품목 저장
         List<DeliveryOrderItem> deliveryOrderItems = new ArrayList<>();
 
         // items가 null이거나 비어있으면 주문의 모든 품목을 자동으로 포함
@@ -92,30 +88,9 @@ public class DeliveryOrderCommandServiceImpl implements DeliveryOrderCommandServ
             }
         }
 
-        // 7. 납품서 품목 일괄 저장
+        // 6. 납품서 품목 일괄 저장
         deliveryOrderItemRepository.saveAll(deliveryOrderItems);
 
         return doCode;
-    }
-
-    /**
-     * 납품서 코드 생성 (DO-YYYYMMDD-XX)
-     * 예: DO-20251219-01, DO-20251219-02, ..., DO-20251219-99, DO-20251219-100
-     */
-    private String generateDeliveryOrderCode() {
-        String today = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-
-        // 오늘 날짜로 생성된 납품서 개수 조회
-        long count = deliveryOrderRepository.countByToday(today);
-
-        // 다음 순번 (1부터 시작)
-        int nextSequence = (int) (count + 1);
-
-        // 01~99는 2자리, 100 이상은 그대로 표시
-        String sequence = nextSequence < 100
-            ? String.format("%02d", nextSequence)
-            : String.valueOf(nextSequence);
-
-        return String.format("DO-%s-%s", today, sequence);
     }
 }
