@@ -221,10 +221,10 @@
                 OR B.so_code LIKE CONCAT('%', #{keyword}, '%')
                 OR EXISTS (
                 SELECT 1
-                FROM production_request_item PRI
-                JOIN sales_order_item SOI ON PRI.so_item_id = SOI.id
-                WHERE PRI.pr_id = A.id
-                AND SOI.item_name LIKE CONCAT('%', #{keyword}, '%')
+                FROM production_request_item E
+                JOIN sales_order_item F ON E.so_item_id = F.id
+                WHERE E.pr_id = A.id
+                AND F.item_name LIKE CONCAT('%', #{keyword}, '%')
                 )
                 )
             </if>
