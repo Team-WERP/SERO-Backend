@@ -54,7 +54,7 @@ public class SOClientCommandServiceImpl implements SOClientCommandService {
                 .clientName(clientEmployee.getClient().getCompanyName())
 
                 .orderedAt(DateTimeUtils.nowDateTime())
-                .shippedAt(request.getShipped_at())
+                .shippedAt(request.getShippedAt())
                 .totalPrice(totalOrderPrice)
                 .totalQuantity(totalOrderQuantity)
                 .totalItemCount(request.getItems().size())

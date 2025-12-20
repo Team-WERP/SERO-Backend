@@ -19,8 +19,8 @@ public class SOClientOrderDTO {
     @Schema(description = "주문 ID")
     private int orderId;
 
-    @Schema(description = "납기 요청일", example = "2026-01-31 16:00:00")
-    private String shipped_at;
+    @Schema(description = "납기 요청일", example = "2026-01-31 16:00")
+    private String shippedAt;
 
     @Schema(description = "PO 번호", example = "PO-20251219-001")
     private String poCode;
@@ -49,7 +49,7 @@ public class SOClientOrderDTO {
     public static SOClientOrderDTO of(SalesOrder savedOrder, List<SalesOrderItem> savedItems) {
         return SOClientOrderDTO.builder()
                 .orderId(savedOrder.getId())
-                .shipped_at(savedOrder.getShippedAt())
+                .shippedAt(savedOrder.getShippedAt())
                 .poCode(savedOrder.getPoCode())
                 .shippingName(savedOrder.getShippingName())
                 .address(savedOrder.getAddress())
