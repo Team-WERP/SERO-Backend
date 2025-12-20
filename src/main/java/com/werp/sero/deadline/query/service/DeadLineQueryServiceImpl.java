@@ -23,7 +23,7 @@ public class DeadLineQueryServiceImpl implements DeadLineQueryService {
     private static final int WORK_START_HOUR = 9;           // 근무 시작 시간
     private static final int WORK_END_HOUR = 18;            // 근무 종료 시간
     private static final int SHIPPING_DAYS = 2;             // 배송 소요 일수
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
 
     @Override
