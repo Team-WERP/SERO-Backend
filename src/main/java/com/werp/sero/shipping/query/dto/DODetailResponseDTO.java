@@ -48,8 +48,8 @@ public class DODetailResponseDTO {
     @Schema(description = "합계금액", example = "2300000000")
     private long totalAmount;
 
-    @Schema(description = "납품기한 (주문의 납기일)", example = "2025-12-15")
-    private String deliveryDeadline;
+    @Schema(description = "납기일시 (납품서 납기일)", example = "2025-12-25 14:00")
+    private String shippedAt;
 
     @Schema(description = "납품장소 (배송지 주소)", example = "경상북도 경주시 명계3일반산업")
     private String deliveryLocation;
