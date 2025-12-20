@@ -48,7 +48,7 @@ public class DeliveryOrderCommandServiceImpl implements DeliveryOrderCommandServ
                 .doCode(doCode)
                 .doUrl("") // TODO: 문서 URL은 추후 처리
                 .note(requestDTO.getNote())
-                .createdAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+                .createdAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))
                 .shippedAt(requestDTO.getShippedAt())
                 .salesOrder(salesOrder)
                 .manager(manager)
