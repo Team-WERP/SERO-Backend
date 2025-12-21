@@ -68,7 +68,9 @@ public enum ErrorCode {
     GOODS_ISSUE_NOT_FOUND(HttpStatus.NOT_FOUND, "SHIPPING001", "출고지시 정보를 찾을 수 없습니다."),
 
     /* DELIVERY ORDER */
-    DELIVERY_ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "SHIPPING002", "납품서 정보를 찾을 수 없습니다.");
+    DELIVERY_ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "SHIPPING002", "납품서 정보를 찾을 수 없습니다."),
+
+    PR_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "PRODUCTION007", "생산요청 품목을 찾을 수 없습니다");
 
     private final HttpStatus status;
     private final String code;
