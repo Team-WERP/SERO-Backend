@@ -3,6 +3,7 @@ package com.werp.sero.production.command.application.controller;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.production.command.application.dto.PRDraftCreateRequestDTO;
 import com.werp.sero.production.command.application.dto.PRDraftUpdateRequestDTO;
+import com.werp.sero.production.command.application.dto.PRManagerAssignRequestDTO;
 import com.werp.sero.production.command.application.service.PRCommandService;
 import com.werp.sero.security.annotation.CurrentUser;
 import io.swagger.v3.oas.annotations.Operation;
@@ -80,4 +81,18 @@ public class PRCommandController {
         PRCommandService.request(prId, employee);
         return ResponseEntity.ok().build();
     }
+
+    @Operation(
+            summary = "생산요청 담당자 배정",
+            description = "특정 생산요청에 담당자를 배정합니다."
+    )
+    @PutMapping("/{prId}/manager")
+    public ResponseEntity<Void> assignManager(
+            @PathVariable int prId,
+            @RequestBody PRManagerAssignRequestDTO dto
+    ) {
+        PRCommandService.assignManager(prId, dto.getManagerId());
+        return ResponseEntity.ok().build();
+    }
+
 }
