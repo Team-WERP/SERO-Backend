@@ -4,8 +4,6 @@ import com.werp.sero.warehouse.exception.InvalidMaterialTypeException;
 import com.werp.sero.warehouse.exception.InvalidStockStatusException;
 import com.werp.sero.warehouse.exception.WarehouseNotFoundException;
 import com.werp.sero.warehouse.exception.WarehouseStockNotFoundException;
-import com.werp.sero.warehouse.command.domain.aggregate.WarehouseStock;
-import com.werp.sero.warehouse.command.domain.aggregate.WarehouseStockHistory;
 import com.werp.sero.warehouse.query.dao.WarehouseMapper;
 import com.werp.sero.warehouse.query.dao.WarehouseStockHistoryMapper;
 import com.werp.sero.warehouse.query.dao.WarehouseStockMapper;
@@ -56,28 +54,33 @@ public class WarehouseStockQueryServiceImpl implements WarehouseStockQueryServic
         }
 
         // 4. 재고 목록 조회
-        List<WarehouseStock> stocks = warehouseStockMapper.findByCondition(
+        return warehouseStockMapper.findByCondition(
                 warehouseId,
                 materialType,
                 stockStatus,
                 keyword
         );
-
-        return stocks.stream()
-                .map(WarehouseStockListResponseDTO::from)
-                .toList();
     }
 
     @Override
     public WarehouseStockDetailResponseDTO getWarehouseStockDetail(int stockId) {
         // 1. 재고 정보 조회
-        WarehouseStock stock = warehouseStockMapper.findByIdWithDetails(stockId)
+        WarehouseStockDetailResponseDTO stock = warehouseStockMapper.findByIdWithDetails(stockId)
                 .orElseThrow(WarehouseStockNotFoundException::new);
 
         // 2. 변동 이력 조회
-        List<WarehouseStockHistory> histories =
+        List<WarehouseStockDetailResponseDTO.StockHistoryDTO> histories =
                 warehouseStockHistoryMapper.findByWarehouseStockId(stockId);
 
-        return WarehouseStockDetailResponseDTO.from(stock, histories);
+        return WarehouseStockDetailResponseDTO.builder()
+                .id(stock.getId())
+                .warehouse(stock.getWarehouse())
+                .material(stock.getMaterial())
+                .safetyStock(stock.getSafetyStock())
+                .currentStock(stock.getCurrentStock())
+                .availableStock(stock.getAvailableStock())
+                .stockStatus(stock.getStockStatus())
+                .stockHistory(histories)
+                .build();
     }
 }

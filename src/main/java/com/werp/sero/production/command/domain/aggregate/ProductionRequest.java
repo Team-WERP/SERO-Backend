@@ -86,4 +86,20 @@ public class ProductionRequest {
         return item;
     }
 
+    public void changeDueAt(String dueAt) { this.dueAt = dueAt; }
+    public void changeReason(String reason) { this.reason = reason; }
+
+    public void changeTotalQuantity(int totalQuantity) {
+        this.totalQuantity = totalQuantity;
+    }
+
+    public void request(String prCode) {
+        this.prCode = prCode;
+        this.status = "PR_RVW";
+        this.requestedAt = DateTimeUtils.nowDateTime();
+    }
+
+    public void assignManager(Employee manager) {
+        this.manager = manager;
+    }
 }

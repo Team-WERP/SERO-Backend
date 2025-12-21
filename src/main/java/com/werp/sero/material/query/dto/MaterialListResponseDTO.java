@@ -1,6 +1,5 @@
 package com.werp.sero.material.query.dto;
 
-import com.werp.sero.material.command.domain.aggregate.Material;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -26,20 +25,4 @@ public class MaterialListResponseDTO {
     private int safetyStock;
     private Integer rawMaterialCount;
     private String createdAt;
-
-    public static MaterialListResponseDTO from(Material material) {
-        return MaterialListResponseDTO.builder()
-                .id(material.getId())
-                .name(material.getName())
-                .materialCode(material.getMaterialCode())
-                .spec(material.getSpec())
-                .type(material.getType())
-                .status(material.getStatus())
-                .baseUnit(material.getBaseUnit())
-                .unitPrice(material.getUnitPrice())
-                .safetyStock(material.getSafetyStock())
-                .rawMaterialCount(material.getRawMaterialCount())
-                .createdAt(material.getCreatedAt())
-                .build();
-    }
 }

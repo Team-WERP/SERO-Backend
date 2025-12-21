@@ -6,6 +6,7 @@ import com.werp.sero.security.jwt.JwtAuthenticationFilter;
 import com.werp.sero.security.jwt.JwtExceptionFilter;
 import com.werp.sero.security.jwt.JwtTokenProvider;
 import com.werp.sero.security.service.ClientEmployeeUserDetailsService;
+import com.werp.sero.util.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +23,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 @RequiredArgsConstructor
 @EnableWebSecurity
@@ -29,12 +31,14 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class ClientEmployeeSecurityConfig {
     private static final String AUTHORITY = "AC_CLI";
 
+    private final RedisUtil redisUtil;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtExceptionFilter jwtExceptionFilter;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private final ClientEmployeeUserDetailsService clientEmployeeUserDetailsService;
+    private final CorsConfigurationSource corsConfigurationSource;
 
     @Bean("clientEmployeeAuthenticationManager")
     public AuthenticationManager clientEmployeeAuthenticationManager() {
@@ -49,6 +53,7 @@ public class ClientEmployeeSecurityConfig {
     @Bean
     public SecurityFilterChain clientEmployFilterChain(final HttpSecurity http) throws Exception {
         http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .csrf(CsrfConfigurer::disable)
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -61,7 +66,7 @@ public class ClientEmployeeSecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .authenticationManager(clientEmployeeAuthenticationManager())
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisUtil), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtExceptionFilter, JwtAuthenticationFilter.class)
                 .exceptionHandling(exception -> exception
                         .accessDeniedHandler(customAccessDeniedHandler)

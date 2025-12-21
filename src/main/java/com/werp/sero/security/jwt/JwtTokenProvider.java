@@ -91,6 +91,15 @@ public class JwtTokenProvider {
                 .getPayload();
     }
 
+    public String extractEmail(final String token) {
+        return Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getSubject();
+    }
+
     public Authentication getAuthentication(final String token) {
         final Claims claims = parseClaims(token);
 
@@ -115,9 +124,11 @@ public class JwtTokenProvider {
         return new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
     }
 
-    public void validateToken(final String accessToken) {
+    public boolean validateToken(final String accessToken) {
         try {
             parseClaims(accessToken);
+
+            return true;
         } catch (UnsupportedJwtException | MalformedJwtException | IllegalArgumentException e) {
             log.error("Invalid JWT Token: {}", e);
             throw new InvalidTokenException();
@@ -131,5 +142,9 @@ public class JwtTokenProvider {
             log.error("Jwt exception: {}", e);
             throw new InvalidTokenException();
         }
+    }
+
+    public long getExpirationTime(final String token) {
+        return parseClaims(token).getExpiration().getTime();
     }
 }

@@ -1,7 +1,9 @@
 package com.werp.sero.order.query.service;
 
+import com.werp.sero.order.exception.SalesOrderNotFoundException;
 import com.werp.sero.order.query.dao.SOMapper;
 import com.werp.sero.order.query.dto.SOFilterDTO;
+import com.werp.sero.order.query.dto.SODetailsResponseDTO;
 import com.werp.sero.order.query.dto.SOResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -42,5 +44,15 @@ public class SOServiceImpl implements SOQueryService {
         params.put("offset", offset);
 
         return soMapper.selectAllSalesOrders(params);
+    }
+
+    @Override
+    public SODetailsResponseDTO findOrderDetailsById(int orderId) {
+        SODetailsResponseDTO orderDetails = soMapper.selectOrderDetailWithItems(orderId);
+        if (orderDetails == null) {
+            throw new SalesOrderNotFoundException();
+        }
+
+        return orderDetails;
     }
 }
