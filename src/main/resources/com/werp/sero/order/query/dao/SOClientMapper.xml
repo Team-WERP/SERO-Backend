@@ -56,12 +56,15 @@
             B.unit,
             B.unit_price,
             B.total_price AS item_total_price
-        FROM sales_order A
+        FROM (
+                 SELECT * FROM sales_order
+                 WHERE client_id = #{clientId}
+                 ORDER BY ordered_at DESC
+                     LIMIT 5
+             ) A
                  LEFT JOIN sales_order_item B ON A.id = B.so_id
                  LEFT JOIN client_employee C ON A.client_manager_id = C.id
-        WHERE A.client_id = #{clientId}
-        ORDER BY A.ordered_at DESC
-            LIMIT 5
+        ORDER BY A.ordered_at DESC, B.id ASC
     </select>
 
     <!-- 고객사 주문 불러오기 -->
