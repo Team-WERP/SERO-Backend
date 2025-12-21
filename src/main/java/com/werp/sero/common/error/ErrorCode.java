@@ -37,6 +37,7 @@ public enum ErrorCode {
     WAREHOUSE_NOT_FOUND(HttpStatus.NOT_FOUND, "WAREHOUSE002", "창고 정보를 찾을 수 없습니다."),
     INVALID_MATERIAL_TYPE(HttpStatus.BAD_REQUEST, "WAREHOUSE003", "잘못된 자재 유형입니다. (허용: MAT_FG, MAT_RM)"),
     INVALID_STOCK_STATUS(HttpStatus.BAD_REQUEST, "WAREHOUSE004", "잘못된 재고 상태입니다. (허용: NORMAL, LOW, OUT_OF_STOCK)"),
+    INSUFFICIENT_STOCK(HttpStatus.BAD_REQUEST, "WAREHOUSE005", "재고가 부족합니다."),
 
     /* CLIENT */
     CLIENT_NOT_FOUND(HttpStatus.NOT_FOUND, "CLIENT001", "거래처 정보를 찾을 수 없습니다."),
