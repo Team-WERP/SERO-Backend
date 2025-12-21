@@ -1,5 +1,6 @@
 package com.werp.sero.production.command.domain.aggregate;
 
+import com.werp.sero.common.util.DateTimeUtils;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -43,4 +44,30 @@ public class ProductionPlan {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "production_line_id", nullable = false)
     private ProductionLine productionLine;
+
+    public static ProductionPlan create(
+            ProductionRequestItem prItem,
+            ProductionLine productionLine,
+            Employee manager,
+            String startDate,
+            String endDate,
+            int productionQuantity,
+            String ppCode
+    ) {
+        ProductionPlan plan = new ProductionPlan();
+
+        plan.productionRequestItem = prItem;
+        plan.productionLine = productionLine;
+        plan.employee = manager;
+
+        plan.startDate = startDate;
+        plan.endDate = endDate;
+        plan.productionQuantity = productionQuantity;
+        plan.ppCode = ppCode;
+
+        plan.createdAt = DateTimeUtils.nowDateTime();
+
+        return plan;
+    }
+
 }

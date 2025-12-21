@@ -1,8 +1,12 @@
 package com.werp.sero.production.command.application.controller;
 
+import com.werp.sero.employee.command.domain.aggregate.Employee;
+import com.werp.sero.production.command.application.dto.ProductionPlanCreateRequestDTO;
+import com.werp.sero.production.command.application.dto.ProductionPlanCreateResponseDTO;
 import com.werp.sero.production.command.application.dto.ProductionPlanValidateRequestDTO;
 import com.werp.sero.production.command.application.dto.ProductionPlanValidationResponseDTO;
 import com.werp.sero.production.command.application.service.PPCommandService;
+import com.werp.sero.security.annotation.CurrentUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +46,27 @@ public class PPCommandController {
             ) {
         return ResponseEntity.ok(
                 ppCommandService.validate(request)
+        );
+    }
+
+    @Operation(
+            summary = "생산계획 생성",
+            description = """
+                    생산요청 품목(PR Item)에 대해
+                    생산계획을 확정 생성합니다.
+
+                    사전 조건:
+                    - 생산계획 검증(validate) 통과
+                    - PR Item당 1건만 생성 가능
+                    """
+    )
+    @PostMapping
+    public ResponseEntity<ProductionPlanCreateResponseDTO> create(
+            @RequestBody ProductionPlanCreateRequestDTO request,
+            @CurrentUser Employee currentEmployee
+    ) {
+        return ResponseEntity.ok(
+                ppCommandService.create(request, currentEmployee)
         );
     }
 }

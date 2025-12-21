@@ -1,12 +1,25 @@
 package com.werp.sero.production.command.application.service;
 
+import com.werp.sero.employee.command.domain.aggregate.Employee;
+import com.werp.sero.production.command.application.dto.ProductionPlanCreateRequestDTO;
+import com.werp.sero.production.command.application.dto.ProductionPlanCreateResponseDTO;
 import com.werp.sero.production.command.application.dto.ProductionPlanValidateRequestDTO;
 import com.werp.sero.production.command.application.dto.ProductionPlanValidationResponseDTO;
+import com.werp.sero.production.command.domain.aggregate.ProductionLine;
+import com.werp.sero.production.command.domain.aggregate.ProductionPlan;
+import com.werp.sero.production.command.domain.aggregate.ProductionRequestItem;
+import com.werp.sero.production.command.domain.repository.PPRepository;
+import com.werp.sero.production.command.domain.repository.PRItemRepository;
+import com.werp.sero.production.command.domain.repository.PRRepository;
+import com.werp.sero.production.command.domain.repository.ProductionLineRepository;
+import com.werp.sero.production.exception.ProductionLineNotFoundException;
 import com.werp.sero.production.exception.ProductionRequestItemNotFoundException;
 import com.werp.sero.production.query.dao.PPValidateMapper;
+import com.werp.sero.system.command.application.service.DocumentSequenceCommandService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -17,8 +30,13 @@ import java.time.temporal.ChronoUnit;
 public class PPCommandServiceImpl implements PPCommandService{
     private static final int DAILY_AVAILABLE_SECONDS = 8 * 60 * 60; // 8시간
     private final PPValidateMapper ppValidateMapper;
+    private final DocumentSequenceCommandService documentSequenceCommandService;
+    private final PPRepository ppRepository;
+    private final PRItemRepository prItemRepository;
+    private final ProductionLineRepository productionLineRepository;
 
     @Override
+    @Transactional
     public ProductionPlanValidationResponseDTO validate(ProductionPlanValidateRequestDTO request) {
 
         // PR Item 존재 여부
@@ -84,5 +102,55 @@ public class PPCommandServiceImpl implements PPCommandService{
         }
 
         return ProductionPlanValidationResponseDTO.ok();
+    }
+
+    @Override
+    @Transactional
+    public ProductionPlanCreateResponseDTO create(
+            ProductionPlanCreateRequestDTO request,
+            Employee employee
+    ) {
+
+        ProductionPlanValidationResponseDTO validation =
+                validate(
+                        new ProductionPlanValidateRequestDTO(
+                                request.getPrItemId(),
+                                request.getProductionLineId(),
+                                request.getStartDate(),
+                                request.getEndDate(),
+                                request.getProductionQuantity()
+                        )
+                );
+
+        if (!validation.isValid()) {
+            throw new IllegalStateException(validation.getMessage());
+        }
+
+        ProductionRequestItem prItem =
+                prItemRepository.findById(request.getPrItemId())
+                        .orElseThrow(ProductionRequestItemNotFoundException::new);
+
+        ProductionLine productionLine =
+                productionLineRepository.findById(request.getProductionLineId())
+                        .orElseThrow(ProductionLineNotFoundException::new);
+
+        String ppCode =
+                documentSequenceCommandService.generateDocumentCode("DOC_PP");
+
+        ProductionPlan plan = ProductionPlan.create(
+                prItem,
+                productionLine,
+                employee,
+                request.getStartDate(),
+                request.getEndDate(),
+                request.getProductionQuantity(),
+                ppCode
+        );
+        ppRepository.save(plan);
+
+        return new ProductionPlanCreateResponseDTO(
+                plan.getId(),
+                plan.getPpCode()
+        );
     }
 }

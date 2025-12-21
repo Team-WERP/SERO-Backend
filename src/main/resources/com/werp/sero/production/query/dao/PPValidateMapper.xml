@@ -27,7 +27,7 @@
 
         SELECT COUNT(1)
         FROM production_plan A
-        WHERE A.pr_item_quantity_id = #{prItemId}
+        WHERE A.pr_item_id = #{prItemId}
 
     </select>
 
