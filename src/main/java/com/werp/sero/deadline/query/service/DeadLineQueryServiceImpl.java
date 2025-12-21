@@ -55,9 +55,14 @@ public class DeadLineQueryServiceImpl implements DeadLineQueryService {
                         .withMinute(0)
                         .withSecond(0);
             } else {
-                // 기존 생산계획이 없으면 당장 내일 09:00부터 시작
+                // 기존 생산계획이 없으면 현재 시간 기준으로 생산 시작 시간 결정
                 LocalDateTime now = LocalDateTime.now();
-                productionStartTime = now.plusDays(1)
+                int currentHour = now.getHour();
+
+                // 근무시간(9~18시) 중이면 다음날 09:00, 근무시간 외면 모레 09:00
+                int daysToAdd = (currentHour >= WORK_START_HOUR && currentHour < WORK_END_HOUR) ? 1 : 2;
+
+                productionStartTime = now.plusDays(daysToAdd)
                         .withHour(WORK_START_HOUR)
                         .withMinute(0)
                         .withSecond(0);
