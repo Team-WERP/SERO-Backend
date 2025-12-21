@@ -95,8 +95,10 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
 
         goodsIssueRepository.save(goodsIssue);
 
-        // 8. 재고 검증 및 출고지시 품목 생성
+        // 8. 재고 검증, 할당 및 출고지시 품목 생성
         List<String> insufficientItems = new ArrayList<>();
+        List<GoodsIssueItem> goodsIssueItems = new ArrayList<>();
+        List<WarehouseStock> stocksToUpdate = new ArrayList<>();
 
         for (DeliveryOrderItem doItem : deliveryOrderItems) {
             String itemCode = doItem.getSalesOrderItem().getItemCode();
@@ -117,6 +119,7 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
                 int availableStock = (stock != null) ? stock.getAvailableStock() : 0;
                 insufficientItems.add(String.format("%s(%s): 필요 %d개, 가용 %d개",
                         itemName, itemCode, requiredQuantity, availableStock));
+                continue;  // 재고 부족 시 다음 품목으로
             }
 
             // 출고지시 품목 생성
@@ -125,7 +128,11 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
                     .goodsIssue(goodsIssue)
                     .salesOrderItem(doItem.getSalesOrderItem())
                     .build();
-            goodsIssueItemRepository.save(giItem);
+            goodsIssueItems.add(giItem);
+
+            // 재고 할당 (available_stock 감소)
+            stock.allocateStock(requiredQuantity);
+            stocksToUpdate.add(stock);
         }
 
         // 9. 재고 부족 시 예외 발생
@@ -134,7 +141,11 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
             throw new InsufficientStockException(message);
         }
 
-        // 10. 주문 품목별 이력 기록 (출고지시 수량)
+        // 10. 배치 저장 (출고지시 품목 및 재고)
+        goodsIssueItemRepository.saveAll(goodsIssueItems);
+        warehouseStockRepository.saveAll(stocksToUpdate);
+
+        // 11. 주문 품목별 이력 기록 (출고지시 수량)
         for (DeliveryOrderItem doItem : deliveryOrderItems) {
             SalesOrderItemHistory history = SalesOrderItemHistory.builder()
                     .prQuantity(0)
