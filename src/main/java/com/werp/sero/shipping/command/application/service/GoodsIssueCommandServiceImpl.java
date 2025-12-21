@@ -6,6 +6,8 @@ import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.material.command.domain.aggregate.Material;
 import com.werp.sero.material.command.domain.repository.MaterialRepository;
 import com.werp.sero.order.command.domain.aggregate.SalesOrder;
+import com.werp.sero.order.command.domain.aggregate.SalesOrderItemHistory;
+import com.werp.sero.order.command.domain.repository.SalesOrderItemHistoryRepository;
 import com.werp.sero.order.command.domain.repository.SORepository;
 import com.werp.sero.shipping.command.application.dto.GICreateRequestDTO;
 import com.werp.sero.shipping.command.domain.aggregate.DeliveryOrder;
@@ -45,6 +47,7 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
     private final WarehouseStockRepository warehouseStockRepository;
     private final MaterialRepository materialRepository;
     private final SORepository soRepository;
+    private final SalesOrderItemHistoryRepository salesOrderItemHistoryRepository;
     private final DocumentSequenceCommandService documentSequenceCommandService;
 
     @Override
@@ -129,6 +132,22 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
         if (!insufficientItems.isEmpty()) {
             String message = "재고가 부족합니다: " + String.join(", ", insufficientItems);
             throw new InsufficientStockException(message);
+        }
+
+        // 10. 주문 품목별 이력 기록 (출고지시 수량)
+        for (DeliveryOrderItem doItem : deliveryOrderItems) {
+            SalesOrderItemHistory history = SalesOrderItemHistory.builder()
+                    .prQuantity(0)
+                    .piQuantity(0)
+                    .giQuantity(doItem.getDoQuantity())  // 출고지시 수량
+                    .shippedQuantity(0)
+                    .doQuantity(0)
+                    .completedQuantity(0)
+                    .soItemId(doItem.getSalesOrderItem().getId())
+                    .createdAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))
+                    .creatorId(drafter.getId())
+                    .build();
+            salesOrderItemHistoryRepository.save(history);
         }
 
         return giCode;
