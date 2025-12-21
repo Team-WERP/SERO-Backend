@@ -56,8 +56,7 @@ public class DeadLineQueryServiceImpl implements DeadLineQueryService {
                         .withSecond(0);
             } else {
                 // 기존 생산계획이 없으면 당장 내일 09:00부터 시작
-                String nowDateTimeStr = DateTimeUtils.nowDateTime();
-                LocalDateTime now = LocalDateTime.parse(nowDateTimeStr, FORMATTER);
+                LocalDateTime now = LocalDateTime.now();
                 productionStartTime = now.plusDays(1)
                         .withHour(WORK_START_HOUR)
                         .withMinute(0)
@@ -79,11 +78,12 @@ public class DeadLineQueryServiceImpl implements DeadLineQueryService {
             // 6. 배송 시간 추가하여 최종 납기 예정일 계산 (생산 완료 + 배송 2일)
             LocalDateTime expectedDeliveryDate = productionEndTime.plusDays(SHIPPING_DAYS);
 
-            // 7. 희망 납기일 파싱
-            LocalDateTime desiredDeliveryDate = LocalDateTime.parse(
-                    request.getDesiredDeliveryDate(),
-                    FORMATTER
-            );
+            // 7. 희망 납기일 파싱 (초 단위가 있으면 제거)
+            String desiredDateStr = request.getDesiredDeliveryDate();
+            if (desiredDateStr.length() > 16 && desiredDateStr.charAt(16) == ':') {
+                desiredDateStr = desiredDateStr.substring(0, 16);
+            }
+            LocalDateTime desiredDeliveryDate = LocalDateTime.parse(desiredDateStr, FORMATTER);
 
             // 8. 납기 가능 여부 판단 (생산 완료 + 배송까지 고려)
             boolean deliveryPossible = !expectedDeliveryDate.isAfter(desiredDeliveryDate);

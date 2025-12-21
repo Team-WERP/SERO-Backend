@@ -14,7 +14,7 @@ import java.util.List;
 @Schema(description = "납기 가능 여부 조회 요청하는 DTO")
 public class DeadLineQueryRequestDTO {
 
-    @Schema(description = "희망 수령일")
+    @Schema(description = "희망 수령일 (형식: yyyy-MM-dd HH:mm)", example = "2026-06-30 17:00")
     private String desiredDeliveryDate;
 
     @Schema(description = "조회할 품목 목록")
