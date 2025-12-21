@@ -2,6 +2,7 @@ package com.werp.sero.order.query.service;
 
 import com.werp.sero.employee.command.domain.aggregate.ClientEmployee;
 import com.werp.sero.order.command.application.dto.SOClientOrderDTO;
+import com.werp.sero.order.exception.SalesOrderNotFoundException;
 import com.werp.sero.order.query.dao.SOClientMapper;
 import com.werp.sero.order.query.dto.SOClientResponseDTO;
 import lombok.RequiredArgsConstructor;
@@ -27,8 +28,13 @@ public class SOClientQueryServiceImpl implements SOClientQueryService {
     @Override
     public SOClientResponseDTO getOrderForReorder(final int orderId, final ClientEmployee clientEmployee) {
         int clientId = clientEmployee.getId();
+        SOClientResponseDTO order = soClientMapper.selectOrderForReorder(clientId, orderId);
 
-        return soClientMapper.selectOrderForReorder(clientId, orderId);
+        if(order == null){
+            throw new SalesOrderNotFoundException();
+        }
+
+        return order;
     }
 
 }

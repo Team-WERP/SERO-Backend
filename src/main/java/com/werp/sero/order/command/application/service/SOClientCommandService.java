@@ -6,5 +6,5 @@ import com.werp.sero.order.command.application.dto.SODetailResponseDTO;
 import jakarta.validation.Valid;
 
 public interface SOClientCommandService {
-    SOClientOrderDTO createOrder(final ClientEmployee clientEmployee, final @Valid SOClientOrderDTO request);
+    SOClientOrderDTO createOrder(final ClientEmployee clientEmployee, final SOClientOrderDTO request);
 }
