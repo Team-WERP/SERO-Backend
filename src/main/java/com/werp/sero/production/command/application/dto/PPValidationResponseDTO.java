@@ -15,8 +15,4 @@ public class PPValidationResponseDTO {
                 "생산계획 수립이 가능합니다."
         );
     }
-
-    public static PPValidationResponseDTO fail(String message) {
-        return new PPValidationResponseDTO(false, message);
-    }
 }

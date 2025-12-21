@@ -1,6 +1,7 @@
 package com.werp.sero.production.command.application.service;
 
 import com.werp.sero.employee.command.domain.aggregate.Employee;
+import com.werp.sero.material.exception.MaterialNotFoundException;
 import com.werp.sero.production.command.application.dto.PPCreateRequestDTO;
 import com.werp.sero.production.command.application.dto.PPCreateResponseDTO;
 import com.werp.sero.production.command.application.dto.PPValidateRequestDTO;
@@ -11,8 +12,7 @@ import com.werp.sero.production.command.domain.aggregate.ProductionRequestItem;
 import com.werp.sero.production.command.domain.repository.PPRepository;
 import com.werp.sero.production.command.domain.repository.PRItemRepository;
 import com.werp.sero.production.command.domain.repository.ProductionLineRepository;
-import com.werp.sero.production.exception.ProductionLineNotFoundException;
-import com.werp.sero.production.exception.ProductionRequestItemNotFoundException;
+import com.werp.sero.production.exception.*;
 import com.werp.sero.production.query.dao.PPValidateMapper;
 import com.werp.sero.system.command.application.service.DocumentSequenceCommandService;
 import lombok.RequiredArgsConstructor;
@@ -43,16 +43,14 @@ public class PPCommandServiceImpl implements PPCommandService{
                 ppValidateMapper.selectMaterialCodeByPRItem(request.getPrItemId());
         log.info("materialCode={}", materialCode);
         if (materialCode == null) {
-            return PPValidationResponseDTO
-                    .fail("생산요청 품목을 찾을 수 없습니다.");
+            throw new ProductionRequestItemNotFoundException();
         }
 
         // 이미 계획 존재 여부 (PR Item당 1회 정책)
         int planCount =
                 ppValidateMapper.countPlansByPRItem(request.getPrItemId());
         if (planCount > 0) {
-            return PPValidationResponseDTO
-                    .fail("이미 해당 품목에 대한 생산계획이 존재합니다.");
+            throw new ProductionPlanAlreadyExistsException();
         }
 
         // Material 조회
@@ -60,8 +58,7 @@ public class PPCommandServiceImpl implements PPCommandService{
                 ppValidateMapper.selectMaterialId(materialCode);
         log.info("materialId={}", materialId);
         if (materialId == null) {
-            return PPValidationResponseDTO
-                    .fail("자재 마스터가 존재하지 않습니다.");
+            throw new MaterialNotFoundException();
         }
 
         // line_material에서 cycle_time 조회
@@ -72,16 +69,14 @@ public class PPCommandServiceImpl implements PPCommandService{
                 );
         log.info("cycleTime={}", cycleTime);
         if (cycleTime == null || cycleTime <= 0) {
-            return PPValidationResponseDTO
-                    .fail("해당 라인에서는 이 품목을 생산할 수 없습니다.");
+            throw new ProductionPlanLineNotCapableException();
         }
 
         // 기간 유효성
         LocalDate start = LocalDate.parse(request.getStartDate());
         LocalDate end = LocalDate.parse(request.getEndDate());
         if (start.isAfter(end)) {
-            return PPValidationResponseDTO
-                    .fail("생산 시작일은 종료일보다 늦을 수 없습니다.");
+            throw new ProductionPlanInvalidPeriodException();
         }
         long days = ChronoUnit.DAYS.between(start, end) + 1;
 
@@ -91,13 +86,10 @@ public class PPCommandServiceImpl implements PPCommandService{
 
         // 수량 검증
         if (request.getProductionQuantity() <= 0) {
-            return PPValidationResponseDTO
-                    .fail("생산 수량은 0보다 커야 합니다.");
+            throw new ProductionPlanInvalidQuantityException();
         }
-
         if (request.getProductionQuantity() > capa) {
-            return PPValidationResponseDTO
-                    .fail("선택한 기간과 라인 기준 생산 가능 수량을 초과했습니다.");
+            throw new ProductionPlanCapacityExceededException();
         }
 
         return PPValidationResponseDTO.ok();
