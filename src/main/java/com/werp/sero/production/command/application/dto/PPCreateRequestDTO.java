@@ -5,12 +5,10 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class ProductionPlanValidateRequestDTO {
+public class PPCreateRequestDTO {
     private int prItemId;
     private int productionLineId;
-
     private String startDate;
     private String endDate;
-
     private int productionQuantity;
 }

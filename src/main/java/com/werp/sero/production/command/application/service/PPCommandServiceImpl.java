@@ -1,16 +1,15 @@
 package com.werp.sero.production.command.application.service;
 
 import com.werp.sero.employee.command.domain.aggregate.Employee;
-import com.werp.sero.production.command.application.dto.ProductionPlanCreateRequestDTO;
-import com.werp.sero.production.command.application.dto.ProductionPlanCreateResponseDTO;
-import com.werp.sero.production.command.application.dto.ProductionPlanValidateRequestDTO;
-import com.werp.sero.production.command.application.dto.ProductionPlanValidationResponseDTO;
+import com.werp.sero.production.command.application.dto.PPCreateRequestDTO;
+import com.werp.sero.production.command.application.dto.PPCreateResponseDTO;
+import com.werp.sero.production.command.application.dto.PPValidateRequestDTO;
+import com.werp.sero.production.command.application.dto.PPValidationResponseDTO;
 import com.werp.sero.production.command.domain.aggregate.ProductionLine;
 import com.werp.sero.production.command.domain.aggregate.ProductionPlan;
 import com.werp.sero.production.command.domain.aggregate.ProductionRequestItem;
 import com.werp.sero.production.command.domain.repository.PPRepository;
 import com.werp.sero.production.command.domain.repository.PRItemRepository;
-import com.werp.sero.production.command.domain.repository.PRRepository;
 import com.werp.sero.production.command.domain.repository.ProductionLineRepository;
 import com.werp.sero.production.exception.ProductionLineNotFoundException;
 import com.werp.sero.production.exception.ProductionRequestItemNotFoundException;
@@ -37,14 +36,14 @@ public class PPCommandServiceImpl implements PPCommandService{
 
     @Override
     @Transactional
-    public ProductionPlanValidationResponseDTO validate(ProductionPlanValidateRequestDTO request) {
+    public PPValidationResponseDTO validate(PPValidateRequestDTO request) {
 
         // PR Item 존재 여부
         String materialCode =
                 ppValidateMapper.selectMaterialCodeByPRItem(request.getPrItemId());
         log.info("materialCode={}", materialCode);
         if (materialCode == null) {
-            return ProductionPlanValidationResponseDTO
+            return PPValidationResponseDTO
                     .fail("생산요청 품목을 찾을 수 없습니다.");
         }
 
@@ -52,7 +51,7 @@ public class PPCommandServiceImpl implements PPCommandService{
         int planCount =
                 ppValidateMapper.countPlansByPRItem(request.getPrItemId());
         if (planCount > 0) {
-            return ProductionPlanValidationResponseDTO
+            return PPValidationResponseDTO
                     .fail("이미 해당 품목에 대한 생산계획이 존재합니다.");
         }
 
@@ -61,7 +60,7 @@ public class PPCommandServiceImpl implements PPCommandService{
                 ppValidateMapper.selectMaterialId(materialCode);
         log.info("materialId={}", materialId);
         if (materialId == null) {
-            return ProductionPlanValidationResponseDTO
+            return PPValidationResponseDTO
                     .fail("자재 마스터가 존재하지 않습니다.");
         }
 
@@ -73,7 +72,7 @@ public class PPCommandServiceImpl implements PPCommandService{
                 );
         log.info("cycleTime={}", cycleTime);
         if (cycleTime == null || cycleTime <= 0) {
-            return ProductionPlanValidationResponseDTO
+            return PPValidationResponseDTO
                     .fail("해당 라인에서는 이 품목을 생산할 수 없습니다.");
         }
 
@@ -81,7 +80,7 @@ public class PPCommandServiceImpl implements PPCommandService{
         LocalDate start = LocalDate.parse(request.getStartDate());
         LocalDate end = LocalDate.parse(request.getEndDate());
         if (start.isAfter(end)) {
-            return ProductionPlanValidationResponseDTO
+            return PPValidationResponseDTO
                     .fail("생산 시작일은 종료일보다 늦을 수 없습니다.");
         }
         long days = ChronoUnit.DAYS.between(start, end) + 1;
@@ -92,28 +91,28 @@ public class PPCommandServiceImpl implements PPCommandService{
 
         // 수량 검증
         if (request.getProductionQuantity() <= 0) {
-            return ProductionPlanValidationResponseDTO
+            return PPValidationResponseDTO
                     .fail("생산 수량은 0보다 커야 합니다.");
         }
 
         if (request.getProductionQuantity() > capa) {
-            return ProductionPlanValidationResponseDTO
+            return PPValidationResponseDTO
                     .fail("선택한 기간과 라인 기준 생산 가능 수량을 초과했습니다.");
         }
 
-        return ProductionPlanValidationResponseDTO.ok();
+        return PPValidationResponseDTO.ok();
     }
 
     @Override
     @Transactional
-    public ProductionPlanCreateResponseDTO create(
-            ProductionPlanCreateRequestDTO request,
+    public PPCreateResponseDTO create(
+            PPCreateRequestDTO request,
             Employee employee
     ) {
 
-        ProductionPlanValidationResponseDTO validation =
+        PPValidationResponseDTO validation =
                 validate(
-                        new ProductionPlanValidateRequestDTO(
+                        new PPValidateRequestDTO(
                                 request.getPrItemId(),
                                 request.getProductionLineId(),
                                 request.getStartDate(),
@@ -148,7 +147,7 @@ public class PPCommandServiceImpl implements PPCommandService{
         );
         ppRepository.save(plan);
 
-        return new ProductionPlanCreateResponseDTO(
+        return new PPCreateResponseDTO(
                 plan.getId(),
                 plan.getPpCode()
         );

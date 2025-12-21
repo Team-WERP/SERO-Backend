@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class ProductionPlanCreateResponseDTO {
+public class PPCreateResponseDTO {
     private int productionPlanId;
     private String ppCode;
 }

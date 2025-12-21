@@ -1,10 +1,10 @@
 package com.werp.sero.production.command.application.controller;
 
 import com.werp.sero.employee.command.domain.aggregate.Employee;
-import com.werp.sero.production.command.application.dto.ProductionPlanCreateRequestDTO;
-import com.werp.sero.production.command.application.dto.ProductionPlanCreateResponseDTO;
-import com.werp.sero.production.command.application.dto.ProductionPlanValidateRequestDTO;
-import com.werp.sero.production.command.application.dto.ProductionPlanValidationResponseDTO;
+import com.werp.sero.production.command.application.dto.PPCreateRequestDTO;
+import com.werp.sero.production.command.application.dto.PPCreateResponseDTO;
+import com.werp.sero.production.command.application.dto.PPValidateRequestDTO;
+import com.werp.sero.production.command.application.dto.PPValidationResponseDTO;
 import com.werp.sero.production.command.application.service.PPCommandService;
 import com.werp.sero.security.annotation.CurrentUser;
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,8 +41,8 @@ public class PPCommandController {
                     """
     )
     @PostMapping("/validate")
-    public ResponseEntity<ProductionPlanValidationResponseDTO> validate(
-            @RequestBody ProductionPlanValidateRequestDTO request
+    public ResponseEntity<PPValidationResponseDTO> validate(
+            @RequestBody PPValidateRequestDTO request
             ) {
         return ResponseEntity.ok(
                 ppCommandService.validate(request)
@@ -61,8 +61,8 @@ public class PPCommandController {
                     """
     )
     @PostMapping
-    public ResponseEntity<ProductionPlanCreateResponseDTO> create(
-            @RequestBody ProductionPlanCreateRequestDTO request,
+    public ResponseEntity<PPCreateResponseDTO> create(
+            @RequestBody PPCreateRequestDTO request,
             @CurrentUser Employee currentEmployee
     ) {
         return ResponseEntity.ok(

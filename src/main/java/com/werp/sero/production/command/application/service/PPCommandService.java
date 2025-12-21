@@ -1,13 +1,13 @@
 package com.werp.sero.production.command.application.service;
 
 import com.werp.sero.employee.command.domain.aggregate.Employee;
-import com.werp.sero.production.command.application.dto.ProductionPlanCreateRequestDTO;
-import com.werp.sero.production.command.application.dto.ProductionPlanCreateResponseDTO;
-import com.werp.sero.production.command.application.dto.ProductionPlanValidateRequestDTO;
-import com.werp.sero.production.command.application.dto.ProductionPlanValidationResponseDTO;
+import com.werp.sero.production.command.application.dto.PPCreateRequestDTO;
+import com.werp.sero.production.command.application.dto.PPCreateResponseDTO;
+import com.werp.sero.production.command.application.dto.PPValidateRequestDTO;
+import com.werp.sero.production.command.application.dto.PPValidationResponseDTO;
 
 public interface PPCommandService {
-    ProductionPlanValidationResponseDTO validate(ProductionPlanValidateRequestDTO request);
+    PPValidationResponseDTO validate(PPValidateRequestDTO request);
 
-    ProductionPlanCreateResponseDTO create(ProductionPlanCreateRequestDTO request, Employee currnetEmployee);
+    PPCreateResponseDTO create(PPCreateRequestDTO request, Employee currnetEmployee);
 }
