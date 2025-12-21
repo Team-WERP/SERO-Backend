@@ -8,6 +8,8 @@ import com.werp.sero.approval.command.domain.repository.ApprovalAttachmentReposi
 import com.werp.sero.approval.command.domain.repository.ApprovalLineRepository;
 import com.werp.sero.approval.command.domain.repository.ApprovalRepository;
 import com.werp.sero.approval.exception.ApprovalDuplicatedException;
+import com.werp.sero.approval.exception.ApprovalLineSequenceNotAllowedException;
+import com.werp.sero.approval.exception.ApprovalLineSequenceRequiredException;
 import com.werp.sero.approval.exception.InvalidApprovalTypeException;
 import com.werp.sero.common.util.DateTimeUtils;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
@@ -33,6 +35,10 @@ import java.util.stream.Collectors;
 @Service
 public class ApprovalCommandServiceImpl implements ApprovalCommandService {
     private static final String APPROVAL_DOC_TYPE_CODE = "DOC_SERO";
+    private static final String APPROVAL_TYPE_APPROVAL = "AT_APPR";
+    private static final String APPROVAL_TYPE_REVIEWER = "AT_RVW";
+    private static final String APPROVAL_TYPE_REFERENCE = "AT_REF";
+    private static final String APPROVAL_TYPE_RECIPIENT = "AT_RCPT";
 
     private final EmployeeRepository employeeRepository;
     private final ApprovalRepository approvalRepository;
@@ -65,18 +71,20 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
         final List<ApprovalLine> approvalLines = saveApprovalLines(approval, requestDTO.getApprovalLines());
 
         final List<ApprovalLineResponseDTO> approvalLineResponseDTOs = approvalLines.stream()
-                .filter(approvalLine -> approvalLine.getLineType().equals("AT_APPR") || approvalLine.getLineType().equals("AT_RVW"))
+                .filter(approvalLine ->
+                        approvalLine.getLineType().equals(APPROVAL_TYPE_APPROVAL) ||
+                                approvalLine.getLineType().equals(APPROVAL_TYPE_REVIEWER))
                 .sorted(Comparator.comparingInt(ApprovalLine::getSequence))
                 .map(ApprovalLineResponseDTO::of)
                 .collect(Collectors.toList());
 
         final List<ApprovalLineResponseDTO> refLines = approvalLines.stream()
-                .filter(approvalLine -> approvalLine.getLineType().equals("AT_REF"))
+                .filter(approvalLine -> approvalLine.getLineType().equals(APPROVAL_TYPE_REFERENCE))
                 .map(ApprovalLineResponseDTO::of)
                 .collect(Collectors.toList());
 
         final List<ApprovalLineResponseDTO> rcptLines = approvalLines.stream()
-                .filter(approvalLine -> approvalLine.getLineType().equals("AT_RCPT"))
+                .filter(approvalLine -> approvalLine.getLineType().equals(APPROVAL_TYPE_RECIPIENT))
                 .map(ApprovalLineResponseDTO::of)
                 .collect(Collectors.toList());
 
@@ -145,9 +153,12 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
                         throw new EmployeeNotFoundException(dto.getApproverId() + "번의 직원이 존재하지 않습니다.");
                     }
 
+                    validateApprovalLine(dto);
+
                     String status = null;
 
-                    if (dto.getLineType().equals("AT_APPR") || dto.getLineType().equals("AT_RVW")) {
+                    if (dto.getLineType().equals(APPROVAL_TYPE_APPROVAL)
+                            || dto.getLineType().equals(APPROVAL_TYPE_REVIEWER)) {
                         status = "ALS_PEND";
                     }
 
@@ -156,5 +167,19 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
                 .collect(Collectors.toList());
 
         return approvalLineRepository.saveAll(approvalLines);
+    }
+
+    private void validateApprovalLine(final ApprovalLineRequestDTO requestDTO) {
+        final String lineType = requestDTO.getLineType();
+
+        if ((lineType.equals(APPROVAL_TYPE_APPROVAL) || lineType.equals(APPROVAL_TYPE_REVIEWER))
+                && requestDTO.getSequence() == null) {
+            throw new ApprovalLineSequenceRequiredException();
+        }
+
+        if ((lineType.equals(APPROVAL_TYPE_RECIPIENT) || lineType.equals(APPROVAL_TYPE_REFERENCE))
+                && requestDTO.getSequence() != null) {
+            throw new ApprovalLineSequenceNotAllowedException();
+        }
     }
 }

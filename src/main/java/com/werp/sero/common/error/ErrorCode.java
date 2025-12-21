@@ -68,7 +68,9 @@ public enum ErrorCode {
 
     /* APPROVAL */
     INVALID_APPROVAL_TYPE(HttpStatus.NOT_FOUND, "APPROVAL001", "지원하지 않는 결재 타입입니다."),
-    APPROVAL_DUPLICATED(HttpStatus.CONFLICT, "APPROVAL002", "이미 존재하는 결재입니다.");
+    APPROVAL_DUPLICATED(HttpStatus.CONFLICT, "APPROVAL002", "이미 존재하는 결재입니다."),
+    APPROVAL_LINE_SEQUENCE_REQUIRED(HttpStatus.BAD_REQUEST, "APPROVAL003", "결재 및 협조는 결재 순서 지정이 필수입니다."),
+    APPROVAL_LINE_SEQUENCE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "APPROVAL004", "수신 및 참조는 결재 순서를 지정할 수 없습니다.");
 
     private final HttpStatus status;
     private final String code;
