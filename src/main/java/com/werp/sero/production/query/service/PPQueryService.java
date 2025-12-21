@@ -1,7 +1,12 @@
 package com.werp.sero.production.query.service;
 
 import com.werp.sero.production.query.dto.PRItemPlanningResponseDTO;
+import com.werp.sero.production.query.dto.ProductionLineResponseDTO;
+
+import java.util.List;
 
 public interface PPQueryService {
     PRItemPlanningResponseDTO getPlanning(int prItemId);
+
+    List<ProductionLineResponseDTO> getProductionLines(Integer factoryId);
 }

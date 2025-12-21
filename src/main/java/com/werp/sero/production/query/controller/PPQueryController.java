@@ -1,15 +1,16 @@
 package com.werp.sero.production.query.controller;
 
 import com.werp.sero.production.query.dto.PRItemPlanningResponseDTO;
+import com.werp.sero.production.query.dto.ProductionLineResponseDTO;
 import com.werp.sero.production.query.service.PPQueryService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Tag(
         name = "생산계획 - Query",
@@ -30,6 +31,26 @@ public class PPQueryController {
     ) {
         return ResponseEntity.ok(
                 ppQueryService.getPlanning(prItemId)
+        );
+    }
+
+    @Operation(
+            summary = "생산라인 목록 조회",
+            description = """
+                생산계획 수립 시 선택 가능한 생산라인 목록을 조회한다.
+                활성 상태(PL_ACTIVE)인 라인만 반환한다.
+                """
+    )
+    @GetMapping("/production-lines")
+    public ResponseEntity<List<ProductionLineResponseDTO>> getProductionLines(
+            @Parameter(
+                    description = "공장 ID (선택)",
+                    example = "2"
+            )
+            @RequestParam(required = false) Integer factoryId
+    ) {
+        return ResponseEntity.ok(
+                ppQueryService.getProductionLines(factoryId)
         );
     }
 }

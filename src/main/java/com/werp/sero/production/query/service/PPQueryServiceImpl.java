@@ -4,6 +4,7 @@ import com.werp.sero.production.exception.ProductionRequestItemNotFoundException
 import com.werp.sero.production.query.dao.PPQueryMapper;
 import com.werp.sero.production.query.dto.PRItemPlanningBaseDTO;
 import com.werp.sero.production.query.dto.PRItemPlanningResponseDTO;
+import com.werp.sero.production.query.dto.ProductionLineResponseDTO;
 import com.werp.sero.production.query.dto.ProductionPlanSummaryDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -45,5 +46,11 @@ public class PPQueryServiceImpl implements PPQueryService{
         );
 
         return response;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductionLineResponseDTO> getProductionLines(Integer factoryId) {
+        return ppQueryMapper.selectProductionLines(factoryId);
     }
 }
