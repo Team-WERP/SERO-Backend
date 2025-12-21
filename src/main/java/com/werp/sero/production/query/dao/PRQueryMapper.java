@@ -1,7 +1,6 @@
 package com.werp.sero.production.query.dao;
 
-import com.werp.sero.production.query.dto.PRDraftDetailResponseDTO;
-import com.werp.sero.production.query.dto.PRDraftListResponseDTO;
+import com.werp.sero.production.query.dto.*;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -19,4 +18,8 @@ public interface PRQueryMapper {
             @Param("prId") int prId,
             @Param("drafterId") int drafterId
     );
+
+    List<PRListResponseDTO> selectPRList(PRListSearchCondition condition);
+
+    List<PRDetailResponseDTO> selectPRDetail(int prId);
 }

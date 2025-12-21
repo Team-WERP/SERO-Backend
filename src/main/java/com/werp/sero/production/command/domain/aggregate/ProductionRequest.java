@@ -98,4 +98,8 @@ public class ProductionRequest {
         this.status = "PR_RVW";
         this.requestedAt = DateTimeUtils.nowDateTime();
     }
+
+    public void assignManager(Employee manager) {
+        this.manager = manager;
+    }
 }
