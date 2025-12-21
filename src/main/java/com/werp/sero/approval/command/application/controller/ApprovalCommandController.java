@@ -1,6 +1,7 @@
 package com.werp.sero.approval.command.application.controller;
 
 import com.werp.sero.approval.command.application.dto.ApprovalCreateRequestDTO;
+import com.werp.sero.approval.command.application.dto.ApprovalResponseDTO;
 import com.werp.sero.approval.command.application.service.ApprovalCommandService;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.security.annotation.CurrentUser;
@@ -24,11 +25,9 @@ public class ApprovalCommandController {
 
     @Operation(summary = "결재 상신")
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<Void> submitForApproval(@CurrentUser final Employee employee,
-                                                  @Valid @RequestPart(name = "requestDTO") final ApprovalCreateRequestDTO requestDTO,
-                                                  @RequestPart(name = "files", required = false) final List<MultipartFile> files) {
-        approvalCommandService.submitForApproval(employee, requestDTO, files);
-
-        return ResponseEntity.ok().build();
+    public ResponseEntity<ApprovalResponseDTO> submitForApproval(@CurrentUser final Employee employee,
+                                                                 @Valid @RequestPart(name = "requestDTO") final ApprovalCreateRequestDTO requestDTO,
+                                                                 @RequestPart(name = "files", required = false) final List<MultipartFile> files) {
+        return ResponseEntity.ok(approvalCommandService.submitForApproval(employee, requestDTO, files));
     }
 }

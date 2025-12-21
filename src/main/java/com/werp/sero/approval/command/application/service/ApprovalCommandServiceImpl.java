@@ -1,7 +1,6 @@
 package com.werp.sero.approval.command.application.service;
 
-import com.werp.sero.approval.command.application.dto.ApprovalCreateRequestDTO;
-import com.werp.sero.approval.command.application.dto.ApprovalLineRequestDTO;
+import com.werp.sero.approval.command.application.dto.*;
 import com.werp.sero.approval.command.domain.aggregate.Approval;
 import com.werp.sero.approval.command.domain.aggregate.ApprovalAttachment;
 import com.werp.sero.approval.command.domain.aggregate.ApprovalLine;
@@ -22,6 +21,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -41,21 +42,43 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
 
     @Transactional
     @Override
-    public void submitForApproval(final Employee employee, final ApprovalCreateRequestDTO requestDTO,
-                                  final List<MultipartFile> files) {
+    public ApprovalResponseDTO submitForApproval(final Employee employee, final ApprovalCreateRequestDTO requestDTO,
+                                                 final List<MultipartFile> files) {
         final Object ref = validateRefCode(requestDTO.getApprovalTargetType(), requestDTO.getRefCode());
 
         final String approvalCode = documentSequenceCommandService.generateDocumentCode(APPROVAL_DOC_TYPE_CODE);
 
         final Approval approval = saveApproval(employee, approvalCode, requestDTO);
 
+        List<ApprovalAttachmentResponseDTO> approvalAttachmentResponseDTOs = new ArrayList<>();
+
         if (files != null && !files.isEmpty()) {
-            saveApprovalAttachments(approval, files);
+            approvalAttachmentResponseDTOs = saveApprovalAttachments(approval, files).stream()
+                    .map(ApprovalAttachmentResponseDTO::of)
+                    .collect(Collectors.toList());
         }
 
-        saveApprovalLines(approval, requestDTO.getApprovalLines());
+        final List<ApprovalLine> approvalLines = saveApprovalLines(approval, requestDTO.getApprovalLines());
+
+        final List<ApprovalLineResponseDTO> approvalLineResponseDTOs = approvalLines.stream()
+                .filter(approvalLine -> approvalLine.getLineType().equals("AT_APPR") || approvalLine.getLineType().equals("AT_RVW"))
+                .sorted(Comparator.comparingInt(ApprovalLine::getSequence))
+                .map(ApprovalLineResponseDTO::of)
+                .collect(Collectors.toList());
+
+        final List<ApprovalLineResponseDTO> refLines = approvalLines.stream()
+                .filter(approvalLine -> approvalLine.getLineType().equals("AT_REF"))
+                .map(ApprovalLineResponseDTO::of)
+                .collect(Collectors.toList());
+
+        final List<ApprovalLineResponseDTO> rcptLines = approvalLines.stream()
+                .filter(approvalLine -> approvalLine.getLineType().equals("AT_RCPT"))
+                .map(ApprovalLineResponseDTO::of)
+                .collect(Collectors.toList());
 
         updateRefCode(requestDTO.getApprovalTargetType(), approvalCode, ref);
+
+        return ApprovalResponseDTO.of(approval, approvalAttachmentResponseDTOs, approvalLineResponseDTOs, refLines, rcptLines);
     }
 
     private void updateRefCode(final String approvalTargetType, final String approvalCode,
@@ -83,7 +106,7 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
         return approvalRepository.save(approval);
     }
 
-    private void saveApprovalAttachments(final Approval approval, final List<MultipartFile> files) {
+    private List<ApprovalAttachment> saveApprovalAttachments(final Approval approval, final List<MultipartFile> files) {
         final List<ApprovalAttachment> approvalAttachments = files.stream()
                 .map(file -> {
                     // TODO 파일 S3에 업로드
@@ -93,10 +116,10 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
                 })
                 .collect(Collectors.toList());
 
-        approvalAttachmentRepository.saveAll(approvalAttachments);
+        return approvalAttachmentRepository.saveAll(approvalAttachments);
     }
 
-    private void saveApprovalLines(final Approval approval, final List<ApprovalLineRequestDTO> requestDTOs) {
+    private List<ApprovalLine> saveApprovalLines(final Approval approval, final List<ApprovalLineRequestDTO> requestDTOs) {
         final List<Employee> employees = employeeRepository.findByIdIn(requestDTOs.stream()
                 .map(ApprovalLineRequestDTO::getApproverId)
                 .collect(Collectors.toList()));
@@ -112,10 +135,16 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
                         throw new EmployeeNotFoundException(dto.getApproverId() + "번의 직원이 존재하지 않습니다.");
                     }
 
-                    return new ApprovalLine(dto.getLineType(), dto.getSequence(), dto.getNote(), approval, employee);
+                    String status = null;
+
+                    if (dto.getLineType().equals("AT_APPR") || dto.getLineType().equals("AT_RVW")) {
+                        status = "ALS_PEND";
+                    }
+
+                    return new ApprovalLine(dto.getLineType(), dto.getSequence(), status, dto.getNote(), approval, employee);
                 })
                 .collect(Collectors.toList());
 
-        approvalLineRepository.saveAll(approvalLines);
+        return approvalLineRepository.saveAll(approvalLines);
     }
 }
