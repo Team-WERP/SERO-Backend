@@ -42,7 +42,7 @@
         FROM production_plan A
                  JOIN production_line B
                       ON A.production_line_id = B.id
-        WHERE A.pr_item_quantity_id = #{prItemId}
+        WHERE A.pr_item_id = #{prItemId}
         ORDER BY A.start_date
 
     </select>
@@ -121,5 +121,35 @@
         ORDER BY B.due_at ASC, A.id ASC;
 
     </select>
+
+    <!-- ===================================================== -->
+    <!-- 월별 생산계획 조회                                     -->
+    <!-- ===================================================== -->
+    <select id="selectMonthlyPlans"
+            resultType="com.werp.sero.production.command.application.dto.PPMonthlyPlanResponseDTO">
+
+        SELECT
+            A.id                  AS ppId,
+            A.production_line_id  AS productionLineId,
+            C.item_name           AS itemName,
+            A.start_date          AS startDate,
+            A.end_date            AS endDate,
+            A.production_quantity AS productionQuantity,
+            A.status              AS status
+        FROM production_plan A
+                 JOIN production_request_item B
+                      ON A.pr_item_id = B.id
+                 JOIN sales_order_item C
+                      ON B.so_item_id = C.id
+        WHERE
+            A.start_date &lt;= #{monthEnd}
+          AND A.end_date   &gt;= #{monthStart}
+        ORDER BY
+            A.production_line_id,
+            A.start_date
+
+    </select>
+
+
 
 </mapper>

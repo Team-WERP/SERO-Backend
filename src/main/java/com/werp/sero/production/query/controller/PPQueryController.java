@@ -1,5 +1,6 @@
 package com.werp.sero.production.query.controller;
 
+import com.werp.sero.production.command.application.dto.PPMonthlyPlanResponseDTO;
 import com.werp.sero.production.query.dto.PPUnassignedResponseDTO;
 import com.werp.sero.production.query.dto.PRItemPlanningResponseDTO;
 import com.werp.sero.production.query.dto.ProductionLineResponseDTO;
@@ -68,6 +69,16 @@ public class PPQueryController {
     ) {
         return ResponseEntity.ok(
                 ppQueryService.getUnassignedTargets(month)
+        );
+    }
+
+    @Operation(summary = "월별 생산계획 조회")
+    @GetMapping
+    public ResponseEntity<List<PPMonthlyPlanResponseDTO>> getMonthlyPlans(
+            @RequestParam String month
+    ) {
+        return ResponseEntity.ok(
+                ppQueryService.getMonthlyPlans(month)
         );
     }
 }
