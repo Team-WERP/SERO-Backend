@@ -47,6 +47,7 @@ public class WarehouseStock {
 
         this.availableStock -= quantity;
     }
+<<<<<<< HEAD
 
 
     public void deductStock(int quantity) {
@@ -62,4 +63,6 @@ public class WarehouseStock {
 
         this.currentStock -= quantity;
     }
+=======
+>>>>>>> origin/develop
 }
