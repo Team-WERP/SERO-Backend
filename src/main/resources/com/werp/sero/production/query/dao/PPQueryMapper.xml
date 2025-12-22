@@ -67,5 +67,59 @@
 
     </select>
 
+    <!-- ===================================================== -->
+    <!-- 미편성 생산요청 목록 조회                                     -->
+    <!-- ===================================================== -->
+    <select id="selectUnassignedTargets"
+            resultType="com.werp.sero.production.query.dto.PPUnassignedResponseDTO">
+
+        SELECT
+            A.id                AS prItemId,
+            A.pr_id             AS prId,
+            A.quantity          AS requestedQuantity,
+            A.status            AS prItemStatus,
+
+            B.due_at            AS dueAt,
+
+            C.item_code         AS itemCode,
+            C.item_name         AS itemName,
+            C.spec              AS spec,
+
+            D.id                AS materialId,
+            D.material_code     AS materialCode,
+
+            E.id                AS lineMaterialId,
+
+            F.id                AS productionLineId,
+            F.line_name         AS productionLineName
+
+        FROM production_request_item A
+                 JOIN production_request B
+                      ON B.id = A.pr_id
+
+                 JOIN sales_order_item C
+                      ON C.id = A.so_item_id
+
+                 JOIN material D
+                      ON D.material_code = C.item_code
+                          AND D.type = 'MAT_FG'          -- 완제품만
+
+                 JOIN line_material E
+                      ON E.material_id = D.id
+
+                 JOIN production_line F
+                      ON F.id = E.line_id
+
+        WHERE A.status = 'PIS_TARGET'
+          AND NOT EXISTS (
+            SELECT 1
+            FROM production_plan G
+            WHERE G.pr_item_id = A.id
+              AND G.status = 'PP_CONFIRMED'   -- 확정만 제외
+        )
+
+        ORDER BY B.due_at ASC, A.id ASC;
+
+    </select>
 
 </mapper>

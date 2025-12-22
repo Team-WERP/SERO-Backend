@@ -1,5 +1,6 @@
 package com.werp.sero.production.query.controller;
 
+import com.werp.sero.production.query.dto.PPUnassignedResponseDTO;
 import com.werp.sero.production.query.dto.PRItemPlanningResponseDTO;
 import com.werp.sero.production.query.dto.ProductionLineResponseDTO;
 import com.werp.sero.production.query.service.PPQueryService;
@@ -17,6 +18,7 @@ import java.util.List;
         description = "생산계획 관련 조회 API"
 )
 @RestController
+@RequestMapping("/production-plans")
 @RequiredArgsConstructor
 public class PPQueryController {
     private final PPQueryService ppQueryService;
@@ -25,7 +27,7 @@ public class PPQueryController {
             summary = "PR Item 기준 생산계획 수립용 상세 조회",
             description = "선택한 PR Item에 대해 생산계획 수립에 필요한 상세 정보를 조회한다."
     )
-    @GetMapping("/production-request-items/{prItemId}/planning")
+    @GetMapping("/production-request-items/{prItemId}")
     public ResponseEntity<PRItemPlanningResponseDTO> getPlanning(
             @PathVariable int prItemId
     ) {
@@ -51,6 +53,21 @@ public class PPQueryController {
     ) {
         return ResponseEntity.ok(
                 ppQueryService.getProductionLines(factoryId)
+        );
+    }
+
+    @Operation(
+            summary = "미편성 생산요청 목록 조회",
+            description = """
+            생산계획 수립 대상(PIS_TARGET) 중 아직 확정된 생산계획(PP_CONFIRMED)이 없는 생산요청 품목 목록을 조회한다.
+            """
+    )
+    @GetMapping("/unassigned")
+    public ResponseEntity<List<PPUnassignedResponseDTO>> getUnassignedTargets(
+            @RequestParam(required = false) String month
+    ) {
+        return ResponseEntity.ok(
+                ppQueryService.getUnassignedTargets(month)
         );
     }
 }

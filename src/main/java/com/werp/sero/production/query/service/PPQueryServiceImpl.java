@@ -2,10 +2,7 @@ package com.werp.sero.production.query.service;
 
 import com.werp.sero.production.exception.ProductionRequestItemNotFoundException;
 import com.werp.sero.production.query.dao.PPQueryMapper;
-import com.werp.sero.production.query.dto.PRItemPlanningBaseDTO;
-import com.werp.sero.production.query.dto.PRItemPlanningResponseDTO;
-import com.werp.sero.production.query.dto.ProductionLineResponseDTO;
-import com.werp.sero.production.query.dto.ProductionPlanSummaryDTO;
+import com.werp.sero.production.query.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,5 +49,11 @@ public class PPQueryServiceImpl implements PPQueryService{
     @Transactional(readOnly = true)
     public List<ProductionLineResponseDTO> getProductionLines(Integer factoryId) {
         return ppQueryMapper.selectProductionLines(factoryId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PPUnassignedResponseDTO> getUnassignedTargets(String month) {
+        return ppQueryMapper.selectUnassignedTargets();
     }
 }

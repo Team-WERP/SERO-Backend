@@ -1,5 +1,6 @@
 package com.werp.sero.production.query.dao;
 
+import com.werp.sero.production.query.dto.PPUnassignedResponseDTO;
 import com.werp.sero.production.query.dto.PRItemPlanningBaseDTO;
 import com.werp.sero.production.query.dto.ProductionLineResponseDTO;
 import com.werp.sero.production.query.dto.ProductionPlanSummaryDTO;
@@ -21,4 +22,6 @@ public interface PPQueryMapper {
     List<ProductionLineResponseDTO> selectProductionLines(
             @Param("factoryId") Integer factoryId
     );
+
+    List<PPUnassignedResponseDTO> selectUnassignedTargets();
 }
