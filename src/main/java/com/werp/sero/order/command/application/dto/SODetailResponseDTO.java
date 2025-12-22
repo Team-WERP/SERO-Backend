@@ -56,7 +56,7 @@ public class SODetailResponseDTO {
     private String note;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @Schema(description = "승인 코드")
+    @Schema(description = "결재 번호")
     private String approvalCode;
 
     @Schema(description = "주문 상태")

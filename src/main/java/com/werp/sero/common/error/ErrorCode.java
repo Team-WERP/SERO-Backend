@@ -40,7 +40,7 @@ public enum ErrorCode {
     INSUFFICIENT_STOCK(HttpStatus.BAD_REQUEST, "WAREHOUSE005", "재고가 부족합니다."),
 
     /* CLIENT */
-    CLIENT_NOT_FOUND(HttpStatus.NOT_FOUND, "CLIENT001", "거래처 정보를 찾을 수 없습니다."),
+    CLIENT_NOT_FOUND(HttpStatus.NOT_FOUND, "CLIENT001", "고객사 정보를 찾을 수 없습니다."),
     CLIENT_BUSINESS_NO_DUPLICATED(HttpStatus.CONFLICT, "CLIENT002", "이미 등록된 사업자번호입니다."),
     CLIENT_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "CLIENT003", "해당 고객사의 거래 품목이 아닙니다."),
     CLIENT_ADDRESS_NOT_FOUND(HttpStatus.NOT_FOUND, "CLIENT004", "배송지를 찾을 수 없습니다."),
@@ -67,6 +67,12 @@ public enum ErrorCode {
 
     /* GOODS ISSUE */
     GOODS_ISSUE_NOT_FOUND(HttpStatus.NOT_FOUND, "SHIPPING001", "출고지시 정보를 찾을 수 없습니다."),
+
+    /* APPROVAL */
+    INVALID_APPROVAL_TYPE(HttpStatus.NOT_FOUND, "APPROVAL001", "지원하지 않는 결재 타입입니다."),
+    APPROVAL_DUPLICATED(HttpStatus.CONFLICT, "APPROVAL002", "이미 존재하는 결재입니다."),
+    APPROVAL_LINE_SEQUENCE_REQUIRED(HttpStatus.BAD_REQUEST, "APPROVAL003", "결재 및 협조는 결재 순서 지정이 필수입니다."),
+    APPROVAL_LINE_SEQUENCE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "APPROVAL004", "수신 및 참조는 결재 순서를 지정할 수 없습니다."),
 
     /* DELIVERY ORDER */
     DELIVERY_ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "SHIPPING002", "납품서 정보를 찾을 수 없습니다.");

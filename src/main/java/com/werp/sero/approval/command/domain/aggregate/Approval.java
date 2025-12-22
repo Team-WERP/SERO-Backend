@@ -41,4 +41,16 @@ public class Approval {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "drafter_id", nullable = false)
     private Employee employee;
+
+    public Approval(final String approvalCode, final String title, final String content, final int totalLine,
+                    final String refCode, final String draftedAt, final Employee employee) {
+        this.approvalCode = approvalCode;
+        this.title = title;
+        this.content = content;
+        this.status = "AS_ING";
+        this.totalLine = totalLine;
+        this.refCode = refCode;
+        this.draftedAt = draftedAt;
+        this.employee = employee;
+    }
 }

@@ -79,4 +79,9 @@ public class GoodsIssue {
         this.approvalCode = approvalCode;
         this.status = "GI_APP";
     }
+
+    public void updatedApprovalInfo(final String approvalCode, final String status) {
+        this.approvalCode = approvalCode;
+        this.status = status;
+    }
 }

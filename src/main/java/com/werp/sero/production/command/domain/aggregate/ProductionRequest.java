@@ -99,6 +99,11 @@ public class ProductionRequest {
         this.requestedAt = DateTimeUtils.nowDateTime();
     }
 
+    public void updateApprovalInfo(final String approvalCode, final String status) {
+        this.approvalCode = approvalCode;
+        this.status = status;
+    }
+  
     public void assignManager(Employee manager) {
         this.manager = manager;
     }
