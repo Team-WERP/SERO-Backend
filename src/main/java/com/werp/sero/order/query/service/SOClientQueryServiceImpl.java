@@ -2,6 +2,7 @@ package com.werp.sero.order.query.service;
 
 import com.werp.sero.employee.command.domain.aggregate.ClientEmployee;
 import com.werp.sero.order.command.application.dto.SOClientOrderDTO;
+import com.werp.sero.order.exception.InvalidSalesOrderIdException;
 import com.werp.sero.order.exception.SalesOrderNotFoundException;
 import com.werp.sero.order.query.dao.SOClientMapper;
 import com.werp.sero.order.query.dao.SOMapper;
@@ -91,6 +92,10 @@ public class SOClientQueryServiceImpl implements SOClientQueryService {
 
         if (order == null) {
             throw new SalesOrderNotFoundException();
+        }
+
+        if( order.getClientId() !=  clientEmployee.getClient().getId()){
+            throw new InvalidSalesOrderIdException();
         }
 
         List<String> deliveryUrls = doMapper.selectDeliveryUrlsBySoId(orderId);

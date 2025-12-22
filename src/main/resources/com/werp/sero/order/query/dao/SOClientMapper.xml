@@ -185,6 +185,7 @@
     <select id="selectOrderDetailForClient" resultMap="SOClientDetailResultMap">
         SELECT
             A.id AS order_id,
+            A.client_id,
             A.so_code,
             A.po_code,
             A.ordered_at,
@@ -199,21 +200,21 @@
             A.recipient_name,
             A.recipient_contact,
 
-            E.name AS manager_name,
-            E.contact AS manager_contact,
+            B.name AS manager_name,
+            B.contact AS manager_contact,
 
-            I.id AS item_id,
-            I.item_code,
-            I.item_name,
-            I.spec,
-            I.quantity,
-            I.unit,
-            I.unit_price,
-            I.total_price AS item_total_price
+            C.id AS item_id,
+            C.item_code,
+            C.item_name,
+            C.spec,
+            C.quantity,
+            C.unit,
+            C.unit_price,
+            C.total_price AS item_total_price
         FROM sales_order A
-                 LEFT JOIN employee E ON A.manager_id = E.id
-                 LEFT JOIN sales_order_item I ON A.id = I.so_id
+                 LEFT JOIN employee B ON A.manager_id = B.id
+                 LEFT JOIN sales_order_item C ON A.id = C.so_id
         WHERE A.id = #{orderId}
-        ORDER BY I.id ASC
+        ORDER BY C.id ASC
     </select>
 </mapper>
