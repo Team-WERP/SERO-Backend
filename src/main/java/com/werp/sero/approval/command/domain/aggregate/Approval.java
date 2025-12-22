@@ -53,4 +53,9 @@ public class Approval {
         this.draftedAt = draftedAt;
         this.employee = employee;
     }
+
+    public void updateApprovalStatus(final String status, final String completedAt) {
+        this.status = status;
+        this.completedAt = completedAt;
+    }
 }

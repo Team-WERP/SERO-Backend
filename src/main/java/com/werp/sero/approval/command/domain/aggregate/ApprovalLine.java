@@ -47,4 +47,14 @@ public class ApprovalLine {
         this.approval = approval;
         this.employee = employee;
     }
+
+    public void updateApprovalLine(final String status, final String note, final String processedAt) {
+        this.status = status;
+        this.note = note;
+        this.processedAt = processedAt;
+    }
+
+    public void updateStatus(final String status) {
+        this.status = status;
+    }
 }

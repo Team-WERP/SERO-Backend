@@ -88,6 +88,123 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
         return ApprovalResponseDTO.of(approval, approvalAttachmentResponseDTOs, approvalLineResponseDTOs, refLines, rcptLines);
     }
 
+    @Transactional
+    @Override
+    public void approve(final Employee employee, final int approvalId, final ApprovalDecisionRequestDTO requestDTO) {
+        final Approval approval = findApprovalById(approvalId);
+
+        final ApprovalLine approvalLine = findApprovalLineByApprovalAndEmployee(approval, employee);
+
+        validateApprovable(approval, approvalLine);
+
+        final String documentPrefix = approval.getRefCode().substring(0, 2);
+
+        final Object ref = validateRefCode(documentPrefix, approval.getRefCode());
+
+        final String now = DateTimeUtils.nowDateTime();
+
+        approvalLine.updateApprovalLine("ALS_APPR", requestDTO.getNote(), now);
+
+        if (hasNextApprover(approval, approvalLine)) {
+            activateNextApprover(approval, approvalLine.getSequence());
+
+            return;
+        }
+
+        updateRefDocumentStatus("AS_APPR", documentPrefix, ref);
+
+        approval.updateApprovalStatus("AS_APPR", now);
+    }
+
+    @Transactional
+    @Override
+    public void reject(final Employee employee, final int approvalId, final ApprovalDecisionRequestDTO requestDTO) {
+        final Approval approval = findApprovalById(approvalId);
+
+        final ApprovalLine approvalLine = findApprovalLineByApprovalAndEmployee(approval, employee);
+
+        validateApprovable(approval, approvalLine);
+
+        final String documentPrefix = approval.getRefCode().substring(0, 2);
+
+        final Object ref = validateRefCode(documentPrefix, approval.getRefCode());
+
+        updateRefDocumentStatus("AS_RJCT", documentPrefix, ref);
+
+        final String now = DateTimeUtils.nowDateTime();
+
+        approvalLine.updateApprovalLine("ALS_RJCT", requestDTO.getNote(), now);
+
+        approval.updateApprovalStatus("AS_RJCT", now);
+    }
+
+    private void validateApprovable(final Approval approval, final ApprovalLine approvalLine) {
+        if (!"ALS_RVW".equals(approvalLine.getStatus())) {
+            throw new ApprovalNotCurrentSequenceException();
+        }
+
+        if (!"AS_ING".equals(approval.getStatus())) {
+            throw new ApprovalAlreadyProcessedException();
+        }
+    }
+
+    private boolean hasNextApprover(final Approval approval, final ApprovalLine approvalLine) {
+        return approvalLineRepository.existsByApprovalAndSequenceIsNotNullAndSequenceGreaterThan(approval, approvalLine.getSequence());
+    }
+
+    private void activateNextApprover(final Approval approval, final int approvalLineSequence) {
+        final ApprovalLine approvalLine =
+                approvalLineRepository.findFirstByApprovalAndSequenceGreaterThanOrderBySequenceAsc(approval, approvalLineSequence)
+                        .orElseThrow();
+
+        approvalLine.updateStatus("ALS_RVW");
+    }
+
+    private void updateRefDocumentStatus(final String approvalStatus, String documentPrefix, final Object object) {
+        final boolean isRejected = approvalStatus.equals("AS_RJCT");
+
+        switch (documentPrefix) {
+            case "SO" -> {
+                final SalesOrder so = (SalesOrder) object;
+
+                if (!"ORD_APPR_PEND".equals(so.getStatus())) {
+                    throw new ApprovalRefDocumentAlreadyProcessedException();
+                }
+
+                so.updateApprovalInfo(so.getApprovalCode(), (isRejected ? "ORD_APPR_RJCT" : "ORD_APPR_DONE"));
+            }
+            case "GI" -> {
+                final GoodsIssue gi = (GoodsIssue) object;
+
+                if (!"GI_APPR_PEND".equals(gi.getStatus())) {
+                    throw new ApprovalRefDocumentAlreadyProcessedException();
+                }
+
+                gi.updateApprovalInfo(gi.getApprovalCode(), (isRejected ? "GI_APPR_RJCT" : "GI_APPR_DONE"));
+            }
+            case "PR" -> {
+                final ProductionRequest pr = (ProductionRequest) object;
+
+                if (!"PR_APPR_PEND".equals(pr.getStatus())) {
+                    throw new ApprovalRefDocumentAlreadyProcessedException();
+                }
+
+                pr.updateApprovalInfo(pr.getApprovalCode(), (isRejected ? "PR_APPR_RJCT" : "PR_APPR_DONE"));
+            }
+            default -> throw new InvalidDocumentTypeException();
+        }
+    }
+
+    private ApprovalLine findApprovalLineByApprovalAndEmployee(final Approval approval, final Employee employee) {
+        return approvalLineRepository.findByApprovalAndEmployee(approval, employee)
+                .orElseThrow(ApprovalLineAccessDeniedException::new);
+    }
+
+    private Approval findApprovalById(final int approvalId) {
+        return approvalRepository.findById(approvalId)
+                .orElseThrow(ApprovalNotFoundException::new);
+    }
+
     private void validateDuplicateApproval(final String refCode) {
         if (approvalRepository.existsByRefCode(refCode)) {
             throw new ApprovalDuplicatedException();
@@ -98,8 +215,9 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
                                final Object object) {
         switch (approvalTargetType) {
             case "SO" -> ((SalesOrder) object).updateApprovalInfo(approvalCode, "ORD_APPR_PEND");
-            case "GI" -> ((GoodsIssue) object).updatedApprovalInfo(approvalCode, "GI_APPR_PEND");
+            case "GI" -> ((GoodsIssue) object).updateApprovalInfo(approvalCode, "GI_APPR_PEND");
             case "PR" -> ((ProductionRequest) object).updateApprovalInfo(approvalCode, "PR_APPR_PEND");
+            default -> throw new InvalidDocumentTypeException();
         }
     }
 
@@ -107,7 +225,7 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
         return approvalRefCodeValidators.stream()
                 .filter(validator -> validator.supports(approvalTargetType))
                 .findFirst()
-                .orElseThrow(InvalidApprovalTypeException::new)
+                .orElseThrow(InvalidDocumentTypeException::new)
                 .validate(refCode);
     }
 

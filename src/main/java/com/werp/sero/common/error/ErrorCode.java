@@ -68,13 +68,18 @@ public enum ErrorCode {
     GOODS_ISSUE_NOT_FOUND(HttpStatus.NOT_FOUND, "SHIPPING001", "출고지시 정보를 찾을 수 없습니다."),
 
     /* APPROVAL */
-    INVALID_APPROVAL_TYPE(HttpStatus.NOT_FOUND, "APPROVAL001", "지원하지 않는 결재 타입입니다."),
+    INVALID_DOCUMENT_TYPE(HttpStatus.NOT_FOUND, "APPROVAL001", "지원하지 않는 결재 문서 유형입니다."),
     APPROVAL_DUPLICATED(HttpStatus.CONFLICT, "APPROVAL002", "이미 존재하는 결재입니다."),
     APPROVAL_LINE_SEQUENCE_REQUIRED(HttpStatus.BAD_REQUEST, "APPROVAL003", "결재 및 협조는 결재 순서 지정이 필수입니다."),
     APPROVAL_LINE_SEQUENCE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "APPROVAL004", "수신 및 참조는 결재 순서를 지정할 수 없습니다."),
     APPROVAL_LINE_REQUIRED(HttpStatus.BAD_REQUEST, "APPROVAL005", "결재선에는 결재 또는 협조가 1명 이상 포함되어야 합니다."),
     APPROVAL_NOT_FOUND(HttpStatus.NOT_FOUND, "APPROVAL006", "결재 정보를 찾을 수 없습니다."),
     APPROVAL_LINE_SEQUENCE_DUPLICATED(HttpStatus.CONFLICT, "APPROVAL007", "결재 및 협조 결재선의 순서는 중복될 수 없습니다."),
+    APPROVAL_LINE_ACCESS_DENIED(HttpStatus.NOT_FOUND, "APPROVAL008", "해당 결재의 결재자가 아닙니다."),
+    APPROVAL_ALREADY_PROCESSED(HttpStatus.CONFLICT, "APPROVAL009", "이미 처리가 완료된 결재입니다."),
+    APPROVAL_REF_DOCUMENT_ALREADY_PROCESSED(HttpStatus.CONFLICT, "APPROVAL010", "연관된 문서가 이미 승인/반려 처리되었습니다."),
+    APPROVAL_NOT_CURRENT_SEQUENCE(HttpStatus.BAD_REQUEST, "APPROVAL011", "본인의 결재 순서가 아닙니다."),
+    APPROVAL_LINE_NOT_FOUND(HttpStatus.NOT_FOUND, "APPROVAL012", "결재자 정보를 찾을 수 없습니다."),
 
     /* DELIVERY ORDER */
     DELIVERY_ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "SHIPPING002", "납품서 정보를 찾을 수 없습니다.");
