@@ -1,5 +1,6 @@
 package com.werp.sero.production.command.domain.aggregate;
 
+import com.werp.sero.common.util.DateTimeUtils;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -44,4 +45,23 @@ public class WorkOrder {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "creator_id", nullable = false)
     private Employee creator;
+
+    public WorkOrder(
+            String woCode,
+            String workDate,
+            int quantity,
+            ProductionRequest productionRequest,
+            ProductionPlan productionPlan,
+            Employee manager,
+            Employee creator
+    ) {
+        this.woCode = woCode;
+        this.workDate = workDate;
+        this.quantity = quantity;
+        this.productionRequest = productionRequest;
+        this.productionPlan = productionPlan;
+        this.manager = manager;
+        this.creator = creator;
+        this.createdAt = DateTimeUtils.nowDateTime();
+    }
 }

@@ -1,5 +1,6 @@
 package com.werp.sero.common.util;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -14,5 +15,9 @@ public class DateTimeUtils {
 
     public static String nowDateTime() {
         return LocalDateTime.now().format(DATE_TIME_FORMATTER);
+    }
+
+    public static LocalDate parse(String date) {
+        return LocalDate.parse(date); // yyyy-MM-dd
     }
 }

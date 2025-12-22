@@ -81,7 +81,13 @@ public enum ErrorCode {
     PP_LINE_NOT_CAPABLE(HttpStatus.BAD_REQUEST, "PRODUCTION105", "해당 라인에서는 이 품목을 생산할 수 없습니다."),
     PP_DRAFT_NOT_FOUND(HttpStatus.NOT_FOUND, "PRODUCTION106", "생산계획 초안(PP_DRAFT)을 찾을 수 없습니다."),
     PP_INVALID_STATUS(HttpStatus.BAD_REQUEST, "PRODUCTION107","현재 상태에서는 해당 생산계획을 처리할 수 없습니다."),
-    PR_ITEM_INVALID_STATUS(HttpStatus.BAD_REQUEST, "PRODUCTION009", "현재 상태에서는 해당 생산요청 품목을 처리할 수 없습니다.");
+    PR_ITEM_INVALID_STATUS(HttpStatus.BAD_REQUEST, "PRODUCTION009", "현재 상태에서는 해당 생산요청 품목을 처리할 수 없습니다."),
+    PP_NOT_FOUND(HttpStatus.NOT_FOUND, "PRODUCTION108", "생산계획을 찾을 수 없습니다."),
+
+    /* WORK ORDER */
+    WO_ALREADY_EXISTS(HttpStatus.CONFLICT, "PRODUCTION201", "이미 해당 생산계획에 대한 작업지시가 존재합니다."),
+    WO_INVALID_PP_STATUS(HttpStatus.BAD_REQUEST, "PRODUCTION202", "확정되지 않은 생산계획으로는 작업지시를 생성할 수 없습니다."),
+    WO_INVALID_PERIOD(HttpStatus.BAD_REQUEST, "PRODUCTION203", "작업지시 생성 기간이 올바르지 않습니다.");
 
 
     private final HttpStatus status;
