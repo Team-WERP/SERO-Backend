@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "주문", description = "주문 관련 API (Query)")
+@Tag(name = "주문(본사) - Query", description = "주문 관련 API")
 @RequestMapping("/orders")
 @RequiredArgsConstructor
 @RestController

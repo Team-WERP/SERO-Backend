@@ -6,5 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface SORepository extends JpaRepository<SalesOrder, Integer> {
-    Optional<SalesOrder> findBySoCode(String soCode);
+
+    Optional<SalesOrder> findBySoCode(final String soCode);
+
 }
