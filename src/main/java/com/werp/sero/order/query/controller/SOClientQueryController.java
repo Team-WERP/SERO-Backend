@@ -1,9 +1,7 @@
 package com.werp.sero.order.query.controller;
 
 import com.werp.sero.employee.command.domain.aggregate.ClientEmployee;
-import com.werp.sero.order.command.application.dto.SOClientOrderDTO;
-import com.werp.sero.order.query.dto.SOClientResponseDTO;
-import com.werp.sero.order.query.dto.SOResponseDTO;
+import com.werp.sero.order.query.dto.*;
 import com.werp.sero.order.query.service.SOClientQueryService;
 import com.werp.sero.security.annotation.CurrentUser;
 import io.swagger.v3.oas.annotations.Operation;
@@ -63,9 +61,9 @@ public class SOClientQueryController {
                     )
             )),
             @ApiResponse(responseCode = "404", content = @Content(mediaType = "application/json", examples = {
-                    @ExampleObject(name = "ORDER_CANNOT_FOUND", value = """
+                    @ExampleObject(name = "SALES_ORDER_CANNOT_FOUND", value = """
                             {
-                                "code": "ORDER001",
+                                "code": "ORDER002",
                                 "message": "주문 정보를 찾을 수 없습니다."
                             }
                             """)
@@ -81,6 +79,61 @@ public class SOClientQueryController {
         return ResponseEntity.ok(response);
     }
 
+
+    @Operation(summary = "고객사 주문 목록 조회")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "고객사 주문 목록 조회", content = @Content(
+                    mediaType = "application/json",
+                    array = @ArraySchema(
+                            schema = @Schema(implementation = SOClientListResponseDTO.class)
+                    )
+            )),
+            @ApiResponse(responseCode = "404", content = @Content(mediaType = "application/json", examples = {
+                    @ExampleObject(name = "SALES_ORDER_LIST_NOT_FOUND", value = """
+                            {
+                                "code": "ORDER001",
+                                "message": "주문 목록을 찾을 수 없습니다."
+                            }
+                            """)
+            }))
+    })
+    @GetMapping
+    public ResponseEntity<List<SOClientListResponseDTO>> getOrderList(
+            @CurrentUser final ClientEmployee clientEmployee,
+            @ModelAttribute SOClientFilterDTO filter,
+            @RequestParam(defaultValue = "1") Integer page) {
+
+        List<SOClientListResponseDTO> response = soClientService.findClientOrderList(clientEmployee, filter, page);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "고객사 주문 상세 조회")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "고객사 주문 상세 조회", content = @Content(
+                    mediaType = "application/json",
+                    array = @ArraySchema(
+                            schema = @Schema(implementation = SOClientDetailResponseDTO.class)
+                    )
+            )),
+            @ApiResponse(responseCode = "404", content = @Content(mediaType = "application/json", examples = {
+                    @ExampleObject(name = "SALES_ORDER_NOT_FOUND", value = """
+                            {
+                                "code": "ORDER002",
+                                "message": "주문 목록을 찾을 수 없습니다."
+                            }
+                            """)
+            }))
+    })
+    @GetMapping("/{orderId}")
+    public ResponseEntity<SOClientDetailResponseDTO> getOrderDetail(
+            @PathVariable int orderId,
+            @CurrentUser final ClientEmployee clientEmployee) {
+
+        SOClientDetailResponseDTO response = soClientService.findClientOrderDetail(orderId, clientEmployee);
+
+        return ResponseEntity.ok(response);
+    }
 
 
 }
