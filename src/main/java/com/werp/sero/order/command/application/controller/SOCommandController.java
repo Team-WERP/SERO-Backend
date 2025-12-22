@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "order", description = "주문 관련 API")
+@Tag(name = "주문(본사) - Command", description = "본사 주문 관련 API")
 @RequestMapping("/orders")
 @RequiredArgsConstructor
 @RestController

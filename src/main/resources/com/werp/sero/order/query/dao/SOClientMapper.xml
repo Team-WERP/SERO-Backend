@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.werp.sero.order.query.dao.SOClientMapper">
+    <resultMap id="SOClientResponseResultMap" type="com.werp.sero.order.query.dto.SOClientResponseDTO">
+        <id property="orderId" column="order_id"/>
+        <result property="soCode" column="so_code"/>
+        <result property="mainItemName" column="main_item_name"/>
+        <result property="totalQuantity" column="total_quantity"/>
+        <result property="totalPrice" column="total_price"/>
+        <result property="orderedAt" column="ordered_at"/>
+
+        <result property="shippingName" column="shipping_name"/>
+        <result property="address" column="address"/>
+        <result property="recipientName" column="recipient_name"/>
+        <result property="recipientContact" column="recipient_contact"/>
+
+        <result property="clientId" column="client_id"/>
+        <result property="clientManagerId" column="client_manager_id"/>
+        <result property="clientManagerName" column="manager_name"/>
+        <result property="clientManagerContact" column="manager_contact"/>
+
+        <collection property="items" ofType="com.werp.sero.order.query.dto.SOClientItemResponseDTO">
+            <id property="id" column="item_id"/>
+            <result property="itemCode" column="item_code"/>
+            <result property="itemName" column="item_name"/>
+            <result property="spec" column="spec"/>
+            <result property="quantity" column="quantity"/>
+            <result property="unit" column="unit"/>
+            <result property="unitPrice" column="unit_price"/>
+            <result property="totalPrice" column="item_total_price"/>
+        </collection>
+    </resultMap>
+    <!-- 고객사 주문 이력 조회 -->
+    <select id="selectOrderHistory" resultMap="SOClientResponseResultMap">
+        SELECT
+            A.id AS order_id,
+            A.so_code,
+            A.main_item_name,
+            A.total_quantity,
+            A.total_price,
+            A.ordered_at,
+            A.shipping_name,
+            A.address,
+            A.recipient_name,
+            A.recipient_contact,
+            A.client_id,
+            A.client_manager_id,
+            C.name AS manager_name,
+            C.contact AS manager_contact,
+            B.id AS item_id,
+            B.item_code,
+            B.item_name,
+            B.spec,
+            B.quantity,
+            B.unit,
+            B.unit_price,
+            B.total_price AS item_total_price
+        FROM (
+                 SELECT * FROM sales_order
+                 WHERE client_id = #{clientId}
+                 ORDER BY ordered_at DESC
+                     LIMIT 5
+             ) A
+                 LEFT JOIN sales_order_item B ON A.id = B.so_id
+                 LEFT JOIN client_employee C ON A.client_manager_id = C.id
+        ORDER BY A.ordered_at DESC, B.id ASC
+    </select>
+
+    <!-- 고객사 주문 불러오기 -->
+    <select id="selectOrderForReorder" resultMap="SOClientResponseResultMap">
+        SELECT
+            A.id AS order_id,
+            A.so_code,
+            A.main_item_name,
+            A.total_quantity,
+            A.total_price,
+            A.ordered_at,
+            A.shipping_name,
+            A.address,
+            A.recipient_name,
+            A.recipient_contact,
+            A.client_id,
+            A.client_manager_id,
+            C.name AS manager_name,
+            C.contact AS manager_contact,
+            B.id AS item_id,
+            B.item_code,
+            B.item_name,
+            B.spec,
+            B.quantity,
+            B.unit,
+            B.unit_price,
+            B.total_price AS item_total_price
+        FROM sales_order A
+                 LEFT JOIN sales_order_item B ON A.id = B.so_id
+                 LEFT JOIN client_employee C ON A.client_manager_id = C.id
+        WHERE A.id = #{orderId}
+          AND A.client_id = #{clientId}
+    </select>
+</mapper>
