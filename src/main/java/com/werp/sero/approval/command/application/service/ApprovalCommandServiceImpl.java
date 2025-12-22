@@ -167,6 +167,10 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
             case "SO" -> {
                 final SalesOrder so = (SalesOrder) object;
 
+                if (so.getApprovalCode() == null) {
+                    throw new ApprovalNotSubmittedException();
+                }
+
                 if (!"ORD_APPR_PEND".equals(so.getStatus())) {
                     throw new ApprovalRefDocumentAlreadyProcessedException();
                 }
@@ -176,6 +180,10 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
             case "GI" -> {
                 final GoodsIssue gi = (GoodsIssue) object;
 
+                if (gi.getApprovalCode() == null) {
+                    throw new ApprovalNotSubmittedException();
+                }
+
                 if (!"GI_APPR_PEND".equals(gi.getStatus())) {
                     throw new ApprovalRefDocumentAlreadyProcessedException();
                 }
@@ -184,6 +192,10 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
             }
             case "PR" -> {
                 final ProductionRequest pr = (ProductionRequest) object;
+
+                if (pr.getApprovalCode() == null) {
+                    throw new ApprovalNotSubmittedException();
+                }
 
                 if (!"PR_APPR_PEND".equals(pr.getStatus())) {
                     throw new ApprovalRefDocumentAlreadyProcessedException();
