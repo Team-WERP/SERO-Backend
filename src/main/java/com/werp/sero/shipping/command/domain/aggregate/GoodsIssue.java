@@ -4,12 +4,17 @@ import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.order.command.domain.aggregate.SalesOrder;
 import com.werp.sero.warehouse.command.domain.aggregate.Warehouse;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @Table(name = "goods_issue")
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder
 @Entity
 public class GoodsIssue {
     @Id
@@ -45,7 +50,7 @@ public class GoodsIssue {
     private Employee drafter;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "gi_manager_id", nullable = false)
+    @JoinColumn(name = "gi_manager_id")
     private Employee manager;
 
     @ManyToOne(fetch = FetchType.LAZY)
