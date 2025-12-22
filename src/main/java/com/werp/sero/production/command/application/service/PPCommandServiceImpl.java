@@ -2,10 +2,7 @@ package com.werp.sero.production.command.application.service;
 
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.material.exception.MaterialNotFoundException;
-import com.werp.sero.production.command.application.dto.PPCreateRequestDTO;
-import com.werp.sero.production.command.application.dto.PPCreateResponseDTO;
-import com.werp.sero.production.command.application.dto.PPValidateRequestDTO;
-import com.werp.sero.production.command.application.dto.PPValidationResponseDTO;
+import com.werp.sero.production.command.application.dto.*;
 import com.werp.sero.production.command.domain.aggregate.ProductionLine;
 import com.werp.sero.production.command.domain.aggregate.ProductionPlan;
 import com.werp.sero.production.command.domain.aggregate.ProductionRequestItem;
@@ -34,40 +31,51 @@ public class PPCommandServiceImpl implements PPCommandService{
     private final PRItemRepository prItemRepository;
     private final ProductionLineRepository productionLineRepository;
 
+    /**
+     * 생산계획 검증
+     */
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public PPValidationResponseDTO validate(PPValidateRequestDTO request) {
 
         // PR Item 존재 여부
-        String materialCode =
-                ppValidateMapper.selectMaterialCodeByPRItem(request.getPrItemId());
-        log.info("materialCode={}", materialCode);
-        if (materialCode == null) {
-            throw new ProductionRequestItemNotFoundException();
+        ProductionRequestItem prItem =
+                prItemRepository.findById(request.getPrItemId())
+                        .orElseThrow(ProductionRequestItemNotFoundException::new);
+
+        // 계획 수립 대상만 검증 가능
+        if (!"PIS_TARGET".equals(prItem.getStatus())) {
+            throw new InvalidPRItemStatusException(
+                    "생산계획 수립 대상(PIS_TARGET)만 확정할 수 있습니다."
+            );
         }
 
-        // 이미 계획 존재 여부 (PR Item당 1회 정책)
+        // 이미 확정된 계획 존재 여부
         int planCount =
                 ppValidateMapper.countPlansByPRItem(request.getPrItemId());
         if (planCount > 0) {
             throw new ProductionPlanAlreadyExistsException();
         }
 
-        // Material 조회
+        // material 조회
+        String materialCode =
+                ppValidateMapper.selectMaterialCodeByPRItem(request.getPrItemId());
+        if (materialCode == null) {
+            throw new MaterialNotFoundException();
+        }
+
         Integer materialId =
                 ppValidateMapper.selectMaterialId(materialCode);
-        log.info("materialId={}", materialId);
         if (materialId == null) {
             throw new MaterialNotFoundException();
         }
 
-        // line_material에서 cycle_time 조회
+        // cycle time
         Integer cycleTime =
                 ppValidateMapper.selectCycleTime(
                         materialId,
                         request.getProductionLineId()
                 );
-        log.info("cycleTime={}", cycleTime);
         if (cycleTime == null || cycleTime <= 0) {
             throw new ProductionPlanLineNotCapableException();
         }
@@ -78,11 +86,9 @@ public class PPCommandServiceImpl implements PPCommandService{
         if (start.isAfter(end)) {
             throw new ProductionPlanInvalidPeriodException();
         }
-        long days = ChronoUnit.DAYS.between(start, end) + 1;
 
-        // 라인 가용 시간 → capa 계산
-        long totalAvailableSeconds = days * DAILY_AVAILABLE_SECONDS;
-        long capa = totalAvailableSeconds / cycleTime;
+        long days = ChronoUnit.DAYS.between(start, end) + 1;
+        long capa = (days * DAILY_AVAILABLE_SECONDS) / cycleTime;
 
         // 수량 검증
         if (request.getProductionQuantity() <= 0) {
@@ -95,27 +101,43 @@ public class PPCommandServiceImpl implements PPCommandService{
         return PPValidationResponseDTO.ok();
     }
 
+    /**
+     * 생산계획 수립 대상 추가
+     */
     @Override
     @Transactional
-    public PPCreateResponseDTO create(
-            PPCreateRequestDTO request,
-            Employee employee
-    ) {
+    public void addToPlanningTarget(PPAddTargetRequestDTO request, Employee employee) {
+        ProductionRequestItem prItem = prItemRepository.findById(request.getPrItemId())
+                .orElseThrow(ProductionRequestItemNotFoundException::new);
 
-        PPValidationResponseDTO validation =
-                validate(
-                        new PPValidateRequestDTO(
-                                request.getPrItemId(),
-                                request.getProductionLineId(),
-                                request.getStartDate(),
-                                request.getEndDate(),
-                                request.getProductionQuantity()
-                        )
-                );
-
-        if (!validation.isValid()) {
-            throw new IllegalStateException(validation.getMessage());
+        if(!"PIS_WAIT".equals(prItem.getStatus())) {
+            throw new InvalidPRItemStatusException();
         }
+        if (ppRepository.existsByProductionRequestItemIdAndStatus(prItem.getId(), "PP_DRAFT")
+                || ppRepository.existsByProductionRequestItemIdAndStatus(prItem.getId(), "PP_CONFIRMED")) {
+            throw new ProductionPlanAlreadyExistsException();
+        }
+
+        prItem.changeStatus("PIS_TARGET");
+
+        ProductionPlan draft = ProductionPlan.createDraft(prItem, employee);
+        ppRepository.save(draft);
+    }
+
+    /**
+     * 생산계획 확정 (DRAFT → CONFIRMED)
+     */
+    @Override
+    @Transactional
+    public PPCreateResponseDTO create(PPCreateRequestDTO request, Employee employee) {
+
+        validate(new PPValidateRequestDTO(
+                request.getPrItemId(),
+                request.getProductionLineId(),
+                request.getStartDate(),
+                request.getEndDate(),
+                request.getProductionQuantity()
+        ));
 
         ProductionRequestItem prItem =
                 prItemRepository.findById(request.getPrItemId())
@@ -125,11 +147,17 @@ public class PPCommandServiceImpl implements PPCommandService{
                 productionLineRepository.findById(request.getProductionLineId())
                         .orElseThrow(ProductionLineNotFoundException::new);
 
+        ProductionPlan plan =
+                ppRepository.findByProductionRequestItemIdAndStatus(
+                                prItem.getId(),
+                                "PP_DRAFT"
+                        )
+                        .orElseThrow(ProductionPlanDraftNotFoundException::new);
+
         String ppCode =
                 documentSequenceCommandService.generateDocumentCode("DOC_PP");
 
-        ProductionPlan plan = ProductionPlan.create(
-                prItem,
+        plan.confirm(
                 productionLine,
                 employee,
                 request.getStartDate(),
@@ -137,7 +165,7 @@ public class PPCommandServiceImpl implements PPCommandService{
                 request.getProductionQuantity(),
                 ppCode
         );
-        ppRepository.save(plan);
+        prItem.changeStatus("PIS_PLANNED");
 
         return new PPCreateResponseDTO(
                 plan.getId(),

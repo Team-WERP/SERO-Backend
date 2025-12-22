@@ -2,6 +2,7 @@ package com.werp.sero.production.command.domain.aggregate;
 
 import com.werp.sero.common.util.DateTimeUtils;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
+import com.werp.sero.production.exception.InvalidProductionPlanStatusException;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,20 +12,24 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Entity
 public class ProductionPlan {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(name = "pp_code", nullable = false, unique = true)
+    @Column(name = "pp_code", unique = true)
     private String ppCode;
 
-    @Column(name = "start_date", nullable = false)
+    @Column(name = "status", nullable = false, length = 30)
+    private String status; // PP_DRAFT, PP_CONFIRMED, PP_CANCELLED
+
+    @Column(name = "start_date")
     private String startDate;
 
-    @Column(name = "end_date", nullable = false)
+    @Column(name = "end_date")
     private String endDate;
 
-    @Column(name = "production_quantity", nullable = false, columnDefinition = "int default 0")
+    @Column(name = "production_quantity", nullable = false)
     private int productionQuantity;
 
     @Column(name = "created_at", nullable = false)
@@ -42,11 +47,25 @@ public class ProductionPlan {
     private Employee employee;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "production_line_id", nullable = false)
+    @JoinColumn(name = "production_line_id")
     private ProductionLine productionLine;
 
-    public static ProductionPlan create(
+    // 생산계획 수립 대상 추가 (DRAFT)
+    public static ProductionPlan createDraft(
             ProductionRequestItem prItem,
+            Employee employee
+    ) {
+        ProductionPlan plan = new ProductionPlan();
+        plan.productionRequestItem = prItem;
+        plan.employee = employee;
+        plan.status = "PP_DRAFT";
+        plan.productionQuantity = 0;
+        plan.createdAt = DateTimeUtils.nowDateTime();
+        return plan;
+    }
+
+    // 생산계획 확정(DRAFT → CONFIRMED)
+    public void confirm(
             ProductionLine productionLine,
             Employee manager,
             String startDate,
@@ -54,20 +73,16 @@ public class ProductionPlan {
             int productionQuantity,
             String ppCode
     ) {
-        ProductionPlan plan = new ProductionPlan();
-
-        plan.productionRequestItem = prItem;
-        plan.productionLine = productionLine;
-        plan.employee = manager;
-
-        plan.startDate = startDate;
-        plan.endDate = endDate;
-        plan.productionQuantity = productionQuantity;
-        plan.ppCode = ppCode;
-
-        plan.createdAt = DateTimeUtils.nowDateTime();
-
-        return plan;
+        if (!"PP_DRAFT".equals(this.status)) {
+            throw new InvalidProductionPlanStatusException();
+        }
+        this.productionLine = productionLine;
+        this.employee = manager;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.productionQuantity = productionQuantity;
+        this.ppCode = ppCode;
+        this.status = "PP_CONFIRMED";
+        this.updatedAt = DateTimeUtils.nowDateTime();
     }
-
 }

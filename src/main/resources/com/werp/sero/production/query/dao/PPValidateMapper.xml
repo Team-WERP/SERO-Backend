@@ -28,8 +28,10 @@
         SELECT COUNT(1)
         FROM production_plan A
         WHERE A.pr_item_id = #{prItemId}
+          AND A.status = 'PP_CONFIRMED'
 
     </select>
+
 
     <!-- ===================================================== -->
     <!-- material_code → material.id                            -->

@@ -1,10 +1,7 @@
 package com.werp.sero.production.command.application.controller;
 
 import com.werp.sero.employee.command.domain.aggregate.Employee;
-import com.werp.sero.production.command.application.dto.PPCreateRequestDTO;
-import com.werp.sero.production.command.application.dto.PPCreateResponseDTO;
-import com.werp.sero.production.command.application.dto.PPValidateRequestDTO;
-import com.werp.sero.production.command.application.dto.PPValidationResponseDTO;
+import com.werp.sero.production.command.application.dto.*;
 import com.werp.sero.production.command.application.service.PPCommandService;
 import com.werp.sero.security.annotation.CurrentUser;
 import io.swagger.v3.oas.annotations.Operation;
@@ -50,10 +47,32 @@ public class PPCommandController {
     }
 
     @Operation(
+            summary = "생산계획 수립 대상에 추가",
+            description = """
+            PR Item을 생산계획 수립 대상(PIS_TARGET) 상태로 전환합니다.
+
+            처리 내용:
+            - PR Item 상태: PIS_WAIT → PIS_TARGET
+            - Production Plan(PP) 초안 준비
+
+            제약 조건:
+            - PR Item 상태가 PIS_WAIT 인 경우만 가능
+            - 이미 생산계획 수립 대상이거나 계획이 존재하면 불가
+            """
+    )
+    @PostMapping("/targets")
+    public ResponseEntity<Void> addToPlanningTarget(
+            @RequestBody PPAddTargetRequestDTO request,
+            @CurrentUser Employee currentEmployee
+    ) {
+        ppCommandService.addToPlanningTarget(request, currentEmployee);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(
             summary = "생산계획 생성",
             description = """
-                    생산요청 품목(PR Item)에 대해
-                    생산계획을 확정 생성합니다.
+                    생산요청 품목(PR Item)에 대해 생산계획을 확정 생성합니다.
 
                     사전 조건:
                     - 생산계획 검증(validate) 통과
