@@ -2,20 +2,6 @@ package com.werp.sero.shipping.command.application.service;
 
 import com.werp.sero.common.error.ErrorCode;
 import com.werp.sero.common.error.exception.BusinessException;
-<<<<<<< HEAD
-import com.werp.sero.material.command.domain.aggregate.Material;
-import com.werp.sero.material.command.domain.repository.MaterialRepository;
-import com.werp.sero.order.command.domain.aggregate.SalesOrderItemHistory;
-import com.werp.sero.order.command.domain.repository.SalesOrderItemHistoryRepository;
-import com.werp.sero.shipping.command.domain.aggregate.GoodsIssue;
-import com.werp.sero.shipping.command.domain.aggregate.GoodsIssueItem;
-import com.werp.sero.shipping.command.domain.repository.GoodsIssueItemRepository;
-import com.werp.sero.shipping.command.domain.repository.GoodsIssueRepository;
-import com.werp.sero.warehouse.command.domain.aggregate.WarehouseStock;
-import com.werp.sero.warehouse.command.domain.aggregate.WarehouseStockHistory;
-import com.werp.sero.warehouse.command.domain.repository.WarehouseStockHistoryRepository;
-import com.werp.sero.warehouse.command.domain.repository.WarehouseStockRepository;
-=======
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.material.command.domain.aggregate.Material;
 import com.werp.sero.material.command.domain.repository.MaterialRepository;
@@ -23,6 +9,7 @@ import com.werp.sero.order.command.domain.aggregate.SalesOrder;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItemHistory;
 import com.werp.sero.order.command.domain.repository.SalesOrderItemHistoryRepository;
 import com.werp.sero.order.command.domain.repository.SORepository;
+import com.werp.sero.shipping.command.application.dto.GICompleteResponseDTO;
 import com.werp.sero.shipping.command.application.dto.GICreateRequestDTO;
 import com.werp.sero.shipping.command.domain.aggregate.DeliveryOrder;
 import com.werp.sero.shipping.command.domain.aggregate.DeliveryOrderItem;
@@ -37,10 +24,11 @@ import com.werp.sero.shipping.exception.GoodsIssueAlreadyExistsException;
 import com.werp.sero.system.command.application.service.DocumentSequenceCommandService;
 import com.werp.sero.warehouse.command.domain.aggregate.Warehouse;
 import com.werp.sero.warehouse.command.domain.aggregate.WarehouseStock;
+import com.werp.sero.warehouse.command.domain.aggregate.WarehouseStockHistory;
 import com.werp.sero.warehouse.command.domain.repository.WarehouseRepository;
+import com.werp.sero.warehouse.command.domain.repository.WarehouseStockHistoryRepository;
 import com.werp.sero.warehouse.command.domain.repository.WarehouseStockRepository;
 import com.werp.sero.warehouse.exception.InsufficientStockException;
->>>>>>> origin/develop
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,40 +44,11 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
 
     private final GoodsIssueRepository goodsIssueRepository;
     private final GoodsIssueItemRepository goodsIssueItemRepository;
-<<<<<<< HEAD
-    private final WarehouseStockRepository warehouseStockRepository;
-    private final WarehouseStockHistoryRepository warehouseStockHistoryRepository;
-    private final MaterialRepository materialRepository;
-    private final SalesOrderItemHistoryRepository salesOrderItemHistoryRepository;
-
-    @Override
-    @Transactional
-    public void completeGoodsIssue(String giCode) {
-        // 1. 출고지시 조회
-        GoodsIssue goodsIssue = goodsIssueRepository.findByGiCode(giCode)
-                .orElseThrow(() -> new BusinessException(ErrorCode.GOODS_ISSUE_NOT_FOUND));
-
-        // 상태 검증: 결재 승인된 출고지시만 출고 처리 가능
-        if (!"GI_APV_APPR".equals(goodsIssue.getStatus())) {
-            throw new BusinessException(ErrorCode.INVALID_GOODS_ISSUE_STATUS);
-        }
-
-        // 2. 출고지시 품목 조회
-        List<GoodsIssueItem> goodsIssueItems = goodsIssueItemRepository.findByGoodsIssueId(goodsIssue.getId());
-
-        // 3. 실제 재고 차감 및 이력 기록
-        List<WarehouseStock> stocksToUpdate = new ArrayList<>();
-        List<WarehouseStockHistory> historiesToSave = new ArrayList<>();
-        List<SalesOrderItemHistory> salesHistoriesToSave = new ArrayList<>();
-
-        for (GoodsIssueItem giItem : goodsIssueItems) {
-            String itemCode = giItem.getSalesOrderItem().getItemCode();
-            int quantity = giItem.getQuantity();
-=======
     private final DeliveryOrderRepository deliveryOrderRepository;
     private final DeliveryOrderItemRepository deliveryOrderItemRepository;
     private final WarehouseRepository warehouseRepository;
     private final WarehouseStockRepository warehouseStockRepository;
+    private final WarehouseStockHistoryRepository warehouseStockHistoryRepository;
     private final MaterialRepository materialRepository;
     private final SORepository soRepository;
     private final SalesOrderItemHistoryRepository salesOrderItemHistoryRepository;
@@ -149,7 +108,6 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
             String itemCode = doItem.getSalesOrderItem().getItemCode();
             String itemName = doItem.getSalesOrderItem().getItemName();
             int requiredQuantity = doItem.getDoQuantity();
->>>>>>> origin/develop
 
             // 자재 조회
             Material material = materialRepository.findByMaterialCode(itemCode)
@@ -157,49 +115,6 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
 
             // 창고 재고 조회
             WarehouseStock stock = warehouseStockRepository
-<<<<<<< HEAD
-                    .findByWarehouseIdAndMaterialId(goodsIssue.getWarehouse().getId(), material.getId())
-                    .orElseThrow(() -> new BusinessException(ErrorCode.WAREHOUSE_STOCK_NOT_FOUND));
-
-            // 실제 재고 차감 (current_stock 감소)
-            stock.deductStock(quantity);
-            stocksToUpdate.add(stock);
-
-            // 창고 재고 변동 이력 기록
-            WarehouseStockHistory history = WarehouseStockHistory.builder()
-                    .warehouseStockId(stock.getId())
-                    .type("OUTBOUND")  // 출고
-                    .reason(String.format("출고지시(%s) 완료", giCode))
-                    .changedQuantity(-quantity)  // 음수로 표기 (감소)
-                    .currentStock(stock.getCurrentStock())  // 변경 후 재고
-                    .createdAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))
-                    .build();
-            historiesToSave.add(history);
-
-            // 주문 품목별 이력 기록 (출고 완료 수량)
-            SalesOrderItemHistory salesHistory = SalesOrderItemHistory.builder()
-                    .prQuantity(0)
-                    .piQuantity(0)
-                    .giQuantity(0)
-                    .shippedQuantity(quantity)  // 출고 완료 수량
-                    .doQuantity(0)
-                    .completedQuantity(0)
-                    .soItemId(giItem.getSalesOrderItem().getId())
-                    .createdAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))
-                    .creatorId(0)  // TODO: 시스템 사용자 ID 또는 현재 사용자 ID
-                    .build();
-            salesHistoriesToSave.add(salesHistory);
-        }
-
-        // 4. 배치 저장
-        warehouseStockRepository.saveAll(stocksToUpdate);
-        warehouseStockHistoryRepository.saveAll(historiesToSave);
-        salesOrderItemHistoryRepository.saveAll(salesHistoriesToSave);
-
-        // 5. 출고지시 상태를 출고완료(GI_ISSUED)로 변경
-        goodsIssue.updatedApprovalInfo(goodsIssue.getApprovalCode(), "GI_ISSUED");
-        goodsIssueRepository.save(goodsIssue);
-=======
                     .findByWarehouseIdAndMaterialId(warehouse.getId(), material.getId())
                     .orElse(null);
 
@@ -251,6 +166,101 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
         }
 
         return giCode;
->>>>>>> origin/develop
+    }
+
+    @Override
+    @Transactional
+    public GICompleteResponseDTO completeGoodsIssue(String giCode) {
+        // 1. 출고지시 조회
+        GoodsIssue goodsIssue = goodsIssueRepository.findByGiCode(giCode)
+                .orElseThrow(() -> new BusinessException(ErrorCode.GOODS_ISSUE_NOT_FOUND));
+
+        // 상태 검증: 결재 승인된 출고지시만 출고 처리 가능
+        if (!"GI_APV_APPR".equals(goodsIssue.getStatus())) {
+            throw new BusinessException(ErrorCode.INVALID_GOODS_ISSUE_STATUS);
+        }
+
+        // 2. 출고지시 품목 조회
+        List<GoodsIssueItem> goodsIssueItems = goodsIssueItemRepository.findByGoodsIssueId(goodsIssue.getId());
+
+        // 3. 실제 재고 차감 및 이력 기록
+        List<WarehouseStock> stocksToUpdate = new ArrayList<>();
+        List<WarehouseStockHistory> historiesToSave = new ArrayList<>();
+        List<SalesOrderItemHistory> salesHistoriesToSave = new ArrayList<>();
+        List<GICompleteResponseDTO.GICompleteItemDTO> responseItems = new ArrayList<>();
+
+        for (GoodsIssueItem giItem : goodsIssueItems) {
+            String itemCode = giItem.getSalesOrderItem().getItemCode();
+            String itemName = giItem.getSalesOrderItem().getItemName();
+            String spec = giItem.getSalesOrderItem().getSpec();
+            String unit = giItem.getSalesOrderItem().getUnit();
+            int quantity = giItem.getQuantity();
+
+            // 자재 조회
+            Material material = materialRepository.findByMaterialCode(itemCode)
+                    .orElseThrow(() -> new BusinessException(ErrorCode.MATERIAL_NOT_FOUND));
+
+            // 창고 재고 조회
+            WarehouseStock stock = warehouseStockRepository
+                    .findByWarehouseIdAndMaterialId(goodsIssue.getWarehouse().getId(), material.getId())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.WAREHOUSE_STOCK_NOT_FOUND));
+
+            // 실제 재고 차감 (current_stock 감소)
+            stock.deductStock(quantity);
+            stocksToUpdate.add(stock);
+
+            // 창고 재고 변동 이력 기록
+            WarehouseStockHistory history = WarehouseStockHistory.builder()
+                    .warehouseStockId(stock.getId())
+                    .type("OUTBOUND")  // 출고
+                    .reason(String.format("출고지시(%s) 완료", giCode))
+                    .changedQuantity(-quantity)  // 음수로 표기 (감소)
+                    .currentStock(stock.getCurrentStock())  // 변경 후 재고
+                    .createdAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))
+                    .build();
+            historiesToSave.add(history);
+
+            // 주문 품목별 이력 기록 (출고 완료 수량)
+            SalesOrderItemHistory salesHistory = SalesOrderItemHistory.builder()
+                    .prQuantity(0)
+                    .piQuantity(0)
+                    .giQuantity(0)
+                    .shippedQuantity(quantity)  // 출고 완료 수량
+                    .doQuantity(0)
+                    .completedQuantity(0)
+                    .soItemId(giItem.getSalesOrderItem().getId())
+                    .createdAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))
+                    .creatorId(goodsIssue.getManager().getId())  // 출고지시 담당자 ID
+                    .build();
+            salesHistoriesToSave.add(salesHistory);
+
+            // 응답 DTO 항목 생성
+            GICompleteResponseDTO.GICompleteItemDTO itemDTO = GICompleteResponseDTO.GICompleteItemDTO.builder()
+                    .itemCode(itemCode)
+                    .itemName(itemName)
+                    .spec(spec)
+                    .quantity(quantity)
+                    .unit(unit)
+                    .remainingStock(stock.getCurrentStock())  // 출고 후 잔여 재고
+                    .build();
+            responseItems.add(itemDTO);
+        }
+
+        // 4. 배치 저장
+        warehouseStockRepository.saveAll(stocksToUpdate);
+        warehouseStockHistoryRepository.saveAll(historiesToSave);
+        salesOrderItemHistoryRepository.saveAll(salesHistoriesToSave);
+
+        // 5. 출고지시 상태를 출고완료(GI_ISSUED)로 변경
+        goodsIssue.updatedApprovalInfo(goodsIssue.getApprovalCode(), "GI_ISSUED");
+        goodsIssueRepository.save(goodsIssue);
+
+        // 6. 응답 DTO 생성 및 반환
+        return GICompleteResponseDTO.builder()
+                .giCode(giCode)
+                .warehouseName(goodsIssue.getWarehouse().getName())
+                .completedAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))
+                .items(responseItems)
+                .build();
     }
 }
