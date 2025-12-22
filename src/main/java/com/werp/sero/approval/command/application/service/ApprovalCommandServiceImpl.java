@@ -103,7 +103,7 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
                                final Object object) {
         switch (approvalTargetType) {
             case "SO" -> ((SalesOrder) object).updateApprovalInfo(approvalCode, "ORD_APPR_PEND");
-            case "GI" -> ((GoodsIssue) object).updatedApprovalInfo(approvalCode, "GI_APV_PEND");
+            case "GI" -> ((GoodsIssue) object).updatedApprovalInfo(approvalCode, "GI_APPR_PEND");
             case "PR" -> ((ProductionRequest) object).updateApprovalInfo(approvalCode, "PR_APPR_PEND");
         }
     }

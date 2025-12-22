@@ -62,6 +62,15 @@
                     <when test='statusType.equals("ORD_PEND")'>
                         AND A.status IN ('ORD_RED', 'ORD_REV')
                     </when>
+                    <when test='statusType.equals("ORD_APPR")'>
+                        AND A.status IN ('ORD_APPR_PEND', 'ORD_APPR_DONE','ORD_APPR_RJCT')
+                    </when>
+                    <when test='statusType.equals("ORD_ING")'>
+                        AND A.status IN ('ORD_WORK_REQ', 'ORD_PRO','ORD_SHIP_READY', 'ORD_SHIPPING')
+                    </when>
+                    <when test='statusType.equals("ORD_DONE")'>
+                        AND A.status IN ('ORD_DONE', 'ORD_CANCEL')
+                    </when>
                     <otherwise>
                         AND A.status = #{statusType}
                     </otherwise>
@@ -69,7 +78,14 @@
             </if>
 
             <if test="dateField != null and dateField != '' and startDate != null and endDate != null">
-                AND A.${dateField} BETWEEN CONCAT(#{startDate}, ' 00:00:00') AND CONCAT(#{endDate}, ' 23:59:59')
+                <choose>
+                    <when test='dateField == "orderedAt"'>
+                        AND A.ordered_at BETWEEN CONCAT(#{startDate}, ' 00:00:00') AND CONCAT(#{endDate}, ' 23:59:59')
+                    </when>
+                    <when test='dateField == "shippedAt"'>
+                        AND A.shipped_at BETWEEN CONCAT(#{startDate}, ' 00:00:00') AND CONCAT(#{endDate}, ' 23:59:59')
+                    </when>
+                </choose>
             </if>
 
             <if test="managerName != null and managerName != ''">

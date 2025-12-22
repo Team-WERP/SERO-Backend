@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 @Getter
 @Builder
 @AllArgsConstructor
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 public class SOClientOrderDTO {
 
     @Schema(description = "주문 ID")

@@ -4,8 +4,10 @@ import com.werp.sero.shipping.query.dto.DODetailResponseDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 @Mapper
-public interface DODetailMapper {
+public interface DOMapper {
 
     /**
      * 납품서 코드로 납품서 상세 조회
@@ -14,4 +16,6 @@ public interface DODetailMapper {
      * @return 납품서 상세 정보 (고객사 정보, 품목 정보 포함)
      */
     DODetailResponseDTO findByDoCode(@Param("doCode") String doCode);
+
+    List<String> selectDeliveryUrlsBySoId(final int orderId);
 }

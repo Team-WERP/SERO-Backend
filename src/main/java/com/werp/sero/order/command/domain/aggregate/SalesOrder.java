@@ -96,7 +96,10 @@ public class SalesOrder {
     }
 
     public void updateManager(Employee manager) {
+        final String UPDATE_STATUS = "ORD_RVW";
+
         this.employee = manager;
+        this.status = UPDATE_STATUS;
     }
 
     public void updateApprovalInfo(final String approvalCode, final String status) {
