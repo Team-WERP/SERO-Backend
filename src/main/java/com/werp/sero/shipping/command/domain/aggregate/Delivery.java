@@ -45,11 +45,13 @@ public class Delivery {
 
     public void startDelivery() {
         this.status = "SHIP_ING";
-        this.departedAt = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        this.departedAt = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        this.goodsIssue.updateStatus("GI_SHIP_ING");
     }
 
     public void completeDelivery() {
         this.status = "SHIP_DONE";
-        this.arrivedAt = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        this.arrivedAt = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        this.goodsIssue.updateStatus("GI_SHIP_DONE");
     }
 }
