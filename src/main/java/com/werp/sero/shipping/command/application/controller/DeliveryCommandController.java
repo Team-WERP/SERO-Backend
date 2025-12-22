@@ -1,9 +1,8 @@
-package com.werp.sero.delivery.command.application.controller;
+package com.werp.sero.shipping.command.application.controller;
 
-
-import com.werp.sero.delivery.command.application.service.DeliveryControllCommandService;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.security.annotation.CurrentUser;
+import com.werp.sero.shipping.command.application.service.DeliveryCommandService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -17,9 +16,9 @@ import java.util.Map;
 @RestController
 @RequestMapping("/delivery")
 @RequiredArgsConstructor
-public class DeliveryControllCommandController {
+public class DeliveryCommandController {
 
-    private final DeliveryControllCommandService deliveryControllCommandService;
+    private final DeliveryCommandService deliveryCommandService;
 
     @PutMapping("/start")
     @Operation(summary = "배송 시작", description = "출고 완료된 배송을 '배송중' 상태로 변경합니다.")
@@ -27,11 +26,11 @@ public class DeliveryControllCommandController {
             @RequestParam String giCode,
             @CurrentUser Employee driver
     ) {
-        deliveryControllCommandService.startDelivery(giCode,driver);
+        deliveryCommandService.startDelivery(giCode, driver);
 
         Map<String, String> response = new HashMap<>();
         response.put("message", "배송이 시작되었습니다.");
-        response.put("giCode",giCode);
+        response.put("giCode", giCode);
 
         return ResponseEntity.ok(response);
     }
@@ -42,11 +41,11 @@ public class DeliveryControllCommandController {
             @RequestParam String giCode,
             @CurrentUser Employee driver
     ) {
-        deliveryControllCommandService.completeDelivery(giCode,driver);
+        deliveryCommandService.completeDelivery(giCode, driver);
 
         Map<String, String> response = new HashMap<>();
         response.put("message", "배송이 완료되었습니다.");
-        response.put("giCode",giCode);
+        response.put("giCode", giCode);
 
         return ResponseEntity.ok(response);
     }

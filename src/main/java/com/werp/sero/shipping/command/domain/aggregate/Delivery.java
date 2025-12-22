@@ -42,4 +42,14 @@ public class Delivery {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "gi_id", nullable = false)
     private GoodsIssue goodsIssue;
+
+    public void startDelivery() {
+        this.status = "SHIP_ING";
+        this.departedAt = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+    }
+
+    public void completeDelivery() {
+        this.status = "SHIP_DONE";
+        this.arrivedAt = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+    }
 }
