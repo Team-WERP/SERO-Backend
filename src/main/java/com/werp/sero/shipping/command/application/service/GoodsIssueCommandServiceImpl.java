@@ -41,6 +41,11 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
         GoodsIssue goodsIssue = goodsIssueRepository.findByGiCode(giCode)
                 .orElseThrow(() -> new BusinessException(ErrorCode.GOODS_ISSUE_NOT_FOUND));
 
+        // 상태 검증: 결재 승인된 출고지시만 출고 처리 가능
+        if (!"GI_APV_APPR".equals(goodsIssue.getStatus())) {
+            throw new BusinessException(ErrorCode.INVALID_GOODS_ISSUE_STATUS);
+        }
+
         // 2. 출고지시 품목 조회
         List<GoodsIssueItem> goodsIssueItems = goodsIssueItemRepository.findByGoodsIssueId(goodsIssue.getId());
 
@@ -97,8 +102,8 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
         warehouseStockHistoryRepository.saveAll(historiesToSave);
         salesOrderItemHistoryRepository.saveAll(salesHistoriesToSave);
 
-        // 5. 출고지시 상태를 완료로 변경
-        goodsIssue.completeGoodsIssue();
+        // 5. 출고지시 상태를 출고완료(GI_ISSUED)로 변경
+        goodsIssue.updatedApprovalInfo(goodsIssue.getApprovalCode(), "GI_ISSUED");
         goodsIssueRepository.save(goodsIssue);
     }
 }

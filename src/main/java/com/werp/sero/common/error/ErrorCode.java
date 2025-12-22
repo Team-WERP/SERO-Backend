@@ -67,6 +67,7 @@ public enum ErrorCode {
 
     /* GOODS ISSUE */
     GOODS_ISSUE_NOT_FOUND(HttpStatus.NOT_FOUND, "SHIPPING001", "출고지시 정보를 찾을 수 없습니다."),
+    INVALID_GOODS_ISSUE_STATUS(HttpStatus.BAD_REQUEST, "SHIPPING003", "출고 처리할 수 없는 상태입니다. 결재 승인된 출고지시만 처리 가능합니다."),
 
     /* APPROVAL */
     INVALID_APPROVAL_TYPE(HttpStatus.NOT_FOUND, "APPROVAL001", "지원하지 않는 결재 타입입니다."),
