@@ -105,7 +105,11 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
 
         goodsIssueRepository.save(goodsIssue);
 
-        // 8. 재고 검증, 할당 및 출고지시 품목 생성
+        // 8. 납품서 상태를 DO_AFTER_GI로 변경
+        deliveryOrder.updateStatus("DO_AFTER_GI");
+        deliveryOrderRepository.save(deliveryOrder);
+
+        // 9. 재고 검증, 할당 및 출고지시 품목 생성
         List<String> insufficientItems = new ArrayList<>();
         List<GoodsIssueItem> goodsIssueItems = new ArrayList<>();
         List<WarehouseStock> stocksToUpdate = new ArrayList<>();
@@ -145,17 +149,17 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
             stocksToUpdate.add(stock);
         }
 
-        // 9. 재고 부족 시 예외 발생
+        // 10. 재고 부족 시 예외 발생
         if (!insufficientItems.isEmpty()) {
             String message = "재고가 부족합니다: " + String.join(", ", insufficientItems);
             throw new InsufficientStockException(message);
         }
 
-        // 10. 배치 저장 (출고지시 품목 및 재고)
+        // 11. 배치 저장 (출고지시 품목 및 재고)
         goodsIssueItemRepository.saveAll(goodsIssueItems);
         warehouseStockRepository.saveAll(stocksToUpdate);
 
-        // 11. 주문 품목별 이력 기록 (출고지시 수량)
+        // 12. 주문 품목별 이력 기록 (출고지시 수량)
         for (DeliveryOrderItem doItem : deliveryOrderItems) {
             SalesOrderItemHistory history = SalesOrderItemHistory.builder()
                     .prQuantity(0)
