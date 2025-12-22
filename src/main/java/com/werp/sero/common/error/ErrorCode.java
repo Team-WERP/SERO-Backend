@@ -44,6 +44,7 @@ public enum ErrorCode {
     CLIENT_BUSINESS_NO_DUPLICATED(HttpStatus.CONFLICT, "CLIENT002", "이미 등록된 사업자번호입니다."),
     CLIENT_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "CLIENT003", "해당 고객사의 거래 품목이 아닙니다."),
     CLIENT_ADDRESS_NOT_FOUND(HttpStatus.NOT_FOUND, "CLIENT004", "배송지를 찾을 수 없습니다."),
+    CLIENT_ACCESS_DENIED(HttpStatus.FORBIDDEN, "CLIENT005", "다른 고객사의 데이터에 접근할 수 없습니다."),
 
     /* SALES ORDER */
     SALES_ORDER_LIST_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER001", "주문 목록을 찾을 수 없습니다."),
