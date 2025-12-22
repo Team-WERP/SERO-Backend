@@ -1,7 +1,7 @@
 package com.werp.sero.production.command.application.controller;
 
 import com.werp.sero.employee.command.domain.aggregate.Employee;
-import com.werp.sero.production.command.application.dto.wo.WorkOrderCreateRequestDTO;
+import com.werp.sero.production.command.application.dto.WorkOrderCreateRequestDTO;
 import com.werp.sero.production.command.application.service.WOCommandService;
 import com.werp.sero.security.annotation.CurrentUser;
 import io.swagger.v3.oas.annotations.Operation;
