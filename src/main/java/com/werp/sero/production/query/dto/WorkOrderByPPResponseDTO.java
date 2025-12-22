@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class WorkOrderResponseDTO {
+public class WorkOrderByPPResponseDTO {
     private int woId;
     private String woCode;
     private String workDate;
