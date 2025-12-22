@@ -3,6 +3,8 @@ package com.werp.sero.production.command.application.service;
 import com.werp.sero.common.error.ErrorCode;
 import com.werp.sero.common.error.exception.BusinessException;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
+import com.werp.sero.employee.command.domain.repository.EmployeeRepository;
+import com.werp.sero.employee.exception.EmployeeNotFoundException;
 import com.werp.sero.order.command.domain.aggregate.SalesOrder;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItem;
 import com.werp.sero.order.command.domain.repository.SORepository;
@@ -30,6 +32,7 @@ public class PRCommandServiceImpl implements PRCommandService {
     private final PRItemRepository prtItemRepository;
     private final SORepository soRepository;
     private final SOItemRepository soItemRepository;
+    private final EmployeeRepository employeeRepository;
     private final DocumentSequenceCommandService documentSequenceCommandService;
 
     @Override
@@ -139,5 +142,17 @@ public class PRCommandServiceImpl implements PRCommandService {
         String prCode = documentSequenceCommandService.generateDocumentCode("DOC_PR");
         pr.request(prCode);
         prRepository.save(pr);
+    }
+
+    @Override
+    @Transactional
+    public void assignManager(int prId, int managerId) {
+        ProductionRequest pr = prRepository.findById(prId)
+                .orElseThrow(ProductionNotFoundException::new);
+
+        Employee manager = employeeRepository.findById(managerId)
+                .orElseThrow(EmployeeNotFoundException::new);
+
+        pr.assignManager(manager);
     }
 }

@@ -10,4 +10,6 @@ public interface PRCommandService {
     void updateDraft(int prId, PRDraftUpdateRequestDTO dto, Employee employee);
 
     void request(int prId, Employee employee);
+
+    void assignManager(int prId, int managerId);
 }

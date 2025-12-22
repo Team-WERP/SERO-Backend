@@ -2,6 +2,98 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.werp.sero.order.query.dao.SOMapper">
+    <resultMap id="SOResultMap" type="com.werp.sero.order.query.dto.SOResponseDTO">
+        <id property="id" column="order_id"/>
+        <result property="soCode" column="so_code"/>
+        <result property="clientName" column="client_name"/>
+        <result property="orderedAt" column="ordered_at"/>
+        <result property="shippedAt" column="shipped_at"/>
+        <result property="poCode" column="po_code"/>
+        <result property="totalQuantity" column="total_quantity"/>
+        <result property="totalItemCount" column="total_item_count"/>
+        <result property="totalPrice" column="total_price"/>
+        <result property="soUrl" column="so_url"/>
+        <result property="rejectionReason" column="rejection_reason"/>
+        <result property="mainItemName" column="main_item_name"/>
+        <result property="note" column="note"/>
+        <result property="approvalCode" column="approval_code"/>
+        <result property="status" column="status"/>
+        <result property="shippingName" column="shipping_name"/>
+        <result property="address" column="address"/>
+        <result property="latitude" column="latitude"/>
+        <result property="longitude" column="longitude"/>
+        <result property="recipientName" column="recipient_name"/>
+        <result property="recipientContact" column="recipient_contact"/>
+        <result property="clientId" column="client_id"/>
+        <result property="clientManagerId" column="client_manager_id"/>
+        <result property="managerName" column="manager_name"/>
+    </resultMap>
+
+    <select id="selectAllSalesOrders" resultMap="SOResultMap">
+        SELECT
+        A.id AS order_id,
+        A.so_code,
+        A.client_id,
+        A.client_manager_id,
+        A.manager_id, A.client_name,
+        A.ordered_at,
+        A.shipped_at,
+        A.po_code,
+        A.status,
+        A.total_quantity,
+        A.total_item_count,
+        A.total_price,
+        A.so_url,
+        A.rejection_reason,
+        A.main_item_name,
+        A.note,
+        A.approval_code,
+        A.shipping_name,
+        A.address,
+        A.recipient_name,
+        A.recipient_contact,
+        B.name AS manager_name
+        FROM sales_order A
+        LEFT JOIN employee B ON A.manager_id = B.id
+
+        <where>
+            <if test="statusType != null and statusType != ''">
+                <choose>
+                    <when test='statusType.equals("ORD_PEND")'>
+                        AND A.status IN ('ORD_RED', 'ORD_REV')
+                    </when>
+                    <otherwise>
+                        AND A.status = #{statusType}
+                    </otherwise>
+                </choose>
+            </if>
+
+            <if test="dateField != null and dateField != '' and startDate != null and endDate != null">
+                AND A.${dateField} BETWEEN CONCAT(#{startDate}, ' 00:00:00') AND CONCAT(#{endDate}, ' 23:59:59')
+            </if>
+
+            <if test="managerName != null and managerName != ''">
+                AND B.name LIKE CONCAT('%', #{managerName}, '%')
+            </if>
+
+            <if test="clientName != null and clientName != ''">
+                AND A.client_name LIKE CONCAT('%', #{clientName}, '%')
+            </if>
+
+            <if test="searchKeyword != null and searchKeyword != ''">
+                AND (
+                A.so_code LIKE CONCAT('%', #{searchKeyword}, '%')
+                OR A.main_item_name LIKE CONCAT('%', #{searchKeyword}, '%')
+                )
+            </if>
+        </where>
+
+        ORDER BY A.ordered_at DESC
+
+        <if test="limit != null and offset != null">
+            LIMIT #{limit} OFFSET #{offset}
+        </if>
+    </select>
 
     <resultMap id="SODetailResultMap" type="com.werp.sero.order.query.dto.SODetailsResponseDTO">
         <id property="orderId" column="order_id"/>

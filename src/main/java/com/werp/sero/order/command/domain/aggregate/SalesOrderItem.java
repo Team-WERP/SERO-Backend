@@ -1,13 +1,14 @@
 package com.werp.sero.order.command.domain.aggregate;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
 @Table(name = "sales_order_item")
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 @Entity
+@Builder
 public class SalesOrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

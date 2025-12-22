@@ -103,4 +103,8 @@ public class ProductionRequest {
         this.approvalCode = approvalCode;
         this.status = status;
     }
+  
+    public void assignManager(Employee manager) {
+        this.manager = manager;
+    }
 }
