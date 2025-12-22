@@ -37,6 +37,7 @@ public enum ErrorCode {
     WAREHOUSE_NOT_FOUND(HttpStatus.NOT_FOUND, "WAREHOUSE002", "창고 정보를 찾을 수 없습니다."),
     INVALID_MATERIAL_TYPE(HttpStatus.BAD_REQUEST, "WAREHOUSE003", "잘못된 자재 유형입니다. (허용: MAT_FG, MAT_RM)"),
     INVALID_STOCK_STATUS(HttpStatus.BAD_REQUEST, "WAREHOUSE004", "잘못된 재고 상태입니다. (허용: NORMAL, LOW, OUT_OF_STOCK)"),
+    INSUFFICIENT_STOCK(HttpStatus.BAD_REQUEST, "WAREHOUSE005", "재고가 부족합니다."),
 
     /* CLIENT */
     CLIENT_NOT_FOUND(HttpStatus.NOT_FOUND, "CLIENT001", "고객사 정보를 찾을 수 없습니다."),
@@ -66,6 +67,7 @@ public enum ErrorCode {
 
     /* GOODS ISSUE */
     GOODS_ISSUE_NOT_FOUND(HttpStatus.NOT_FOUND, "SHIPPING001", "출고지시 정보를 찾을 수 없습니다."),
+    GOODS_ISSUE_ALREADY_EXISTS(HttpStatus.CONFLICT, "SHIPPING003", "해당 납품서로 이미 출고지시가 생성되었습니다."),
 
     /* APPROVAL */
     INVALID_APPROVAL_TYPE(HttpStatus.NOT_FOUND, "APPROVAL001", "지원하지 않는 결재 타입입니다."),

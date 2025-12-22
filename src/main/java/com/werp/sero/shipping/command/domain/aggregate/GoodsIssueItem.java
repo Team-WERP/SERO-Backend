@@ -2,12 +2,17 @@ package com.werp.sero.shipping.command.domain.aggregate;
 
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItem;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @Table(name = "goods_issue_item")
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder
 @Entity
 public class GoodsIssueItem {
     @Id

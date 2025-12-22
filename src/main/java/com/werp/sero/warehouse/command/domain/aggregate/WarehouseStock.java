@@ -1,6 +1,7 @@
 package com.werp.sero.warehouse.command.domain.aggregate;
 
 import com.werp.sero.material.command.domain.aggregate.Material;
+import com.werp.sero.warehouse.exception.InsufficientStockException;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -31,4 +32,19 @@ public class WarehouseStock {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "material_id", nullable = false)
     private Material material;
+
+
+    public void allocateStock(int quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("할당 수량은 0보다 커야 합니다.");
+        }
+
+        if (this.availableStock < quantity) {
+            throw new InsufficientStockException(
+                String.format("가용 재고가 부족합니다. 필요: %d개, 가용: %d개", quantity, this.availableStock)
+            );
+        }
+
+        this.availableStock -= quantity;
+    }
 }
