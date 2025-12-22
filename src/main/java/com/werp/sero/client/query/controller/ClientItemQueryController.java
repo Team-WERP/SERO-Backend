@@ -2,12 +2,11 @@ package com.werp.sero.client.query.controller;
 
 import java.util.List;
 
-import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.werp.sero.client.exception.ClientAccessDeniedException;
+import com.werp.sero.client.command.application.service.ClientAddressCommandService;
 import com.werp.sero.client.query.dto.ClientItemPriceHistoryResponseDTO;
 import com.werp.sero.client.query.dto.ClientItemResponseDTO;
 import com.werp.sero.client.query.service.ClientItemQueryService;
@@ -24,6 +23,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class ClientItemQueryController {
 
     private final ClientItemQueryService clientItemQueryService;
+    private final ClientAddressCommandService clientAddressCommandService;
 
     @Operation(summary = "고객사 거래 가능 품목 조회")
     @GetMapping("/items")
@@ -33,10 +33,7 @@ public class ClientItemQueryController {
         @RequestParam(required = false) String status,
         @CurrentUser ClientEmployee clientEmployee
     ) {
-        // clientId 검증: 로그인한 ClientEmployee의 client_id와 요청한 clientId가 일치하는지 확인
-        if (clientEmployee.getClient().getId() != clientId) {
-            throw new ClientAccessDeniedException();
-        }
+        clientAddressCommandService.validateClientAccess(clientEmployee, clientId);
 
         List<ClientItemResponseDTO> items = clientItemQueryService.getClientItems(clientId, keyword, status);
         return ResponseEntity.ok(items);
@@ -49,10 +46,7 @@ public class ClientItemQueryController {
         @PathVariable int itemId,
         @CurrentUser ClientEmployee clientEmployee
     ) {
-        // clientId 검증: 로그인한 ClientEmployee의 client_id와 요청한 clientId가 일치하는지 확인
-        if (clientEmployee.getClient().getId() != clientId) {
-            throw new ClientAccessDeniedException();
-        }
+        clientAddressCommandService.validateClientAccess(clientEmployee, clientId);
 
         List<ClientItemPriceHistoryResponseDTO> history =
             clientItemQueryService.getPriceHistory(clientId, itemId);

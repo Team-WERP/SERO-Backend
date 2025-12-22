@@ -4,7 +4,6 @@ import com.werp.sero.client.command.application.dto.ClientAddressCreateResponse;
 import com.werp.sero.client.command.application.dto.ClientAddressUpdateRequest;
 import com.werp.sero.client.command.application.dto.ClientAddressUpdateResponse;
 import com.werp.sero.client.command.application.service.ClientAddressCommandService;
-import com.werp.sero.client.exception.ClientAccessDeniedException;
 import com.werp.sero.employee.command.domain.aggregate.ClientEmployee;
 import com.werp.sero.security.annotation.CurrentUser;
 import lombok.AccessLevel;
@@ -33,10 +32,7 @@ public class ClientAddressCommandController {
         @RequestBody @Valid ClientAddressCreateRequest request,
         @CurrentUser ClientEmployee clientEmployee
     ) {
-        // clientId 검증: 로그인한 ClientEmployee의 client_id와 요청한 clientId가 일치하는지 확인
-        if (clientEmployee.getClient().getId() != clientId) {
-            throw new ClientAccessDeniedException();
-        }
+        clientAddressCommandService.validateClientAccess(clientEmployee, clientId);
 
         ClientAddressCreateResponse response =
             clientAddressCommandService.createAddress(clientId, request);
@@ -51,10 +47,7 @@ public class ClientAddressCommandController {
         @RequestBody ClientAddressUpdateRequest request,
         @CurrentUser ClientEmployee clientEmployee
     ) {
-        // clientId 검증: 로그인한 ClientEmployee의 client_id와 요청한 clientId가 일치하는지 확인
-        if (clientEmployee.getClient().getId() != clientId) {
-            throw new ClientAccessDeniedException();
-        }
+        clientAddressCommandService.validateClientAccess(clientEmployee, clientId);
 
         ClientAddressUpdateResponse response =
                 clientAddressCommandService.updateAddress(clientId, addressId, request);
@@ -68,10 +61,7 @@ public class ClientAddressCommandController {
         @PathVariable int addressId,
         @CurrentUser ClientEmployee clientEmployee
     ) {
-        // clientId 검증: 로그인한 ClientEmployee의 client_id와 요청한 clientId가 일치하는지 확인
-        if (clientEmployee.getClient().getId() != clientId) {
-            throw new ClientAccessDeniedException();
-        }
+        clientAddressCommandService.validateClientAccess(clientEmployee, clientId);
 
         clientAddressCommandService.deleteAddress(clientId, addressId);
         return ResponseEntity.ok().build();
