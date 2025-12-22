@@ -1,5 +1,6 @@
-package com.werp.sero.shipping.command.domain.aggregate;
+package com.werp.sero.delivery.command.domain.aggregate;
 
+import com.werp.sero.shipping.command.domain.aggregate.GoodsIssue;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
