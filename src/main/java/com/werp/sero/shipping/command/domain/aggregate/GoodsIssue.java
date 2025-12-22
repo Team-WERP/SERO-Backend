@@ -61,4 +61,8 @@ public class GoodsIssue {
         this.approvalCode = approvalCode;
         this.status = status;
     }
+
+    public void assignManager(final Employee manager) {
+        this.manager = manager;
+    }
 }

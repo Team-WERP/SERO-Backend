@@ -2,6 +2,7 @@ package com.werp.sero.shipping.command.application.controller;
 
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.security.annotation.CurrentUser;
+import com.werp.sero.shipping.command.application.dto.GIAssignManagerResponseDTO;
 import com.werp.sero.shipping.command.application.dto.GICompleteResponseDTO;
 import com.werp.sero.shipping.command.application.dto.GICreateRequestDTO;
 import com.werp.sero.shipping.command.application.service.GoodsIssueCommandService;
@@ -190,5 +191,50 @@ public class GoodsIssueCommandController {
         response.put("giCode", giCode);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @Operation(
+            summary = "출고지시 담당자 배정",
+            description = "물류팀 담당자가 출고지시의 담당자로 자신을 배정합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "담당자 배정 성공",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GIAssignManagerResponseDTO.class),
+                            examples = @ExampleObject(value = """
+                                    {
+                                        "giCode": "GI-20251220-001",
+                                        "managerId": 5,
+                                        "managerName": "김물류",
+                                        "managerDepartment": "물류팀",
+                                        "assignedAt": "2025-12-20 14:30"
+                                    }
+                                    """)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "출고지시를 찾을 수 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(name = "GOODS_ISSUE_NOT_FOUND", value = """
+                                    {
+                                        "code": "SHIPPING001",
+                                        "message": "출고지시 정보를 찾을 수 없습니다."
+                                    }
+                                    """)
+                    )
+            )
+    })
+    @PatchMapping("/{giCode}/assign-manager")
+    public ResponseEntity<GIAssignManagerResponseDTO> assignManager(
+            @PathVariable String giCode,
+            @CurrentUser Employee currentEmployee
+    ) {
+        GIAssignManagerResponseDTO response = goodsIssueCommandService.assignManager(giCode, currentEmployee);
+        return ResponseEntity.ok(response);
     }
 }

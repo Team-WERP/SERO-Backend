@@ -9,6 +9,7 @@ import com.werp.sero.order.command.domain.aggregate.SalesOrder;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItemHistory;
 import com.werp.sero.order.command.domain.repository.SalesOrderItemHistoryRepository;
 import com.werp.sero.order.command.domain.repository.SORepository;
+import com.werp.sero.shipping.command.application.dto.GIAssignManagerResponseDTO;
 import com.werp.sero.shipping.command.application.dto.GICompleteResponseDTO;
 import com.werp.sero.shipping.command.application.dto.GICreateRequestDTO;
 import com.werp.sero.shipping.command.domain.aggregate.DeliveryOrder;
@@ -261,6 +262,29 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
                 .warehouseName(goodsIssue.getWarehouse().getName())
                 .completedAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))
                 .items(responseItems)
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public GIAssignManagerResponseDTO assignManager(String giCode, Employee manager) {
+        // 1. 출고지시 조회
+        GoodsIssue goodsIssue = goodsIssueRepository.findByGiCode(giCode)
+                .orElseThrow(() -> new BusinessException(ErrorCode.GOODS_ISSUE_NOT_FOUND));
+
+        // 2. 담당자 배정
+        goodsIssue.assignManager(manager);
+
+        // 3. 저장
+        goodsIssueRepository.save(goodsIssue);
+
+        // 4. 응답 DTO 생성 및 반환
+        return GIAssignManagerResponseDTO.builder()
+                .giCode(giCode)
+                .managerId(manager.getId())
+                .managerName(manager.getName())
+                .managerDepartment(manager.getDepartment().getDeptName())
+                .assignedAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))
                 .build();
     }
 }
