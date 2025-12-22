@@ -9,9 +9,9 @@ import java.util.Optional;
 
 public interface WarehouseStockRepository extends JpaRepository<WarehouseStock, Integer> {
 
-    @Query("SELECT ws FROM WarehouseStock ws " +
-           "WHERE ws.warehouse.id = :warehouseId " +
-           "AND ws.material.id = :materialId")
+    @Query("SELECT A FROM WarehouseStock A " +
+           "WHERE A.warehouse.id = :warehouseId " +
+           "AND A.material.id = :materialId")
     Optional<WarehouseStock> findByWarehouseIdAndMaterialId(
             @Param("warehouseId") int warehouseId,
             @Param("materialId") int materialId

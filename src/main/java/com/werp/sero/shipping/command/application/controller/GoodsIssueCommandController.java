@@ -2,6 +2,8 @@ package com.werp.sero.shipping.command.application.controller;
 
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.security.annotation.CurrentUser;
+import com.werp.sero.shipping.command.application.dto.GIAssignManagerResponseDTO;
+import com.werp.sero.shipping.command.application.dto.GICompleteResponseDTO;
 import com.werp.sero.shipping.command.application.dto.GICreateRequestDTO;
 import com.werp.sero.shipping.command.application.service.GoodsIssueCommandService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,10 +17,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,12 +26,87 @@ import java.util.Map;
         name = "출고지시 - Command",
         description = "출고지시 작성 API"
 )
+
 @RestController
 @RequestMapping("/goods-issues")
 @RequiredArgsConstructor
 public class GoodsIssueCommandController {
 
     private final GoodsIssueCommandService goodsIssueCommandService;
+
+    @Operation(
+            summary = "출고 완료 처리",
+            description = "결재가 완료된 출고지시를 실행하여 실제 재고를 차감합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "출고 처리 완료",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GICompleteResponseDTO.class),
+                            examples = @ExampleObject(value = """
+                                    {
+                                        "giCode": "GI-20251220-001",
+                                        "warehouseName": "중앙창고",
+                                        "completedAt": "2025-12-20 14:30",
+                                        "trackingNumber": "SERO-20251222-D001",
+                                        "driverName": "김기사",
+                                        "driverContact": "010-1234-5678",
+                                        "items": [
+                                            {
+                                                "itemCode": "MC-A01",
+                                                "itemName": "모터코어A",
+                                                "spec": "100x200",
+                                                "quantity": 100,
+                                                "unit": "EA",
+                                                "remainingStock": 400
+                                            },
+                                            {
+                                                "itemCode": "MC-B01",
+                                                "itemName": "모터코어B",
+                                                "spec": "150x250",
+                                                "quantity": 50,
+                                                "unit": "EA",
+                                                "remainingStock": 200
+                                            }
+                                        ]
+                                    }
+                                    """)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "출고 처리 불가 상태",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(name = "INVALID_GOODS_ISSUE_STATUS", value = """
+                                    {
+                                        "code": "SHIPPING004",
+                                        "message": "출고 처리할 수 없는 상태입니다."
+                                    }
+                                    """)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "출고지시를 찾을 수 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(name = "GOODS_ISSUE_NOT_FOUND", value = """
+                                    {
+                                        "code": "SHIPPING001",
+                                        "message": "출고지시 정보를 찾을 수 없습니다."
+                                    }
+                                    """)
+                    )
+            )
+    })
+    @PostMapping("/{giCode}/complete")
+    public ResponseEntity<GICompleteResponseDTO> completeGoodsIssue(@PathVariable String giCode) {
+        GICompleteResponseDTO response = goodsIssueCommandService.completeGoodsIssue(giCode);
+        return ResponseEntity.ok(response);
+    }
 
     @Operation(
             summary = "출고지시 작성",
@@ -120,5 +194,50 @@ public class GoodsIssueCommandController {
         response.put("giCode", giCode);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @Operation(
+            summary = "출고지시 담당자 배정",
+            description = "물류팀 직원이 출고지시서의 담당자로 자신을 배정합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "담당자 배정 성공",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GIAssignManagerResponseDTO.class),
+                            examples = @ExampleObject(value = """
+                                    {
+                                        "giCode": "GI-20251220-001",
+                                        "managerId": 5,
+                                        "managerName": "김물류",
+                                        "managerDepartment": "물류팀",
+                                        "assignedAt": "2025-12-20 14:30"
+                                    }
+                                    """)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "출고지시서를 찾을 수 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(name = "GOODS_ISSUE_NOT_FOUND", value = """
+                                    {
+                                        "code": "SHIPPING001",
+                                        "message": "출고지시 정보를 찾을 수 없습니다."
+                                    }
+                                    """)
+                    )
+            )
+    })
+    @PatchMapping("/{giCode}/assign-manager")
+    public ResponseEntity<GIAssignManagerResponseDTO> assignManager(
+            @PathVariable String giCode,
+            @CurrentUser Employee currentEmployee
+    ) {
+        GIAssignManagerResponseDTO response = goodsIssueCommandService.assignManager(giCode, currentEmployee);
+        return ResponseEntity.ok(response);
     }
 }

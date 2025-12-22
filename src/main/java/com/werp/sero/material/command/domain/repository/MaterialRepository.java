@@ -11,13 +11,7 @@ import java.util.Optional;
  */
 public interface MaterialRepository extends JpaRepository<Material, Integer> {
 
-    /**
-     * 자재 코드 중복 체크
-     */
     boolean existsByMaterialCode(String materialCode);
 
-    /**
-     * 자재 코드로 자재 조회
-     */
     Optional<Material> findByMaterialCode(String materialCode);
 }

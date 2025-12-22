@@ -47,4 +47,21 @@ public class WarehouseStock {
 
         this.availableStock -= quantity;
     }
+
+
+
+    public void deductStock(int quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("출고 수량은 0보다 커야 합니다.");
+        }
+
+        if (this.currentStock < quantity) {
+            throw new InsufficientStockException(
+                String.format("현재 재고가 부족합니다. 필요: %d개, 현재: %d개", quantity, this.currentStock)
+            );
+        }
+
+        this.currentStock -= quantity;
+    }
+
 }

@@ -4,6 +4,7 @@ import com.werp.sero.common.error.ErrorCode;
 import com.werp.sero.common.error.exception.BusinessException;
 
 public class InsufficientStockException extends BusinessException {
+
     public InsufficientStockException() {
         super(ErrorCode.INSUFFICIENT_STOCK);
     }
