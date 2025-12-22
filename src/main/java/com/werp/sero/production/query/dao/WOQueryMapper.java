@@ -1,14 +1,17 @@
 package com.werp.sero.production.query.dao;
 
-import com.werp.sero.production.query.dto.WorkOrderByPRResponseDTO;
-import com.werp.sero.production.query.dto.WorkOrderByPPResponseDTO;
+import com.werp.sero.production.query.dto.WOByDateResponseDTO;
+import com.werp.sero.production.query.dto.WOByPRResponseDTO;
+import com.werp.sero.production.query.dto.WOByPPResponseDTO;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
 
 @Mapper
 public interface WOQueryMapper {
-    List<WorkOrderByPPResponseDTO> selectByProductionPlan(int ppId);
+    List<WOByPPResponseDTO> selectByProductionPlan(int ppId);
 
-    List<WorkOrderByPRResponseDTO> selectByProductionRequest(int prId);
+    List<WOByPRResponseDTO> selectByProductionRequest(int prId);
+
+    List<WOByDateResponseDTO> selectByDate(String date);
 }

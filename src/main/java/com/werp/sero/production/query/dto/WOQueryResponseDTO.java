@@ -5,7 +5,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class WorkOrderByPRResponseDTO {
+public class WOQueryResponseDTO {
     private int woId;
     private String woCode;
     private String workDate;
@@ -13,11 +13,9 @@ public class WorkOrderByPRResponseDTO {
 
     private int ppId;
     private String ppCode;
-    private String ppStatus;
-
-    private int lineId;
-    private String lineName;
 
     private int prId;
     private String prCode;
+
+    private String lineName;
 }

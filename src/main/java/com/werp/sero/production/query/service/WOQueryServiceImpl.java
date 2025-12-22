@@ -1,8 +1,9 @@
 package com.werp.sero.production.query.service;
 
 import com.werp.sero.production.query.dao.WOQueryMapper;
-import com.werp.sero.production.query.dto.WorkOrderByPRResponseDTO;
-import com.werp.sero.production.query.dto.WorkOrderByPPResponseDTO;
+import com.werp.sero.production.query.dto.WOByDateResponseDTO;
+import com.werp.sero.production.query.dto.WOByPRResponseDTO;
+import com.werp.sero.production.query.dto.WOByPPResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,12 +17,19 @@ public class WOQueryServiceImpl implements WOQueryService{
 
     @Override
     @Transactional(readOnly = true)
-    public List<WorkOrderByPPResponseDTO> getByProductionPlan(int ppId) {
+    public List<WOByPPResponseDTO> getByProductionPlan(int ppId) {
         return woQueryMapper.selectByProductionPlan(ppId);
     }
 
     @Override
-    public List<WorkOrderByPRResponseDTO> getByProductionRequest(int prId) {
+    public List<WOByPRResponseDTO> getByProductionRequest(int prId) {
         return woQueryMapper.selectByProductionRequest(prId);
     }
+
+    @Override
+    public List<WOByDateResponseDTO> getByDate(String date) {
+        return woQueryMapper.selectByDate(date);
+    }
+
+
 }

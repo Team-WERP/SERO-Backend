@@ -10,7 +10,7 @@
     <!-- ===================================================== -->
     <select id="selectByProductionPlan"
             parameterType="int"
-            resultType="com.werp.sero.production.query.dto.WorkOrderQueryResponseDTO">
+            resultType="com.werp.sero.production.query.dto.WOQueryResponseDTO">
 
         SELECT
             A.id              AS woId,
@@ -44,7 +44,7 @@
     <!-- ===================================================== -->
     <select id="selectByProductionRequest"
             parameterType="int"
-            resultType="com.werp.sero.production.query.dto.WorkOrderByPRResponseDTO">
+            resultType="com.werp.sero.production.query.dto.WOByPRResponseDTO">
 
         SELECT
             A.id                AS woId,
@@ -72,6 +72,42 @@
 
         WHERE A.pr_id = #{prId}
         ORDER BY A.work_date ASC
+
+    </select>
+
+    <!-- ===================================================== -->
+    <!-- 작업일자 기준 작업지시 목록 조회                              -->
+    <!-- ===================================================== -->
+    <select id="selectByDate"
+            resultType="com.werp.sero.production.query.dto.WOByDateResponseDTO">
+
+        SELECT
+            A.id            AS woId,
+            A.wo_code       AS woCode,
+            A.work_date     AS workDate,
+            A.quantity      AS quantity,
+
+            B.id            AS ppId,
+            B.pp_code       AS ppCode,
+            B.status        AS ppStatus,
+
+            D.id            AS lineId,
+            D.line_name     AS lineName,
+
+            C.id            AS prId,
+            C.pr_code       AS prCode
+
+        FROM work_order A
+                 JOIN production_plan B
+                      ON A.pp_id = B.id
+                 JOIN production_request C
+                      ON A.pr_id = C.id
+                 LEFT JOIN production_line D
+                           ON B.production_line_id = D.id
+
+        WHERE A.work_date = #{date}
+
+        ORDER BY D.line_name ASC, A.wo_code ASC
 
     </select>
 

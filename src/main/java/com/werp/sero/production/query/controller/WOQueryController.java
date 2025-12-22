@@ -1,7 +1,8 @@
 package com.werp.sero.production.query.controller;
 
-import com.werp.sero.production.query.dto.WorkOrderByPRResponseDTO;
-import com.werp.sero.production.query.dto.WorkOrderByPPResponseDTO;
+import com.werp.sero.production.query.dto.WOByDateResponseDTO;
+import com.werp.sero.production.query.dto.WOByPRResponseDTO;
+import com.werp.sero.production.query.dto.WOByPPResponseDTO;
 import com.werp.sero.production.query.service.WOQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,7 +24,7 @@ public class WOQueryController {
 
     @Operation(summary = "생산계획(PP) 기준 작업지시 목록 조회")
     @GetMapping("/by-pp")
-    public ResponseEntity<List<WorkOrderByPPResponseDTO>> getByProductionPlan(
+    public ResponseEntity<List<WOByPPResponseDTO>> getByProductionPlan(
             @RequestParam int ppId
     ) {
         return ResponseEntity.ok(
@@ -33,11 +34,21 @@ public class WOQueryController {
 
     @Operation(summary = "생산요청(PR) 기준 작업지시 목록 조회")
     @GetMapping("/by-pr")
-    public ResponseEntity<List<WorkOrderByPRResponseDTO>> getByProductionRequest(
+    public ResponseEntity<List<WOByPRResponseDTO>> getByProductionRequest(
             @RequestParam int prId
     ) {
         return ResponseEntity.ok(
                 woQueryService.getByProductionRequest(prId)
+        );
+    }
+
+    @Operation(summary = "작업일자 기준 작업지시 조회 (1일)")
+    @GetMapping("/by-date")
+    public ResponseEntity<List<WOByDateResponseDTO>> getByDate(
+            @RequestParam String date   // yyyy-MM-dd
+    ) {
+        return ResponseEntity.ok(
+                woQueryService.getByDate(date)
         );
     }
 }
