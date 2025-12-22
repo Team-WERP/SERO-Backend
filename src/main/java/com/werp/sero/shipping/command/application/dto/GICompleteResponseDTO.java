@@ -23,6 +23,15 @@ public class GICompleteResponseDTO {
     @Schema(description = "출고 처리 시각", example = "2025-12-20 14:30")
     private String completedAt;
 
+    @Schema(description = "운송장 번호", example = "SERO-20251222-D001")
+    private String trackingNumber;
+
+    @Schema(description = "배송기사 이름", example = "김기사")
+    private String driverName;
+
+    @Schema(description = "배송기사 연락처", example = "010-1234-5678")
+    private String driverContact;
+
     @Schema(description = "출고 품목 상세")
     private List<GICompleteItemDTO> items;
 

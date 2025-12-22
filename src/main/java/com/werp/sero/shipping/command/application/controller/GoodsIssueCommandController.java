@@ -50,6 +50,9 @@ public class GoodsIssueCommandController {
                                         "giCode": "GI-20251220-001",
                                         "warehouseName": "중앙창고",
                                         "completedAt": "2025-12-20 14:30",
+                                        "trackingNumber": "SERO-20251222-D001",
+                                        "driverName": "김기사",
+                                        "driverContact": "010-1234-5678",
                                         "items": [
                                             {
                                                 "itemCode": "MC-A01",
@@ -195,7 +198,7 @@ public class GoodsIssueCommandController {
 
     @Operation(
             summary = "출고지시 담당자 배정",
-            description = "물류팀 담당자가 출고지시의 담당자로 자신을 배정합니다."
+            description = "물류팀 직원이 출고지시서의 담당자로 자신을 배정합니다."
     )
     @ApiResponses({
             @ApiResponse(
@@ -217,7 +220,7 @@ public class GoodsIssueCommandController {
             ),
             @ApiResponse(
                     responseCode = "404",
-                    description = "출고지시를 찾을 수 없음",
+                    description = "출고지시서를 찾을 수 없음",
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(name = "GOODS_ISSUE_NOT_FOUND", value = """

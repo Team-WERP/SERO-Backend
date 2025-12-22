@@ -12,12 +12,14 @@ import com.werp.sero.order.command.domain.repository.SORepository;
 import com.werp.sero.shipping.command.application.dto.GIAssignManagerResponseDTO;
 import com.werp.sero.shipping.command.application.dto.GICompleteResponseDTO;
 import com.werp.sero.shipping.command.application.dto.GICreateRequestDTO;
+import com.werp.sero.shipping.command.domain.aggregate.Delivery;
 import com.werp.sero.shipping.command.domain.aggregate.DeliveryOrder;
 import com.werp.sero.shipping.command.domain.aggregate.DeliveryOrderItem;
 import com.werp.sero.shipping.command.domain.aggregate.GoodsIssue;
 import com.werp.sero.shipping.command.domain.aggregate.GoodsIssueItem;
 import com.werp.sero.shipping.command.domain.repository.DeliveryOrderItemRepository;
 import com.werp.sero.shipping.command.domain.repository.DeliveryOrderRepository;
+import com.werp.sero.shipping.command.domain.repository.DeliveryRepository;
 import com.werp.sero.shipping.command.domain.repository.GoodsIssueItemRepository;
 import com.werp.sero.shipping.command.domain.repository.GoodsIssueRepository;
 import com.werp.sero.shipping.exception.DeliveryOrderNotFoundException;
@@ -26,6 +28,7 @@ import com.werp.sero.system.command.application.service.DocumentSequenceCommandS
 import com.werp.sero.warehouse.command.domain.aggregate.Warehouse;
 import com.werp.sero.warehouse.command.domain.aggregate.WarehouseStock;
 import com.werp.sero.warehouse.command.domain.aggregate.WarehouseStockHistory;
+import com.werp.sero.employee.command.domain.repository.EmployeeRepository;
 import com.werp.sero.warehouse.command.domain.repository.WarehouseRepository;
 import com.werp.sero.warehouse.command.domain.repository.WarehouseStockHistoryRepository;
 import com.werp.sero.warehouse.command.domain.repository.WarehouseStockRepository;
@@ -47,12 +50,14 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
     private final GoodsIssueItemRepository goodsIssueItemRepository;
     private final DeliveryOrderRepository deliveryOrderRepository;
     private final DeliveryOrderItemRepository deliveryOrderItemRepository;
+    private final DeliveryRepository deliveryRepository;
     private final WarehouseRepository warehouseRepository;
     private final WarehouseStockRepository warehouseStockRepository;
     private final WarehouseStockHistoryRepository warehouseStockHistoryRepository;
     private final MaterialRepository materialRepository;
     private final SORepository soRepository;
     private final SalesOrderItemHistoryRepository salesOrderItemHistoryRepository;
+    private final EmployeeRepository employeeRepository;
     private final DocumentSequenceCommandService documentSequenceCommandService;
 
     @Override
@@ -256,11 +261,38 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
         goodsIssue.updatedApprovalInfo(goodsIssue.getApprovalCode(), "GI_ISSUED");
         goodsIssueRepository.save(goodsIssue);
 
-        // 6. 응답 DTO 생성 및 반환
+        // 6. 배송 정보 생성
+        // 6-1. 운송장 번호 생성 (SERO-20251222-D001 형식)
+        String today = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        int dailyCount = deliveryRepository.countByDate(today);
+        String trackingNumber = String.format("SERO-%s-D%03d", today, dailyCount + 1);
+
+        // 6-2. 배송기사 조회 (ID=12, 김기사)
+        Employee driver = employeeRepository.findById(12)
+                .orElseThrow(() -> new BusinessException(ErrorCode.EMPLOYEE_NOT_FOUND));
+
+        // 6-3. 배송 데이터 생성
+        Delivery delivery = Delivery.builder()
+                .trackingNumber(trackingNumber)
+                .driverName(driver.getName())
+                .driverContact(driver.getContact())
+                .status("SHIP_ISSUED")  // 출고 완료
+                .departedAt(null)  // 배송 시작 시 배송기사가 입력
+                .arrivedAt(null)
+                .soCode(goodsIssue.getSalesOrder().getSoCode())
+                .goodsIssue(goodsIssue)
+                .build();
+
+        deliveryRepository.save(delivery);
+
+        // 7. 응답 DTO 생성 및 반환
         return GICompleteResponseDTO.builder()
                 .giCode(giCode)
                 .warehouseName(goodsIssue.getWarehouse().getName())
                 .completedAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))
+                .trackingNumber(trackingNumber)
+                .driverName(driver.getName())
+                .driverContact(driver.getContact())
                 .items(responseItems)
                 .build();
     }
@@ -269,14 +301,27 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
     @Transactional
     public GIAssignManagerResponseDTO assignManager(String giCode, Employee manager) {
         // 1. 출고지시 조회
-        GoodsIssue goodsIssue = goodsIssueRepository.findByGiCode(giCode)
+        GoodsIssue existingGoodsIssue = goodsIssueRepository.findByGiCode(giCode)
                 .orElseThrow(() -> new BusinessException(ErrorCode.GOODS_ISSUE_NOT_FOUND));
 
-        // 2. 담당자 배정
-        goodsIssue.assignManager(manager);
+        // 2. 담당자 배정 - Builder 패턴으로 새로운 엔티티 생성
+        GoodsIssue updatedGoodsIssue = GoodsIssue.builder()
+                .id(existingGoodsIssue.getId())
+                .giCode(existingGoodsIssue.getGiCode())
+                .approvalCode(existingGoodsIssue.getApprovalCode())
+                .giUrl(existingGoodsIssue.getGiUrl())
+                .status(existingGoodsIssue.getStatus())
+                .note(existingGoodsIssue.getNote())
+                .doCode(existingGoodsIssue.getDoCode())
+                .createdAt(existingGoodsIssue.getCreatedAt())
+                .salesOrder(existingGoodsIssue.getSalesOrder())
+                .drafter(existingGoodsIssue.getDrafter())
+                .manager(manager)  // 담당자 배정
+                .warehouse(existingGoodsIssue.getWarehouse())
+                .build();
 
         // 3. 저장
-        goodsIssueRepository.save(goodsIssue);
+        goodsIssueRepository.save(updatedGoodsIssue);
 
         // 4. 응답 DTO 생성 및 반환
         return GIAssignManagerResponseDTO.builder()
