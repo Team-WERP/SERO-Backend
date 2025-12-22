@@ -50,7 +50,7 @@ public class GoodsIssue {
     private Employee drafter;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "gi_manager_id", nullable = false)
+    @JoinColumn(name = "gi_manager_id")
     private Employee manager;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -89,7 +89,7 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
                 .createdAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))
                 .salesOrder(salesOrder)
                 .drafter(drafter)
-                .manager(drafter)  // 초기에는 작성자가 담당자
+                .manager(null)  // 초기에는 담당자 미배정 (물류팀에서 "담당하기" 버튼 클릭 시 배정)
                 .warehouse(warehouse)
                 .build();
 
