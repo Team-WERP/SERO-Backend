@@ -74,7 +74,15 @@ public enum ErrorCode {
     APPROVAL_LINE_SEQUENCE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "APPROVAL004", "수신 및 참조는 결재 순서를 지정할 수 없습니다."),
 
     /* DELIVERY ORDER */
-    DELIVERY_ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "SHIPPING002", "납품서 정보를 찾을 수 없습니다.");
+    DELIVERY_ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "SHIPPING002", "납품서 정보를 찾을 수 없습니다."),
+
+
+
+    /* DELIVERY */
+    DELIVERY_NOT_FOUND(HttpStatus.NOT_FOUND, "DELIVERY001", "배송 정보를 찾을 수 없습니다."),
+    UNAUTHORIZED_DELIVERY_UPDATE(HttpStatus.FORBIDDEN, "DELIVERY002", "배송 상태를 변경할 권한이 없습니다."),
+    INVALID_DELIVERY_STATUS_TRANSITION(HttpStatus.BAD_REQUEST, "DELIVERY003", "잘못된 배송 상태 전환입니다.");
+
 
     private final HttpStatus status;
     private final String code;
