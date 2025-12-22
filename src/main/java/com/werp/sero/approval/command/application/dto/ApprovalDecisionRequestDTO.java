@@ -7,6 +7,6 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class ApprovalDecisionRequestDTO {
-    @Schema(name = "승인/반려 사유")
+    @Schema(description = "결재 승인 또는 반려에 대한 비고", example = "결재 승인합니다.")
     private String note;
 }
