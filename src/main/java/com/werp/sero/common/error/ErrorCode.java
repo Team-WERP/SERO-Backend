@@ -72,6 +72,7 @@ public enum ErrorCode {
     APPROVAL_DUPLICATED(HttpStatus.CONFLICT, "APPROVAL002", "이미 존재하는 결재입니다."),
     APPROVAL_LINE_SEQUENCE_REQUIRED(HttpStatus.BAD_REQUEST, "APPROVAL003", "결재 및 협조는 결재 순서 지정이 필수입니다."),
     APPROVAL_LINE_SEQUENCE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "APPROVAL004", "수신 및 참조는 결재 순서를 지정할 수 없습니다."),
+    APPROVAL_LINE_REQUIRED(HttpStatus.BAD_REQUEST, "APPROVAL005", "결재선에는 결재 또는 협조가 1명 이상 포함되어야 합니다."),
 
     /* DELIVERY ORDER */
     DELIVERY_ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "SHIPPING002", "납품서 정보를 찾을 수 없습니다.");

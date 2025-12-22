@@ -7,10 +7,7 @@ import com.werp.sero.approval.command.domain.aggregate.ApprovalLine;
 import com.werp.sero.approval.command.domain.repository.ApprovalAttachmentRepository;
 import com.werp.sero.approval.command.domain.repository.ApprovalLineRepository;
 import com.werp.sero.approval.command.domain.repository.ApprovalRepository;
-import com.werp.sero.approval.exception.ApprovalDuplicatedException;
-import com.werp.sero.approval.exception.ApprovalLineSequenceNotAllowedException;
-import com.werp.sero.approval.exception.ApprovalLineSequenceRequiredException;
-import com.werp.sero.approval.exception.InvalidApprovalTypeException;
+import com.werp.sero.approval.exception.*;
 import com.werp.sero.common.util.DateTimeUtils;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.employee.command.domain.repository.EmployeeRepository;
@@ -19,7 +16,6 @@ import com.werp.sero.order.command.domain.aggregate.SalesOrder;
 import com.werp.sero.production.command.domain.aggregate.ProductionRequest;
 import com.werp.sero.shipping.command.domain.aggregate.GoodsIssue;
 import com.werp.sero.system.command.application.service.DocumentSequenceCommandService;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -118,10 +114,25 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
 
     private Approval saveApproval(final Employee employee, final String approvalCode,
                                   final ApprovalCreateRequestDTO requestDTO) {
+        final int totalLine = calculateTotalApprovalLineCount(requestDTO.getApprovalLines());
+
         final Approval approval = new Approval(approvalCode, requestDTO.getTitle(), requestDTO.getContent(),
-                requestDTO.getApprovalLines().size(), requestDTO.getRefCode(), DateTimeUtils.nowDateTime(), employee);
+                totalLine, requestDTO.getRefCode(), DateTimeUtils.nowDateTime(), employee);
 
         return approvalRepository.save(approval);
+    }
+
+    private int calculateTotalApprovalLineCount(final List<ApprovalLineRequestDTO> requestDTOs) {
+        final int totalLine = (int) requestDTOs.stream()
+                .filter(dto -> dto.getLineType().equals(APPROVAL_TYPE_APPROVAL) ||
+                        dto.getLineType().equals(APPROVAL_TYPE_REVIEWER))
+                .count();
+
+        if (totalLine == 0) {
+            throw new ApprovalLineRequiredException();
+        }
+
+        return totalLine;
     }
 
     private List<ApprovalAttachment> saveApprovalAttachments(final Approval approval, final List<MultipartFile> files) {
