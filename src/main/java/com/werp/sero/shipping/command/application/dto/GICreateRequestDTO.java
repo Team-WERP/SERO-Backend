@@ -2,7 +2,6 @@ package com.werp.sero.shipping.command.application.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,11 +10,11 @@ import lombok.NoArgsConstructor;
 @Getter
 @Builder
 @AllArgsConstructor
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 public class GICreateRequestDTO {
 
     @NotNull(message = "납품서 번호는 필수입니다")
-    @Schema(description = "납품서 번호", example = "DO-20251220-01")
+    @Schema(description = "납품서 번호", example = "DO-20251220-001")
     private String doCode;
 
     @NotNull(message = "출고 창고는 필수입니다")
