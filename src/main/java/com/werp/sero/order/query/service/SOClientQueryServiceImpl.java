@@ -24,6 +24,8 @@ public class SOClientQueryServiceImpl implements SOClientQueryService {
     private final SOClientMapper soClientMapper;
     private final DOMapper doMapper;
 
+    private static final int DEFAULT_PAGE_SIZE = 20;
+
     @Override
     @Transactional(readOnly = true)
     public List<SOClientResponseDTO> findOrderHistory(final ClientEmployee clientEmployee) {
@@ -52,8 +54,12 @@ public class SOClientQueryServiceImpl implements SOClientQueryService {
             SOClientFilterDTO filter,
             Integer page) {
 
-        int limit = 20;
-        Integer offset = (page != null && page >= 1) ? (page - 1) * limit : 0;
+        Integer limit = DEFAULT_PAGE_SIZE;
+        Integer offset = null;
+
+        if (page != null && page >= 1) {
+            offset = (page - 1) * limit;
+        }
 
         Map<String, Object> params = new HashMap<>();
 

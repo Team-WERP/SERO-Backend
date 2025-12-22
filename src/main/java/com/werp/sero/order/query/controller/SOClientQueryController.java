@@ -117,7 +117,7 @@ public class SOClientQueryController {
                     )
             )),
             @ApiResponse(responseCode = "404", content = @Content(mediaType = "application/json", examples = {
-                    @ExampleObject(name = "SALES_ORDER__NOT_FOUND", value = """
+                    @ExampleObject(name = "SALES_ORDER_NOT_FOUND", value = """
                             {
                                 "code": "ORDER002",
                                 "message": "주문 목록을 찾을 수 없습니다."
