@@ -21,10 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -49,6 +46,8 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
     public ApprovalResponseDTO submitForApproval(final Employee employee, final ApprovalCreateRequestDTO requestDTO,
                                                  final List<MultipartFile> files) {
         validateDuplicateApproval(requestDTO.getRefCode());
+
+        validateApprovalLines(requestDTO.getApprovalLines());
 
         final Object ref = validateRefCode(requestDTO.getApprovalTargetType(), requestDTO.getRefCode());
 
@@ -156,6 +155,8 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
         final Map<Integer, Employee> employeeMap = employees.stream()
                 .collect(Collectors.toMap(Employee::getId, employee -> employee));
 
+        final int firstSequence = getFirstApprovalLineSequence(requestDTOs);
+
         final List<ApprovalLine> approvalLines = requestDTOs.stream()
                 .map(dto -> {
                     final Employee employee = employeeMap.get(dto.getApproverId());
@@ -164,23 +165,39 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
                         throw new EmployeeNotFoundException(dto.getApproverId() + "번의 직원이 존재하지 않습니다.");
                     }
 
-                    validateApprovalLine(dto);
+                    final String status = determineInitialStatus(dto, firstSequence);
 
-                    String status = null;
-
-                    if (dto.getLineType().equals(APPROVAL_TYPE_APPROVAL)
-                            || dto.getLineType().equals(APPROVAL_TYPE_REVIEWER)) {
-                        status = "ALS_PEND";
-                    }
-
-                    return new ApprovalLine(dto.getLineType(), dto.getSequence(), status, dto.getNote(), approval, employee);
+                    return new ApprovalLine(dto.getLineType(), dto.getSequence(), status, approval, employee);
                 })
                 .collect(Collectors.toList());
 
         return approvalLineRepository.saveAll(approvalLines);
     }
 
-    private void validateApprovalLine(final ApprovalLineRequestDTO requestDTO) {
+    private int getFirstApprovalLineSequence(final List<ApprovalLineRequestDTO> requestDTOs) {
+        return requestDTOs.stream()
+                .filter(dto -> APPROVAL_TYPE_APPROVAL.equals(dto.getLineType())
+                        || APPROVAL_TYPE_REVIEWER.equals(dto.getLineType()))
+                .mapToInt(ApprovalLineRequestDTO::getSequence)
+                .min()
+                .orElseThrow(ApprovalLineRequiredException::new);
+    }
+
+    private String determineInitialStatus(ApprovalLineRequestDTO dto, int firstSequence) {
+        if (dto.getLineType().equals(APPROVAL_TYPE_APPROVAL) || dto.getLineType().equals(APPROVAL_TYPE_REVIEWER)) {
+            return (dto.getSequence() == firstSequence) ? "ALS_RVW" : "ALS_PEND";
+        }
+
+        return null;
+    }
+
+    private void validateApprovalLines(final List<ApprovalLineRequestDTO> requestDTOs) {
+        requestDTOs.forEach(this::validateApprovalLineSequence);
+
+        validateDuplicateApprovalLineSequence(requestDTOs);
+    }
+
+    private void validateApprovalLineSequence(final ApprovalLineRequestDTO requestDTO) {
         final String lineType = requestDTO.getLineType();
 
         if ((lineType.equals(APPROVAL_TYPE_APPROVAL) || lineType.equals(APPROVAL_TYPE_REVIEWER))
@@ -191,6 +208,20 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
         if ((lineType.equals(APPROVAL_TYPE_RECIPIENT) || lineType.equals(APPROVAL_TYPE_REFERENCE))
                 && requestDTO.getSequence() != null) {
             throw new ApprovalLineSequenceNotAllowedException();
+        }
+    }
+
+    private void validateDuplicateApprovalLineSequence(final List<ApprovalLineRequestDTO> requestDTOs) {
+        final Set<Integer> sequenceSet = new HashSet<>();
+
+        for (ApprovalLineRequestDTO dto : requestDTOs) {
+            final String lineType = dto.getLineType();
+
+            if (APPROVAL_TYPE_APPROVAL.equals(lineType) || APPROVAL_TYPE_REVIEWER.equals(lineType)) {
+                if (!sequenceSet.add(dto.getSequence())) {
+                    throw new ApprovalLineSequenceDuplicatedException();
+                }
+            }
         }
     }
 }
