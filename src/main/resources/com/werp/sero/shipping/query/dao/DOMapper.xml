@@ -86,4 +86,44 @@
         ORDER BY created_at ASC
     </select>
 
+    <!-- 상태별 납품서 목록 조회 -->
+    <select id="findByStatus" resultType="com.werp.sero.shipping.query.dto.DOListResponseDTO">
+        SELECT
+            /* 납품서 정보 */
+            A.do_code AS doCode,
+            A.created_at AS createdAt,
+            A.shipped_at AS shippedAt,
+            A.status AS status,
+
+            /* 수주 정보 */
+            B.so_code AS soCode,
+
+            /* 고객사 정보 */
+            C.company_name AS companyName,
+
+            /* 담당자 정보 */
+            D.name AS managerName,
+
+            /* 품목 정보 (첫 번째 품목명) */
+            (SELECT F.item_name
+             FROM delivery_order_item E
+             INNER JOIN sales_order_item F ON E.so_item_id = F.id
+             WHERE E.do_id = A.id
+             ORDER BY E.id
+             LIMIT 1) AS itemName,
+
+            /* 총 품목 개수 */
+            (SELECT COUNT(*)
+             FROM delivery_order_item E
+             WHERE E.do_id = A.id) AS itemCount
+
+        FROM delivery_order A
+        INNER JOIN sales_order B ON A.so_id = B.id
+        INNER JOIN client C ON B.client_id = C.id
+        INNER JOIN employee D ON A.manager_id = D.id
+
+        WHERE A.status = #{status}
+        ORDER BY A.created_at DESC
+    </select>
+
 </mapper>
