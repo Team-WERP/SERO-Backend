@@ -3,7 +3,7 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.werp.sero.shipping.query.dao.DODetailMapper">
+<mapper namespace="com.werp.sero.shipping.query.dao.DOMapper">
 
     <!-- 납품서 상세 조회용 ResultMap -->
     <resultMap id="DODetailResultMap" type="com.werp.sero.shipping.query.dto.DODetailResponseDTO">
@@ -76,6 +76,14 @@
 
         WHERE A.do_code = #{doCode}
         ORDER BY E.id
+    </select>
+
+    <select id="selectDeliveryUrlsBySoId" resultType="string">
+        SELECT
+            A.do_url
+        FROM delivery_order A
+        WHERE so_id = #{orderId}
+        ORDER BY created_at ASC
     </select>
 
 </mapper>

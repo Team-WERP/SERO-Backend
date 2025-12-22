@@ -15,8 +15,6 @@ public interface SOClientMapper {
 
     SOClientResponseDTO selectOrderForReorder(final int clientId, final int orderId);
 
-    List<String> selectDeliveryUrlsBySoId(final int orderId);
-
     SOClientDetailResponseDTO selectOrderDetailForClient(final int orderId);
 
     List<SOClientListResponseDTO> selectAllClientSalesOrders(final Map<String, Object> params);

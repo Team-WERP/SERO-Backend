@@ -6,6 +6,7 @@ import com.werp.sero.order.exception.SalesOrderNotFoundException;
 import com.werp.sero.order.query.dao.SOClientMapper;
 import com.werp.sero.order.query.dao.SOMapper;
 import com.werp.sero.order.query.dto.*;
+import com.werp.sero.shipping.query.dao.DOMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +21,7 @@ import java.util.stream.Collectors;
 public class SOClientQueryServiceImpl implements SOClientQueryService {
 
     private final SOClientMapper soClientMapper;
-    private final SOMapper soMapper;
+    private final DOMapper doMapper;
 
     @Override
     @Transactional(readOnly = true)
@@ -92,7 +93,7 @@ public class SOClientQueryServiceImpl implements SOClientQueryService {
             throw new SalesOrderNotFoundException();
         }
 
-        List<String> deliveryUrls = soClientMapper.selectDeliveryUrlsBySoId(orderId);
+        List<String> deliveryUrls = doMapper.selectDeliveryUrlsBySoId(orderId);
 
         return SOClientDetailResponseDTO.builder()
                 .orderId(order.getOrderId())

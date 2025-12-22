@@ -182,14 +182,6 @@
         </collection>
     </resultMap>
 
-    <select id="selectDeliveryUrlsBySoId" resultType="string">
-        SELECT
-            A.do_url
-        FROM delivery_order A
-        WHERE so_id = #{orderId}
-        ORDER BY created_at ASC
-    </select>
-
     <select id="selectOrderDetailForClient" resultMap="SOClientDetailResultMap">
         SELECT
             A.id AS order_id,
