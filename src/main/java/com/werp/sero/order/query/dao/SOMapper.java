@@ -9,7 +9,7 @@ import java.util.Map;
 
 @Mapper
 public interface SOMapper {
-    List<SOResponseDTO> selectAllSalesOrders(Map<String, Object> params);
+    List<SOResponseDTO> selectAllSalesOrders(final Map<String, Object> params);
 
     SODetailsResponseDTO selectOrderDetailWithItems(final int orderId);
 }

@@ -98,4 +98,130 @@
         WHERE A.id = #{orderId}
           AND A.client_id = #{clientId}
     </select>
+
+    <!-- 고객사 주문 목록 조회 -->
+    <select id="selectAllClientSalesOrders" resultType="com.werp.sero.order.query.dto.SOClientListResponseDTO">
+        SELECT
+        A.id as orderId,
+        A.so_code,
+        A.po_code,
+        A.main_item_name,
+        A.total_price,
+        A.ordered_at,
+        A.shipped_at,
+        A.status,
+        A.so_url,
+        A.note
+        FROM sales_order A
+        WHERE A.client_id = #{clientId}
+        <if test="startDate != null and startDate != ''">
+            <choose>
+                <when test="dateField == 'shippedAt'">
+                    AND A.shipped_at >= #{startDate}
+                </when>
+                <otherwise>
+                    AND A.ordered_at >= #{startDate}
+                </otherwise>
+            </choose>
+        </if>
+        <if test="endDate != null and endDate != ''">
+            <choose>
+                <when test="dateField == 'shippedAt'">
+                    AND A.shipped_at &lt;= #{endDate}
+                </when>
+                <otherwise>
+                    AND A.ordered_at &lt;= #{endDate}
+                </otherwise>
+            </choose>
+        </if>
+        <if test="status != null and status != ''">
+            AND A.status = #{status}
+        </if>
+        <if test="searchKeyword != null and searchKeyword != ''">
+            AND (
+            A.so_code LIKE CONCAT('%', #{searchKeyword}, '%')
+            OR A.po_code LIKE CONCAT('%', #{searchKeyword}, '%')
+            )
+        </if>
+        ORDER BY A.ordered_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+
+    <!--고객사 주문 상세 조회-->
+
+    <resultMap id="SOClientDetailResultMap" type="com.werp.sero.order.query.dto.SOClientDetailResponseDTO">
+        <id property="orderId" column="order_id"/>
+        <result property="soCode" column="so_code"/>
+        <result property="poCode" column="po_code"/>
+        <result property="status" column="status"/>
+        <result property="orderedAt" column="ordered_at"/>
+        <result property="shippedAt" column="shipped_at"/>
+        <result property="soUrl" column="so_url"/>
+        <result property="totalQuantity" column="total_quantity"/>
+        <result property="totalPrice" column="total_price"/>
+        <result property="managerName" column="manager_name"/>
+        <result property="managerContact" column="manager_contact"/>
+        <result property="shippingName" column="shipping_name"/>
+        <result property="address" column="address"/>
+        <result property="recipientName" column="recipient_name"/>
+        <result property="recipientContact" column="recipient_contact"/>
+        <result property="note" column="note"/>
+        <result property="clientId" column="client_id"/>
+
+        <collection property="items" ofType="com.werp.sero.order.query.dto.SOClientItemResponseDTO">
+            <id property="id" column="item_id"/>
+            <result property="itemCode" column="item_code"/>
+            <result property="itemName" column="item_name"/>
+            <result property="spec" column="spec"/>
+            <result property="quantity" column="quantity"/>
+            <result property="unit" column="unit"/>
+            <result property="unitPrice" column="unit_price"/>
+            <result property="totalPrice" column="item_total_price"/>
+            <result property="orderId" column="order_id" />
+        </collection>
+    </resultMap>
+
+    <select id="selectDeliveryUrlsBySoId" resultType="string">
+        SELECT
+            A.do_url
+        FROM delivery_order A
+        WHERE so_id = #{orderId}
+        ORDER BY created_at ASC
+    </select>
+
+    <select id="selectOrderDetailForClient" resultMap="SOClientDetailResultMap">
+        SELECT
+            A.id AS order_id,
+            A.so_code,
+            A.po_code,
+            A.ordered_at,
+            A.shipped_at,
+            A.status,
+            A.total_quantity,
+            A.total_price,
+            A.so_url,
+            A.note,
+            A.shipping_name,
+            A.address,
+            A.recipient_name,
+            A.recipient_contact,
+
+            E.name AS manager_name,
+            E.contact AS manager_contact,
+
+            I.id AS item_id,
+            I.item_code,
+            I.item_name,
+            I.spec,
+            I.quantity,
+            I.unit,
+            I.unit_price,
+            I.total_price AS item_total_price
+        FROM sales_order A
+                 LEFT JOIN employee E ON A.manager_id = E.id
+                 LEFT JOIN sales_order_item I ON A.id = I.so_id
+        WHERE A.id = #{orderId}
+        ORDER BY I.id ASC
+    </select>
 </mapper>

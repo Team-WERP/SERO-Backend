@@ -69,7 +69,14 @@
             </if>
 
             <if test="dateField != null and dateField != '' and startDate != null and endDate != null">
-                AND A.${dateField} BETWEEN CONCAT(#{startDate}, ' 00:00:00') AND CONCAT(#{endDate}, ' 23:59:59')
+                <choose>
+                    <when test='dateField == "orderedAt"'>
+                        AND A.ordered_at BETWEEN CONCAT(#{startDate}, ' 00:00:00') AND CONCAT(#{endDate}, ' 23:59:59')
+                    </when>
+                    <when test='dateField == "shippedAt"'>
+                        AND A.shipped_at BETWEEN CONCAT(#{startDate}, ' 00:00:00') AND CONCAT(#{endDate}, ' 23:59:59')
+                    </when>
+                </choose>
             </if>
 
             <if test="managerName != null and managerName != ''">

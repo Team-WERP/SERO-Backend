@@ -36,7 +36,7 @@ public class SOClientItemResponseDTO {
     private long totalPrice;
 
     @Schema(description = "주문 ID")
-    private int salesOrderId;
+    private int orderId;
 
     public static SOClientItemResponseDTO fromEntity(SalesOrderItem entity) {
         return SOClientItemResponseDTO.builder()
@@ -48,7 +48,7 @@ public class SOClientItemResponseDTO {
                 .unit(entity.getUnit())
                 .unitPrice(entity.getUnitPrice())
                 .totalPrice(entity.getTotalPrice())
-                .salesOrderId(entity.getSalesOrder().getId())
+                .orderId(entity.getSalesOrder().getId())
                 .build();
     }
 
