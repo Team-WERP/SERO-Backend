@@ -37,17 +37,20 @@ public enum ErrorCode {
     WAREHOUSE_NOT_FOUND(HttpStatus.NOT_FOUND, "WAREHOUSE002", "창고 정보를 찾을 수 없습니다."),
     INVALID_MATERIAL_TYPE(HttpStatus.BAD_REQUEST, "WAREHOUSE003", "잘못된 자재 유형입니다. (허용: MAT_FG, MAT_RM)"),
     INVALID_STOCK_STATUS(HttpStatus.BAD_REQUEST, "WAREHOUSE004", "잘못된 재고 상태입니다. (허용: NORMAL, LOW, OUT_OF_STOCK)"),
+    INSUFFICIENT_STOCK(HttpStatus.BAD_REQUEST, "WAREHOUSE005", "재고가 부족합니다."),
 
     /* CLIENT */
-    CLIENT_NOT_FOUND(HttpStatus.NOT_FOUND, "CLIENT001", "거래처 정보를 찾을 수 없습니다."),
+    CLIENT_NOT_FOUND(HttpStatus.NOT_FOUND, "CLIENT001", "고객사 정보를 찾을 수 없습니다."),
     CLIENT_BUSINESS_NO_DUPLICATED(HttpStatus.CONFLICT, "CLIENT002", "이미 등록된 사업자번호입니다."),
     CLIENT_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "CLIENT003", "해당 고객사의 거래 품목이 아닙니다."),
     CLIENT_ADDRESS_NOT_FOUND(HttpStatus.NOT_FOUND, "CLIENT004", "배송지를 찾을 수 없습니다."),
+    CLIENT_ACCESS_DENIED(HttpStatus.FORBIDDEN, "CLIENT005", "다른 고객사의 데이터에 접근할 수 없습니다."),
 
     /* SALES ORDER */
     SALES_ORDER_LIST_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER001", "주문 목록을 찾을 수 없습니다."),
     SALES_ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER002", "주문 정보를 찾을 수 없습니다."),
     ORDER_CANNOT_BE_CANCELED(HttpStatus.BAD_REQUEST, "ORDER003", "이미 취소 및 완료 되었거나 확정된 주문입니다."),
+    INVALID_SALES_ORDER_ID(HttpStatus.BAD_REQUEST, "ORDER004", "해당 고객사의 주문이 아닙니다."),
 
     /* EMPLOYEE */
     EMPLOYEE_NOT_FOUND(HttpStatus.NOT_FOUND, "EMPLOYEE001", "직원 정보를 찾을 수 없습니다."),
@@ -66,6 +69,23 @@ public enum ErrorCode {
 
     /* GOODS ISSUE */
     GOODS_ISSUE_NOT_FOUND(HttpStatus.NOT_FOUND, "SHIPPING001", "출고지시 정보를 찾을 수 없습니다."),
+    GOODS_ISSUE_ALREADY_EXISTS(HttpStatus.CONFLICT, "SHIPPING003", "해당 납품서로 이미 출고지시가 생성되었습니다."),
+    INVALID_GOODS_ISSUE_STATUS(HttpStatus.BAD_REQUEST, "SHIPPING004", "출고 처리할 수 없는 상태입니다. 결재 승인된 출고지시만 처리 가능합니다."),
+
+    /* APPROVAL */
+    INVALID_DOCUMENT_TYPE(HttpStatus.NOT_FOUND, "APPROVAL001", "지원하지 않는 결재 문서 유형입니다."),
+    APPROVAL_DUPLICATED(HttpStatus.CONFLICT, "APPROVAL002", "이미 존재하는 결재입니다."),
+    APPROVAL_LINE_SEQUENCE_REQUIRED(HttpStatus.BAD_REQUEST, "APPROVAL003", "결재 및 협조는 결재 순서 지정이 필수입니다."),
+    APPROVAL_LINE_SEQUENCE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "APPROVAL004", "수신 및 참조는 결재 순서를 지정할 수 없습니다."),
+    APPROVAL_LINE_REQUIRED(HttpStatus.BAD_REQUEST, "APPROVAL005", "결재선에는 결재 또는 협조가 1명 이상 포함되어야 합니다."),
+    APPROVAL_NOT_FOUND(HttpStatus.NOT_FOUND, "APPROVAL006", "결재 정보를 찾을 수 없습니다."),
+    APPROVAL_LINE_SEQUENCE_DUPLICATED(HttpStatus.CONFLICT, "APPROVAL007", "결재 및 협조 결재선의 순서는 중복될 수 없습니다."),
+    APPROVAL_LINE_ACCESS_DENIED(HttpStatus.NOT_FOUND, "APPROVAL008", "해당 결재의 결재자가 아닙니다."),
+    APPROVAL_ALREADY_PROCESSED(HttpStatus.CONFLICT, "APPROVAL009", "이미 처리가 완료된 결재입니다."),
+    APPROVAL_REF_DOCUMENT_ALREADY_PROCESSED(HttpStatus.CONFLICT, "APPROVAL010", "연관된 문서가 이미 승인/반려 처리되었습니다."),
+    APPROVAL_NOT_CURRENT_SEQUENCE(HttpStatus.BAD_REQUEST, "APPROVAL011", "본인의 결재 순서가 아닙니다."),
+    APPROVAL_LINE_NOT_FOUND(HttpStatus.NOT_FOUND, "APPROVAL012", "결재자 정보를 찾을 수 없습니다."),
+    APPROVAL_NOT_SUBMITTED(HttpStatus.BAD_REQUEST, "APPROVAL013", "결재가 상신되지 않은 문서입니다."),
 
     /* DELIVERY ORDER */
     DELIVERY_ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "SHIPPING002", "납품서 정보를 찾을 수 없습니다."),

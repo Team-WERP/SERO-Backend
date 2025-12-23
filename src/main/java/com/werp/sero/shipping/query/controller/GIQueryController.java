@@ -23,9 +23,22 @@ public class GIQueryController {
     @Operation(summary = "출고지시 목록 조회", description = "필터링 및 페이징을 지원하는 출고지시 목록 조회")
     @GetMapping
     public ResponseEntity<List<GIListResponseDTO>> findGoodsIssueList(
-            @ModelAttribute GIFilterDTO filter,
+            @RequestParam(required = false) Integer warehouseId,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) String searchKeyword,
             @Parameter(description = "페이지 번호 (1부터 시작, 미입력시 전체 조회)", example = "1")
             @RequestParam(value = "page", required = false) Integer page) {
+
+        GIFilterDTO filter = GIFilterDTO.builder()
+                .warehouseId(warehouseId)
+                .status(status)
+                .startDate(startDate)
+                .endDate(endDate)
+                .searchKeyword(searchKeyword)
+                .build();
+
         return ResponseEntity.ok(giListQueryService.findGoodsIssueList(filter, page));
     }
 
