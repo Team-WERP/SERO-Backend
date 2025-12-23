@@ -12,4 +12,6 @@ public interface WorkOrderResultRepository extends JpaRepository<WorkOrderResult
      WHERE B.productionPlan.id = :ppId
     """)
     int sumGoodQuantityByPpId(int ppId);
+
+    boolean existsByWorkOrderId(int woId);
 }

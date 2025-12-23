@@ -30,10 +30,17 @@ public class WorkOrderResult {
 
     private String note;
 
-    @Column(nullable = false, columnDefinition = "int default 0")
-    private int headCount;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "wo_id", nullable = false)
     private WorkOrder workOrder;
+
+    public WorkOrderResult(int goodQuantity, int defectiveQuantity, String startDate, String endDate, int workTime, String note, WorkOrder workOrder) {
+        this.goodQuantity = goodQuantity;
+        this.defectiveQuantity = defectiveQuantity;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.workTime = workTime;
+        this.note = note;
+        this.workOrder = workOrder;
+    }
 }

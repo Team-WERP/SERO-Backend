@@ -19,7 +19,7 @@ public class ProductionProcess {
     @Column(name = "process_order", nullable = false)
     private String processOrder;
 
-    @Column(name = "cycle_time", nullable = false, columnDefinition = "int default 1")
+    @Column(name = "headcount", nullable = false, columnDefinition = "int default 1")
     private int headCount;
 
     @Column(name = "standard_time", nullable = false, columnDefinition = "int default 0")

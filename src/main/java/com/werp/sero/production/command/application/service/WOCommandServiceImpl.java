@@ -3,9 +3,11 @@ package com.werp.sero.production.command.application.service;
 import com.werp.sero.common.util.DateTimeUtils;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.production.command.application.dto.WorkOrderCreateRequestDTO;
+import com.werp.sero.production.command.application.dto.WorkOrderEndRequest;
 import com.werp.sero.production.command.domain.aggregate.ProductionPlan;
 import com.werp.sero.production.command.domain.aggregate.WorkOrder;
 import com.werp.sero.production.command.domain.aggregate.WorkOrderHistory;
+import com.werp.sero.production.command.domain.aggregate.WorkOrderResult;
 import com.werp.sero.production.command.domain.aggregate.enums.Action;
 import com.werp.sero.production.command.domain.repository.PPRepository;
 import com.werp.sero.production.command.domain.repository.WORepository;
@@ -96,12 +98,12 @@ public class WOCommandServiceImpl implements WOCommandService {
     @Override
     @Transactional
     public void start(int woId, String note) {
-        WorkOrder wo = woRepository.findById(woId)
+        WorkOrder wo = woRepository.findByIdForUpdate(woId)
                 .orElseThrow(() -> new IllegalArgumentException("작업지시가 존재하지 않습니다."));
 
         wo.start();
         WorkOrderHistory woHistory = new WorkOrderHistory(
-                wo.getWoCode(),
+                wo,
                 Action.START,
                 note
         );
@@ -109,6 +111,75 @@ public class WOCommandServiceImpl implements WOCommandService {
         workOrderHistoryRepository.save(woHistory);
     }
 
+    @Override
+    @Transactional
+    public void pause(int woId, String note) {
+        WorkOrder wo = woRepository.findByIdForUpdate(woId)
+                .orElseThrow(() -> new IllegalArgumentException("작업지시가 존재하지 않습니다."));
 
+        wo.pause(); // WO_RUN → WO_PAUSE
+        WorkOrderHistory woHistory = new WorkOrderHistory(
+                wo,
+                Action.PAUSE,
+                note
+        );
+
+        workOrderHistoryRepository.save(woHistory);
+    }
+
+    @Override
+    @Transactional
+    public void resume(int woId, String note) {
+        WorkOrder wo = woRepository.findByIdForUpdate(woId)
+                .orElseThrow(() -> new IllegalArgumentException("작업지시가 존재하지 않습니다."));
+
+        wo.resume(); // WO_PAUSE → WO_RUN
+        WorkOrderHistory woHistory = new WorkOrderHistory(
+                wo,
+                Action.RESUME,
+                note
+        );
+
+        workOrderHistoryRepository.save(woHistory);
+    }
+
+    @Override
+    @Transactional
+    public void end(int woId, WorkOrderEndRequest request) {
+
+        WorkOrder wo = woRepository.findByIdForUpdate(woId)
+                .orElseThrow(() -> new IllegalArgumentException("작업지시가 존재하지 않습니다."));
+
+        if (workOrderResultRepository.existsByWorkOrderId(woId)) {
+            throw new IllegalStateException("이미 작업 실적이 등록되었습니다.");
+        }
+        wo.end(); // WO_RUN → WO_DONE
+
+        int workMinutes = DateTimeUtils.minutesBetween(
+                request.getStartTime(),
+                request.getEndTime()
+        );
+        if (workMinutes <= 0) {
+            throw new IllegalArgumentException("작업 시간이 올바르지 않습니다.");
+        }
+
+        WorkOrderResult result = new WorkOrderResult(
+                request.getGoodQuantity(),
+                request.getDefectiveQuantity(),
+                request.getStartTime(),
+                request.getEndTime(),
+                workMinutes,
+                request.getNote(),
+                wo
+        );
+        workOrderResultRepository.save(result);
+
+        WorkOrderHistory history = new WorkOrderHistory(
+                wo,
+                Action.END,
+                request.getNote()
+        );
+        workOrderHistoryRepository.save(history);
+    }
 
 }

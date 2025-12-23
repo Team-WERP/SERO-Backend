@@ -76,6 +76,20 @@ public class WorkOrder {
         this.status = "WO_RUN";
     }
 
+    public void pause() {
+        if (!"WO_RUN".equals(this.status)) {
+            throw new IllegalStateException("작업을 일시정지할 수 없는 상태입니다.");
+        }
+        this.status = "WO_PAUSE";
+    }
+
+    public void resume() {
+        if (!"WO_PAUSE".equals(this.status)) {
+            throw new IllegalStateException("작업을 재개할 수 없는 상태입니다.");
+        }
+        this.status = "WO_RUN";
+    }
+
     public void end() {
         if (!"WO_RUN".equals(this.status)) {
             throw new IllegalStateException("작업을 종료할 수 없는 상태입니다.");
