@@ -22,4 +22,12 @@ public interface PRQueryMapper {
     List<PRListResponseDTO> selectPRList(PRListSearchCondition condition);
 
     List<PRDetailResponseDTO> selectPRDetail(int prId);
+
+    PRBasicInfoDTO selectPRBasicInfo(
+            @Param("prId") int prId
+    );
+
+    List<PRPlanItemResponseDTO> selectPRPlanItems(
+            @Param("prId") int prId
+    );
 }

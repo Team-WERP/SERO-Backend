@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.werp.sero.production.query.dao.PPQueryMapper">
+
+    <!-- ===================================================== -->
+    <!-- PR Item 기본 정보 조회                                    -->
+    <!-- ===================================================== -->
+
+    <select id="selectPRItemPlanningBase"
+            parameterType="int"
+            resultType="com.werp.sero.production.query.dto.PRItemPlanningBaseDTO">
+
+        SELECT
+            A.id            AS prItemId,
+            B.item_code     AS itemCode,
+            B.item_name     AS itemName,
+            A.quantity      AS requestedQuantity
+        FROM production_request_item A
+                 JOIN sales_order_item B
+                      ON A.so_item_id = B.id
+        WHERE A.id = #{prItemId}
+
+    </select>
+
+    <!-- ===================================================== -->
+    <!-- 기존 생산계획 목록 조회                                     -->
+    <!-- ===================================================== -->
+    <select id="selectProductionPlansByPRItem"
+            parameterType="int"
+            resultType="com.werp.sero.production.query.dto.ProductionPlanSummaryDTO">
+
+        SELECT
+            A.id                  AS ppId,
+            A.production_line_id  AS lineId,
+            B.line_name           AS lineName,
+            A.start_date          AS startDate,
+            A.end_date            AS endDate,
+            A.production_quantity AS productionQuantity
+        FROM production_plan A
+                 JOIN production_line B
+                      ON A.production_line_id = B.id
+        WHERE A.pr_item_id = #{prItemId}
+        ORDER BY A.start_date
+
+    </select>
+
+    <!-- ===================================================== -->
+    <!-- 가동 가능한 생산라인 목록 조회                                -->
+    <!-- ===================================================== -->
+    <select id="selectProductionLines"
+            parameterType="map"
+            resultType="com.werp.sero.production.query.dto.ProductionLineResponseDTO">
+
+        SELECT
+        A.id        AS lineId,
+        A.line_name AS lineName,
+        A.status    AS status
+        FROM production_line A
+        WHERE A.status = 'PL_ACTIVE'
+        <if test="factoryId != null">
+            AND A.factory_id = #{factoryId}
+        </if>
+        ORDER BY A.id
+
+    </select>
+
+    <!-- ===================================================== -->
+    <!-- 미편성 생산요청 목록 조회                                     -->
+    <!-- ===================================================== -->
+    <select id="selectUnassignedTargets"
+            resultType="com.werp.sero.production.query.dto.PPUnassignedResponseDTO">
+
+        SELECT
+            A.id                AS prItemId,
+            A.pr_id             AS prId,
+            A.quantity          AS requestedQuantity,
+            A.status            AS prItemStatus,
+
+            B.due_at            AS dueAt,
+
+            C.item_code         AS itemCode,
+            C.item_name         AS itemName,
+            C.spec              AS spec,
+
+            D.id                AS materialId,
+            D.material_code     AS materialCode,
+
+            E.id                AS lineMaterialId,
+
+            F.id                AS productionLineId,
+            F.line_name         AS productionLineName
+
+        FROM production_request_item A
+                 JOIN production_request B
+                      ON B.id = A.pr_id
+
+                 JOIN sales_order_item C
+                      ON C.id = A.so_item_id
+
+                 JOIN material D
+                      ON D.material_code = C.item_code
+                          AND D.type = 'MAT_FG'          -- 완제품만
+
+                 JOIN line_material E
+                      ON E.material_id = D.id
+
+                 JOIN production_line F
+                      ON F.id = E.line_id
+
+        WHERE A.status = 'PIS_TARGET'
+          AND NOT EXISTS (
+            SELECT 1
+            FROM production_plan G
+            WHERE G.pr_item_id = A.id
+              AND G.status = 'PP_CONFIRMED'   -- 확정만 제외
+        )
+
+        ORDER BY B.due_at ASC, A.id ASC;
+
+    </select>
+
+    <!-- ===================================================== -->
+    <!-- 월별 생산계획 조회                                     -->
+    <!-- ===================================================== -->
+    <select id="selectMonthlyPlans"
+            resultType="com.werp.sero.production.command.application.dto.PPMonthlyPlanResponseDTO">
+
+        SELECT
+            A.id                  AS ppId,
+            A.production_line_id  AS productionLineId,
+            C.item_name           AS itemName,
+            A.start_date          AS startDate,
+            A.end_date            AS endDate,
+            A.production_quantity AS productionQuantity,
+            A.status              AS status
+        FROM production_plan A
+                 JOIN production_request_item B
+                      ON A.pr_item_id = B.id
+                 JOIN sales_order_item C
+                      ON B.so_item_id = C.id
+        WHERE
+            A.start_date &lt;= #{monthEnd}
+          AND A.end_date   &gt;= #{monthStart}
+        ORDER BY
+            A.production_line_id,
+            A.start_date
+
+    </select>
+
+
+
+</mapper>

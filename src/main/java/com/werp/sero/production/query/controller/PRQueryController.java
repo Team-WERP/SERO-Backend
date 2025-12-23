@@ -116,4 +116,19 @@ public class PRQueryController {
         return ResponseEntity.ok(prQueryService.getDetail(prId));
     }
 
+    @Operation(
+            summary = "생산계획 수립 대상 PR Item 목록 조회",
+            description = """
+                특정 생산요청(PR)에 대해 생산계획을 수립할 수 있는 PR Item 목록을 조회합니다.
+                각 PR Item별로 요청 수량, 기계획 수량, 잔여 수량 정보를 포함하며, 생산계획 수립 전 단계에서 사용됩니다.
+                """
+    )
+    @GetMapping("/{prId}/plan-items")
+    public ResponseEntity<PRPlanItemListResponseDTO> getPlanItems(
+            @PathVariable int prId
+    ) {
+        return ResponseEntity.ok(
+                prQueryService.getPlanItems(prId)
+        );
+    }
 }
