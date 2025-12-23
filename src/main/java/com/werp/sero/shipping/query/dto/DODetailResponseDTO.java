@@ -67,6 +67,9 @@ public class DODetailResponseDTO {
     @Schema(description = "납품서 품목 상세")
     public static class DODetailItemDTO {
 
+        @Schema(description = "품목코드", example = "MC-A01")
+        private String itemCode;
+
         @Schema(description = "품명", example = "모터코어 A")
         private String itemName;
 
@@ -75,6 +78,9 @@ public class DODetailResponseDTO {
 
         @Schema(description = "수량 (납품수량)", example = "1000")
         private int quantity;
+
+        @Schema(description = "단위", example = "EA")
+        private String unit;
 
         @Schema(description = "단가", example = "2300000")
         private int unitPrice;
