@@ -3,15 +3,13 @@ package com.werp.sero.production.query.controller;
 import com.werp.sero.production.query.dto.WOByDateResponseDTO;
 import com.werp.sero.production.query.dto.WOByPRResponseDTO;
 import com.werp.sero.production.query.dto.WOByPPResponseDTO;
+import com.werp.sero.production.query.dto.WorkOrderHistoryResponse;
 import com.werp.sero.production.query.service.WOQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -50,5 +48,13 @@ public class WOQueryController {
         return ResponseEntity.ok(
                 woQueryService.getByDate(date)
         );
+    }
+
+    @Operation(summary = "작업지시 히스토리 조회")
+    @GetMapping("/{woId}/history")
+    public ResponseEntity<List<WorkOrderHistoryResponse>> getHistory(
+            @PathVariable int woId
+    ) {
+        return ResponseEntity.ok(woQueryService.getHistory(woId));
     }
 }
