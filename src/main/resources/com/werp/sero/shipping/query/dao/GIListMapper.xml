@@ -57,7 +57,7 @@
                 AND A.status = #{status}
             </if>
             <if test="startDate != null and endDate != null">
-                AND B.shipped_at BETWEEN #{startDate} AND #{endDate}
+                AND DATE(B.shipped_at) BETWEEN #{startDate} AND #{endDate}
             </if>
             <if test="searchKeyword != null and searchKeyword != ''">
                 AND A.gi_code LIKE CONCAT('%', #{searchKeyword}, '%')

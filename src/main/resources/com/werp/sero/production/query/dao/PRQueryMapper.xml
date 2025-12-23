@@ -317,4 +317,80 @@
         ORDER BY E.id ASC
     </select>
 
+    <!-- ===================================================== -->
+    <!-- PR 기본 정보 조회                                      -->
+    <!-- ===================================================== -->
+    <resultMap id="PRBasicInfoResultMap"
+               type="com.werp.sero.production.query.dto.PRBasicInfoDTO">
+        <id property="prId" column="prId"/>
+        <result property="prCode" column="prCode"/>
+        <result property="status" column="status"/>
+    </resultMap>
+
+    <select id="selectPRBasicInfo"
+            parameterType="int"
+            resultMap="PRBasicInfoResultMap">
+
+        SELECT
+            A.id        AS prId,
+            A.pr_code   AS prCode,
+            A.status    AS status
+        FROM production_request A
+        WHERE A.id = #{prId}
+
+    </select>
+
+    <!-- ===================================================== -->
+    <!-- PR 기준 계획 대상 Item 목록 조회                            -->
+    <!-- ===================================================== -->
+    <resultMap id="PRPlanItemResultMap"
+               type="com.werp.sero.production.query.dto.PRPlanItemResponseDTO">
+        <id property="prItemId" column="prItemId"/>
+        <result property="soItemId" column="soItemId"/>
+
+        <result property="itemCode" column="itemCode"/>
+        <result property="itemName" column="itemName"/>
+
+        <result property="requestedQuantity" column="requestedQuantity"/>
+        <result property="plannedQuantity" column="plannedQuantity"/>
+        <result property="remainingQuantity" column="remainingQuantity"/>
+
+        <result property="status" column="status"/>
+    </resultMap>
+
+    <select id="selectPRPlanItems"
+            parameterType="int"
+            resultMap="PRPlanItemResultMap">
+
+        SELECT
+            B.id             AS prItemId,
+            B.so_item_id     AS soItemId,
+
+            C.item_code      AS itemCode,
+            C.item_name      AS itemName,
+
+            B.quantity       AS requestedQuantity,
+
+            IFNULL(SUM(D.production_quantity), 0) AS plannedQuantity,
+            B.quantity - IFNULL(SUM(D.production_quantity), 0) AS remainingQuantity,
+
+            B.status         AS status
+        FROM production_request_item B
+                 JOIN sales_order_item C
+                      ON B.so_item_id = C.id
+                 LEFT JOIN production_plan D
+                           ON D.pr_item_quantity_id = B.id
+        WHERE B.pr_id = #{prId}
+        GROUP BY
+            B.id,
+            B.so_item_id,
+            C.item_code,
+            C.item_name,
+            B.quantity,
+            B.status
+        ORDER BY B.id
+
+    </select>
+
+
 </mapper>

@@ -1,7 +1,5 @@
 package com.werp.sero.production.command.application.service;
 
-import com.werp.sero.common.error.ErrorCode;
-import com.werp.sero.common.error.exception.BusinessException;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.employee.command.domain.repository.EmployeeRepository;
 import com.werp.sero.employee.exception.EmployeeNotFoundException;
@@ -148,7 +146,7 @@ public class PRCommandServiceImpl implements PRCommandService {
     @Transactional
     public void assignManager(int prId, int managerId) {
         ProductionRequest pr = prRepository.findById(prId)
-                .orElseThrow(ProductionNotFoundException::new);
+                .orElseThrow(ProductionRequestNotFoundException::new);
 
         Employee manager = employeeRepository.findById(managerId)
                 .orElseThrow(EmployeeNotFoundException::new);

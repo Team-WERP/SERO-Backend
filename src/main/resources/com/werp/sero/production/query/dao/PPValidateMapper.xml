@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.werp.sero.production.query.dao.PPValidateMapper">
+
+    <!-- ===================================================== -->
+    <!-- PR Item → material_code                               -->
+    <!-- ===================================================== -->
+
+    <select id="selectMaterialCodeByPRItem" resultType="string">
+
+        SELECT
+            B.item_code
+        FROM production_request_item A
+                 JOIN sales_order_item B
+                      ON A.so_item_id = B.id
+        WHERE A.id = #{prItemId}
+
+    </select>
+
+    <!-- ===================================================== -->
+    <!-- PR Item 기준 계획 개수                               -->
+    <!-- ===================================================== -->
+    <select id="countPlansByPRItem" resultType="int">
+
+        SELECT COUNT(1)
+        FROM production_plan A
+        WHERE A.pr_item_id = #{prItemId}
+          AND A.status = 'PP_CONFIRMED'
+
+    </select>
+
+
+    <!-- ===================================================== -->
+    <!-- material_code → material.id                            -->
+    <!-- ===================================================== -->
+    <select id="selectMaterialId" resultType="int">
+
+        SELECT A.id
+        FROM material A
+        WHERE A.material_code = #{materialCode}
+          AND A.status = 'MAT_NORMAL'
+
+    </select>
+
+
+    <!-- ===================================================== -->
+    <!-- cycle_time 조회                                         -->
+    <!-- ===================================================== -->
+    <select id="selectCycleTime" resultType="int">
+
+        SELECT
+            A.cycle_time
+        FROM line_material A
+        WHERE A.material_id = #{materialId}
+          AND A.line_id = #{lineId}
+
+    </select>
+
+
+</mapper>
