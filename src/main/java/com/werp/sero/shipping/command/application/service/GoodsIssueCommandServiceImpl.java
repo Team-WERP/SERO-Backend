@@ -186,7 +186,7 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.GOODS_ISSUE_NOT_FOUND));
 
         // 상태 검증: 결재 승인된 출고지시만 출고 처리 가능
-        if (!"GI_APPR_PEND".equals(goodsIssue.getStatus())) {
+        if (!"GI_APPR_DONE".equals(goodsIssue.getStatus())) {
             throw new BusinessException(ErrorCode.INVALID_GOODS_ISSUE_STATUS);
         }
 
