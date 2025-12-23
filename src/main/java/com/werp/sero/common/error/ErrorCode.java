@@ -81,8 +81,8 @@ public enum ErrorCode {
     PP_LINE_NOT_CAPABLE(HttpStatus.BAD_REQUEST, "PRODUCTION105", "해당 라인에서는 이 품목을 생산할 수 없습니다."),
     PP_DRAFT_NOT_FOUND(HttpStatus.NOT_FOUND, "PRODUCTION106", "생산계획 초안(PP_DRAFT)을 찾을 수 없습니다."),
     PP_INVALID_STATUS(HttpStatus.BAD_REQUEST, "PRODUCTION107","현재 상태에서는 해당 생산계획을 처리할 수 없습니다."),
-    PR_ITEM_INVALID_STATUS(HttpStatus.BAD_REQUEST, "PRODUCTION009", "현재 상태에서는 해당 생산요청 품목을 처리할 수 없습니다.");
-
+    PR_ITEM_INVALID_STATUS(HttpStatus.BAD_REQUEST, "PRODUCTION009", "현재 상태에서는 해당 생산요청 품목을 처리할 수 없습니다."),
+    PR_INVALID_MONTH(HttpStatus.BAD_REQUEST, "PRODUCTION010", "월(month) 형식이 올바르지 않습니다. (yyyy-MM)");
 
     private final HttpStatus status;
     private final String code;

@@ -1,5 +1,6 @@
 package com.werp.sero.production.query.service;
 
+import com.werp.sero.common.util.DateTimeUtils;
 import com.werp.sero.production.command.application.dto.PPMonthlyPlanResponseDTO;
 import com.werp.sero.production.exception.ProductionRequestItemNotFoundException;
 import com.werp.sero.production.query.dao.PPQueryMapper;
@@ -64,12 +65,9 @@ public class PPQueryServiceImpl implements PPQueryService{
     @Override
     @Transactional(readOnly = true)
     public List<PPMonthlyPlanResponseDTO> getMonthlyPlans(String month) {
-        // month: YYYY-MM
-        String monthStart = month + "-01";
-
-        YearMonth ym = YearMonth.parse(month);
-        String monthEnd = month + "-" +
-                String.valueOf(ym.lengthOfMonth()).formatted("%02d");
+        YearMonth ym = DateTimeUtils.parseYearMonth(month);
+        String monthStart = ym.atDay(1).toString();  // yyyy-MM-01
+        String monthEnd   = ym.atEndOfMonth().toString(); // yyyy-MM-28~31
 
         return ppQueryMapper.selectMonthlyPlans(monthStart, monthEnd);
     }
