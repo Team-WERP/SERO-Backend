@@ -1,8 +1,9 @@
 package com.werp.sero.production.command.application.service;
 
 import com.werp.sero.employee.command.domain.aggregate.Employee;
+import com.werp.sero.production.command.application.dto.WorkOrderCreateRequestDTO;
 
 public interface WOCommandService {
 
-    void createFromProductionPlan(int ppId, Employee currentEmployee);
+    void createWorkOrder(WorkOrderCreateRequestDTO request, Employee currentEmployee);
 }

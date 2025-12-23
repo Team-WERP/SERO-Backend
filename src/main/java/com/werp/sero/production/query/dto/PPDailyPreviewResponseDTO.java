@@ -34,5 +34,6 @@ public class PPDailyPreviewResponseDTO {
     private int totalProducedQty;
     private int todayProducedQty;
     private int remainingQuantity;
+    private int recommendedQuantity;
     private int progressRate;
 }

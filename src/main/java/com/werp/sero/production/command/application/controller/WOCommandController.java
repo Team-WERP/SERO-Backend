@@ -6,6 +6,7 @@ import com.werp.sero.production.command.application.service.WOCommandService;
 import com.werp.sero.security.annotation.CurrentUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,14 +33,11 @@ public class WOCommandController {
                 """
     )
     @PostMapping
-    public ResponseEntity<Void> createWorkOrders(
-            @RequestBody WorkOrderCreateRequestDTO request,
+    public ResponseEntity<Void> createWorkOrder(
+            @RequestBody @Valid WorkOrderCreateRequestDTO request,
             @CurrentUser Employee currentEmployee
     ) {
-        woCommandService.createFromProductionPlan(
-                request.getPpId(),
-                currentEmployee
-        );
+        woCommandService.createWorkOrder(request, currentEmployee);
         return ResponseEntity.ok().build();
     }
 }

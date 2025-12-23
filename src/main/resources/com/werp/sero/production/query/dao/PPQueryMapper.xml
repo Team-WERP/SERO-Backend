@@ -191,7 +191,17 @@
             /* 잔여 수량 */
             (A.production_quantity - IFNULL(SUM(H.good_quantity), 0)) AS remainingQuantity,
 
-            /* 진행률 */
+            /* 권장 수량 (오늘 기준) */
+            CASE
+            WHEN DATEDIFF(A.end_date, #{date}) + 1 &lt;= 0 THEN 0
+            ELSE CEILING(
+            (A.production_quantity - IFNULL(SUM(H.good_quantity), 0))
+            / (DATEDIFF(A.end_date, #{date}) + 1)
+            )
+            END AS recommendedQuantity,
+
+
+        /* 진행률 */
             CASE
                 WHEN A.production_quantity = 0 THEN 0
                 ELSE FLOOR((IFNULL(SUM(H.good_quantity), 0) * 100) / A.production_quantity)
