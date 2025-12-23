@@ -193,4 +193,63 @@
         WHERE A.id = #{orderId}
         ORDER BY D.id ASC
     </select>
+
+    <resultMap id="SOItemHistoryResultMap"
+               type="com.werp.sero.order.query.dto.SOItemsHistoryResponseDTO">
+
+        <id property="orderId" column="order_id"/>
+
+        <collection property="items"
+                    ofType="com.werp.sero.order.query.dto.SOItemsHistoryResponseDTO$SOItemHistoryDTO">
+
+            <id column="item_id" property="itemId"/>
+            <result column="pr_quantity" property="prQuantity"/>
+            <result column="pi_quantity" property="piQuantity"/>
+            <result column="do_quantity" property="doQuantity"/>
+            <result column="gi_quantity" property="giQuantity"/>
+            <result column="shipped_quantity" property="shippedQuantity"/>
+            <result column="completed_quantity" property="completedQuantity"/>
+
+            <association property="item"
+                         resultMap="SOItemInfoMap"/>
+
+        </collection>
+
+    </resultMap>
+
+
+
+    <resultMap id="SOItemInfoMap" type="com.werp.sero.order.query.dto.SOItemsHistoryResponseDTO$SOItemInfoDTO">
+        <constructor>
+            <idArg column="item_id" javaType="_int"/>
+            <arg column="item_code" javaType="String"/>
+            <arg column="item_name" javaType="String"/>
+            <arg column="order_quantity" javaType="_int"/>
+            <arg column="available_stock" javaType="_int"/>
+        </constructor>
+    </resultMap>
+    <select id="selectOrderItemHistory" resultMap="SOItemHistoryResultMap">
+        SELECT
+            A.id AS order_id,
+            B.id AS item_id,
+            B.item_code,
+            B.item_name,
+            B.spec,
+            B.unit,
+            B.quantity AS order_quantity,
+            (SELECT IFNULL(SUM(E.available_stock), 0)
+             FROM material D
+                      INNER JOIN warehouse_stock E ON D.id = E.material_id
+             WHERE D.material_code = B.item_code) AS available_stock,
+            IFNULL(C.pr_quantity, 0) AS pr_quantity,
+            IFNULL(C.pi_quantity, 0) AS pi_quantity,
+            IFNULL(C.gi_quantity, 0) AS gi_quantity,
+            IFNULL(C.shipped_quantity, 0) AS shipped_quantity,
+            IFNULL(C.do_quantity, 0) AS do_quantity,
+            IFNULL(C.completed_quantity, 0) AS completed_quantity
+        FROM sales_order A
+                 INNER JOIN sales_order_item B ON A.id = B.so_id
+                 LEFT JOIN sales_order_item_history C ON B.id = C.so_item_id
+        WHERE A.id = #{orderId};
+    </select>
 </mapper>
