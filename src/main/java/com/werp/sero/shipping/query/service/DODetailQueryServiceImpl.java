@@ -29,7 +29,7 @@ public class DODetailQueryServiceImpl implements DODetailQueryService {
     }
 
     @Override
-    public List<DOListResponseDTO> getDeliveryOrdersByStatus(String status) {
-        return doMapper.findByStatus(status);
+    public List<DOListResponseDTO> getDeliveryOrdersByStatusAndManager(String status, int managerId) {
+        return doMapper.findByStatusAndManager(status, managerId);
     }
 }

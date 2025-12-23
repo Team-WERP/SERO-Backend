@@ -15,7 +15,7 @@ import java.util.List;
 @Schema(description = "납품서 상세 조회 응답 DTO")
 public class DODetailResponseDTO {
 
-    @Schema(description = "납품서 문서번호", example = "DO-20251219-01")
+    @Schema(description = "납품서 문서번호", example = "DO-20251219-001")
     private String doCode;
 
     @Schema(description = "일자 (납품서 생성일자)", example = "2025-12-09")

@@ -86,8 +86,8 @@
         ORDER BY created_at ASC
     </select>
 
-    <!-- 상태별 납품서 목록 조회 -->
-    <select id="findByStatus" resultType="com.werp.sero.shipping.query.dto.DOListResponseDTO">
+    <!-- 상태별 및 담당자별 납품서 목록 조회 -->
+    <select id="findByStatusAndManager" resultType="com.werp.sero.shipping.query.dto.DOListResponseDTO">
         SELECT
             /* 납품서 정보 */
             A.do_code AS doCode,
@@ -123,6 +123,7 @@
         INNER JOIN employee D ON A.manager_id = D.id
 
         WHERE A.status = #{status}
+          AND A.manager_id = #{managerId}
         ORDER BY A.created_at DESC
     </select>
 
