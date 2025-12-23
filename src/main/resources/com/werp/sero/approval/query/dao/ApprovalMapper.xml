@@ -85,7 +85,7 @@
             ON B.dept_id = C.id
           LEFT JOIN department D
             ON C.parent_dept_id = D.id
-        <if test="approvalRole == 'approver'">
+        <if test="approvalRole == 'approver' or approvalRole == 'receiver' or approvalRole == 'referrer'">
             JOIN approval_line E
             ON A.id = E.approval_id
         </if>
@@ -93,7 +93,7 @@
             <if test="approvalRole == 'drafter'">
                 A.drafter_id = #{employeeId}
             </if>
-            <if test="approvalRole == 'approver'">
+            <if test="approvalRole == 'approver' or approvalRole == 'receiver' or approvalRole == 'referrer'">
                 AND E.approver_id = #{employeeId}
             </if>
             <if test="approvalRole == 'approver' and approvalLineStatusList != null and approvalLineStatusList.size() > 0">
@@ -121,6 +121,9 @@
             </if>
             <if test="refType != null and refType != ''">
                 AND A.ref_code LIKE CONCAT(#{refType}, '%')
+            </if>
+            <if test="approvalLineType != null and approvalLineType != ''">
+                AND E.line_type = #{approvalLineType}
             </if>
             <if test="approvalRole == 'approver' and isRead != null">
                 <choose>

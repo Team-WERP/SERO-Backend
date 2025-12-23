@@ -28,4 +28,7 @@ public class ApprovalFilterRequestDTO {
 
     @Schema(description = "열람 여부")
     private Boolean isRead;
+
+    @Schema(description = "수신/참조 구분 (RECIPIENT: 수신, REFERRER: 참조)")
+    private String viewType;
 }

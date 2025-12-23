@@ -29,6 +29,8 @@ public class ApprovalFilterDTO {
 
     private Boolean isRead;
 
+    private String approvalLineType;
+
     private int limit;
 
     private long offset;

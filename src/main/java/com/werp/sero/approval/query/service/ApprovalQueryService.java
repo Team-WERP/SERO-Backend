@@ -10,8 +10,11 @@ public interface ApprovalQueryService {
                                                   final Pageable pageable);
 
     ApprovalListResponseDTO getArchivedApprovals(final Employee employee, final ApprovalFilterRequestDTO filterDTO,
-                                                       final Pageable pageable);
+                                                 final Pageable pageable);
 
     ApprovalListResponseDTO getReceivedApprovals(final Employee employee, final ApprovalFilterRequestDTO filterDTO,
-                                                       final Pageable pageable);
+                                                 final Pageable pageable);
+
+    ApprovalListResponseDTO getReferencedApprovals(final Employee employee, final ApprovalFilterRequestDTO filterDTO,
+                                                   final Pageable pageable);
 }
