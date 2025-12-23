@@ -5,8 +5,11 @@ import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.production.command.application.dto.WorkOrderCreateRequestDTO;
 import com.werp.sero.production.command.domain.aggregate.ProductionPlan;
 import com.werp.sero.production.command.domain.aggregate.WorkOrder;
+import com.werp.sero.production.command.domain.aggregate.WorkOrderHistory;
+import com.werp.sero.production.command.domain.aggregate.enums.Action;
 import com.werp.sero.production.command.domain.repository.PPRepository;
 import com.werp.sero.production.command.domain.repository.WORepository;
+import com.werp.sero.production.command.domain.repository.WorkOrderHistoryRepository;
 import com.werp.sero.production.command.domain.repository.WorkOrderResultRepository;
 import com.werp.sero.production.exception.*;
 import com.werp.sero.system.command.application.service.DocumentSequenceCommandService;
@@ -23,6 +26,7 @@ public class WOCommandServiceImpl implements WOCommandService {
     private final WORepository woRepository;
     private final DocumentSequenceCommandService documentSequenceCommandService;
     private final WorkOrderResultRepository workOrderResultRepository;
+    private final WorkOrderHistoryRepository workOrderHistoryRepository;
 
     @Override
     @Transactional
@@ -88,6 +92,23 @@ public class WOCommandServiceImpl implements WOCommandService {
 
         woRepository.save(wo);
     }
+
+    @Override
+    @Transactional
+    public void start(int woId, String note) {
+        WorkOrder wo = woRepository.findById(woId)
+                .orElseThrow(() -> new IllegalArgumentException("작업지시가 존재하지 않습니다."));
+
+        wo.start();
+        WorkOrderHistory woHistory = new WorkOrderHistory(
+                wo.getWoCode(),
+                Action.START,
+                note
+        );
+
+        workOrderHistoryRepository.save(woHistory);
+    }
+
 
 
 }

@@ -30,6 +30,9 @@ public class WorkOrder {
     @Column(nullable = false, columnDefinition = "int default 0")
     private int quantity;
 
+    @Column(name = "status", nullable = false, length = 50)
+    private String status;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pr_id", nullable = false)
     private ProductionRequest productionRequest;
@@ -62,6 +65,21 @@ public class WorkOrder {
         this.productionPlan = productionPlan;
         this.manager = manager;
         this.creator = creator;
+        this.status = "WO_READY";
         this.createdAt = DateTimeUtils.nowDateTime();
+    }
+
+    public void start() {
+        if (!"WO_READY".equals(this.status)) {
+            throw new IllegalStateException("작업을 시작할 수 없는 상태입니다.");
+        }
+        this.status = "WO_RUN";
+    }
+
+    public void end() {
+        if (!"WO_RUN".equals(this.status)) {
+            throw new IllegalStateException("작업을 종료할 수 없는 상태입니다.");
+        }
+        this.status = "WO_DONE";
     }
 }

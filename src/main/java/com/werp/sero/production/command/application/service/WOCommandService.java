@@ -6,4 +6,6 @@ import com.werp.sero.production.command.application.dto.WorkOrderCreateRequestDT
 public interface WOCommandService {
 
     void createWorkOrder(WorkOrderCreateRequestDTO request, Employee currentEmployee);
+
+    void start(int woId, String note);
 }

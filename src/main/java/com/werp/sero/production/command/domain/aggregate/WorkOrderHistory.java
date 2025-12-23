@@ -1,5 +1,6 @@
 package com.werp.sero.production.command.domain.aggregate;
 
+import com.werp.sero.common.util.DateTimeUtils;
 import com.werp.sero.production.command.domain.aggregate.enums.Action;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -25,4 +26,11 @@ public class WorkOrderHistory {
     private String actedAt;
 
     private String note;
+
+    public WorkOrderHistory(String woCode, Action action, String note) {
+        this.woCode = woCode;
+        this.action = action;
+        this.actedAt = DateTimeUtils.nowDateTime();
+        this.note = note;
+    }
 }

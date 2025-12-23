@@ -9,10 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/work-orders")
@@ -38,6 +35,16 @@ public class WOCommandController {
             @CurrentUser Employee currentEmployee
     ) {
         woCommandService.createWorkOrder(request, currentEmployee);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "작업 시작")
+    @PostMapping("/{woId}/start")
+    public ResponseEntity<Void> start(
+            @PathVariable int woId,
+            @RequestParam(required = false) String note
+    ) {
+        woCommandService.start(woId, note);
         return ResponseEntity.ok().build();
     }
 }
