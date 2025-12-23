@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.werp.sero.approval.query.dao.ApprovalMapper">
+    <select id="countByFilterDTO" resultType="_long">
+        SELECT
+               COUNT(DISTINCT A.id)
+          FROM approval A
+          JOIN employee B
+            ON A.drafter_id = B.id
+          JOIN department C
+            ON B.dept_id = C.id
+          LEFT JOIN department D
+            ON C.parent_dept_id = D.id
+        <if test="approvalRole == 'approver'">
+          JOIN approval_line E
+            ON A.id = E.approval_id
+        </if>
+        <where>
+            <if test="approvalRole == 'drafter'">
+                A.drafter_id = #{employeeId}
+            </if>
+            <if test="approvalRole == 'approver'">
+                AND E.approver_id = #{employeeId}
+            </if>
+            <if test="approvalRole == 'approver' and approvalLineStatusList != null and approvalLineStatusList.size() > 0">
+                AND E.status IN
+                <foreach collection="approvalLineStatusList" item="approvalLineStatus" open="(" separator="," close=")">
+                    #{approvalLineStatus}
+                </foreach>
+            </if>
+            <if test="approvalStatus != null and approvalStatus != ''">
+                AND A.status = #{approvalStatus}
+            </if>
+            <if test="startDate != null">
+                AND A.drafted_at >= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND #{endDate} >= A.drafted_at
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                     A.title LIKE CONCAT('%', #{keyword}, '%')
+                 OR B.name LIKE CONCAT('%', #{keyword}, '%')
+                 OR A.approval_code LIKE CONCAT('%', #{keyword}, '%')
+                 OR A.ref_code LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+            <if test="refType != null and refType != ''">
+                AND A.ref_code LIKE CONCAT(#{refType}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="findApprovalsByFilterDTO" resultType="com.werp.sero.approval.query.dto.ApprovalSummaryResponseDTO">
+        SELECT
+               A.id AS approvalId
+             , A.approval_code AS approvalCode
+             , A.title AS title
+             , A.status AS approvalStatus
+             , A.total_line AS totalLine
+             , LEFT(A.ref_code, 2) AS refType
+             , A.ref_code AS refCode
+             , A.drafted_at AS draftedAt
+             , A.drafter_id AS drafterId
+             , B.name AS drafterName
+             , B.position_code AS drafterPositionCode
+             , B.rank_code AS drafterRankCode
+             , C.dept_name AS drafterDepartment
+             , D.dept_name AS drafterParentDepartment
+          FROM approval A
+          JOIN employee B
+            ON A.drafter_id = B.id
+          JOIN department C
+            ON B.dept_id = C.id
+          LEFT JOIN department D
+            ON C.parent_dept_id = D.id
+        <if test="approvalRole == 'approver'">
+            JOIN approval_line E
+            ON A.id = E.approval_id
+        </if>
+        <where>
+            <if test="approvalRole == 'drafter'">
+                A.drafter_id = #{employeeId}
+            </if>
+            <if test="approvalRole == 'approver'">
+                AND E.approver_id = #{employeeId}
+            </if>
+            <if test="approvalRole == 'approver' and approvalLineStatusList != null and approvalLineStatusList.size() > 0">
+                AND E.status IN
+                <foreach collection="approvalLineStatusList" item="approvalLineStatus" open="(" separator="," close=")">
+                    #{approvalLineStatus}
+                </foreach>
+            </if>
+            <if test="approvalStatus != null and approvalStatus != ''">
+                AND A.status = #{approvalStatus}
+            </if>
+            <if test="startDate != null">
+                AND A.drafted_at >= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND #{endDate} >= A.drafted_at
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                A.title LIKE CONCAT('%', #{keyword}, '%')
+                OR B.name LIKE CONCAT('%', #{keyword}, '%')
+                OR A.approval_code LIKE CONCAT('%', #{keyword}, '%')
+                OR A.ref_code LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+            <if test="refType != null and refType != ''">
+                AND A.ref_code LIKE CONCAT(#{refType}, '%')
+            </if>
+        </where>
+          ORDER By A.id DESC
+          LIMIT #{limit}
+         OFFSET #{offset}
+    </select>
+</mapper>

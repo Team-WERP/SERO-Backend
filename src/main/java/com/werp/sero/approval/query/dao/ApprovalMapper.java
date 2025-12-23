@@ -1,0 +1,14 @@
+package com.werp.sero.approval.query.dao;
+
+import com.werp.sero.approval.query.dto.ApprovalFilterDTO;
+import com.werp.sero.approval.query.dto.ApprovalSummaryResponseDTO;
+import org.apache.ibatis.annotations.Mapper;
+
+import java.util.List;
+
+@Mapper
+public interface ApprovalMapper {
+    long countByFilterDTO(final ApprovalFilterDTO filterDTO);
+
+    List<ApprovalSummaryResponseDTO> findApprovalsByFilterDTO(final ApprovalFilterDTO approvalFilterDTO);
+}
