@@ -88,7 +88,8 @@ public enum ErrorCode {
     WO_ALREADY_EXISTS(HttpStatus.CONFLICT, "PRODUCTION201", "이미 해당 생산계획에 대한 작업지시가 존재합니다."),
     WO_INVALID_PP_STATUS(HttpStatus.BAD_REQUEST, "PRODUCTION202", "확정되지 않은 생산계획으로는 작업지시를 생성할 수 없습니다."),
     WO_INVALID_PERIOD(HttpStatus.BAD_REQUEST, "PRODUCTION203", "작업지시 생성 기간이 올바르지 않습니다."),
-    WO_INVALID_QUANTITY(HttpStatus.BAD_REQUEST, "PRODUCTION204", "작업지시 수량이 올바르지 않습니다..");
+    WO_INVALID_QUANTITY(HttpStatus.BAD_REQUEST, "PRODUCTION204", "작업지시 수량이 올바르지 않습니다.."),
+    WO_RESULT_NOT_FOUND(HttpStatus.NOT_FOUND, "PRODUCTION205", "작업지시 실적을 찾을 수 없습니다.");
 
 
     private final HttpStatus status;

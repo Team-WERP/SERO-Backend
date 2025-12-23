@@ -34,7 +34,15 @@ public class WorkOrderResult {
     @JoinColumn(name = "wo_id", nullable = false)
     private WorkOrder workOrder;
 
-    public WorkOrderResult(int goodQuantity, int defectiveQuantity, String startDate, String endDate, int workTime, String note, WorkOrder workOrder) {
+    public WorkOrderResult(
+            int goodQuantity,
+            int defectiveQuantity,
+            String startDate,
+            String endDate,
+            int workTime,
+            String note,
+            WorkOrder workOrder
+    ) {
         this.goodQuantity = goodQuantity;
         this.defectiveQuantity = defectiveQuantity;
         this.startDate = startDate;

@@ -1,9 +1,6 @@
 package com.werp.sero.production.query.service;
 
-import com.werp.sero.production.query.dto.WOByDateResponseDTO;
-import com.werp.sero.production.query.dto.WOByPRResponseDTO;
-import com.werp.sero.production.query.dto.WOByPPResponseDTO;
-import com.werp.sero.production.query.dto.WorkOrderHistoryResponse;
+import com.werp.sero.production.query.dto.*;
 
 import java.util.List;
 
@@ -15,4 +12,6 @@ public interface WOQueryService {
     List<WOByDateResponseDTO> getByDate(String date);
 
     List<WorkOrderHistoryResponse> getHistory(int woId);
+
+    WorkOrderResultResponse getResult(int woId);
 }

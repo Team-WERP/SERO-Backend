@@ -1,9 +1,7 @@
 package com.werp.sero.production.query.controller;
 
-import com.werp.sero.production.query.dto.WOByDateResponseDTO;
-import com.werp.sero.production.query.dto.WOByPRResponseDTO;
-import com.werp.sero.production.query.dto.WOByPPResponseDTO;
-import com.werp.sero.production.query.dto.WorkOrderHistoryResponse;
+import com.werp.sero.production.command.domain.repository.WorkOrderResultRepository;
+import com.werp.sero.production.query.dto.*;
 import com.werp.sero.production.query.service.WOQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,6 +17,7 @@ import java.util.List;
 @Tag(name = "작업지시 - Query")
 public class WOQueryController {
     private final WOQueryService woQueryService;
+    private final WorkOrderResultRepository workOrderResultRepository;
 
     @Operation(summary = "생산계획(PP) 기준 작업지시 목록 조회")
     @GetMapping("/by-pp")
@@ -56,5 +55,15 @@ public class WOQueryController {
             @PathVariable int woId
     ) {
         return ResponseEntity.ok(woQueryService.getHistory(woId));
+    }
+
+    @Operation(summary = "작업지시 실적 조회")
+    @GetMapping("/{woId}/result")
+    public ResponseEntity<WorkOrderResultResponse> getResult(
+            @PathVariable int woId
+    ) {
+        return ResponseEntity.ok(
+                woQueryService.getResult(woId)
+        );
     }
 }
