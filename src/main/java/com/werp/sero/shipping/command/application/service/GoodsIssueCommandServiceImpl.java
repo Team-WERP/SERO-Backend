@@ -262,7 +262,7 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
         salesOrderItemHistoryRepository.saveAll(salesHistoriesToSave);
 
         // 5. 출고지시 상태를 출고완료(GI_ISSUED)로 변경
-        goodsIssue.updatedApprovalInfo(goodsIssue.getApprovalCode(), "GI_ISSUED");
+        goodsIssue.updateApprovalInfo(goodsIssue.getApprovalCode(), "GI_ISSUED");
         goodsIssueRepository.save(goodsIssue);
 
         // 6. 배송 정보 생성
