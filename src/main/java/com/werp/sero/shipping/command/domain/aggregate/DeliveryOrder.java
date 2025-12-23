@@ -31,6 +31,9 @@ public class DeliveryOrder {
     @Column(name = "shipped_at", nullable = false)
     private String shippedAt;
 
+    @Column(name = "status", nullable = false, length = 20)
+    private String status;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "so_id", nullable = false)
     private SalesOrder salesOrder;
@@ -41,13 +44,18 @@ public class DeliveryOrder {
 
     @Builder
     private DeliveryOrder(String doCode, String doUrl, String note, String createdAt, String shippedAt,
-                         SalesOrder salesOrder, Employee manager) {
+                         String status, SalesOrder salesOrder, Employee manager) {
         this.doCode = doCode;
         this.doUrl = doUrl;
         this.note = note;
         this.createdAt = createdAt;
         this.shippedAt = shippedAt;
+        this.status = status;
         this.salesOrder = salesOrder;
         this.manager = manager;
+    }
+
+    public void updateStatus(String status) {
+        this.status = status;
     }
 }

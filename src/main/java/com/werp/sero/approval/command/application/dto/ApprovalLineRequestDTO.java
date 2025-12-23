@@ -17,7 +17,4 @@ public class ApprovalLineRequestDTO {
 
     @Schema(description = "결재 순서")
     private Integer sequence;
-
-    @Schema(description = "비고")
-    private String note;
 }
