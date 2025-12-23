@@ -150,6 +150,92 @@
 
     </select>
 
+    <!-- ===================================================== -->
+    <!-- 일자 기준 생산계획 + 작업지시 + 실적 미리보기                   -->
+    <!-- ===================================================== -->
+    <select id="selectDailyPreview"
+            parameterType="string"
+            resultType="com.werp.sero.production.query.dto.PPDailyPreviewResponseDTO">
+
+        SELECT
+            A.id                  AS ppId,
+            A.pp_code             AS ppCode,
+
+            C.id                  AS prId,
+            C.pr_code             AS prCode,
+
+            F.id                  AS lineId,
+            F.line_name           AS lineName,
+
+            E.id                  AS materialId,
+            E.material_code       AS materialCode,
+            E.name                AS materialName,
+
+            A.start_date          AS startDate,
+            A.end_date            AS endDate,
+            A.production_quantity AS plannedQuantity,
+
+            /* 오늘 작업지시 수량 */
+            IFNULL(SUM(
+                           CASE WHEN G.work_date = #{date} THEN G.quantity ELSE 0 END
+                       ), 0) AS todayWorkQuantity,
+
+            /* 누적 양품 실적 */
+            IFNULL(SUM(H.good_quantity), 0) AS totalProducedQty,
+
+            /* 오늘 양품 실적 */
+            IFNULL(SUM(
+                           CASE WHEN G.work_date = #{date} THEN H.good_quantity ELSE 0 END
+                       ), 0) AS todayProducedQty,
+
+            /* 잔여 수량 */
+            (A.production_quantity - IFNULL(SUM(H.good_quantity), 0)) AS remainingQuantity,
+
+            /* 진행률 */
+            CASE
+                WHEN A.production_quantity = 0 THEN 0
+                ELSE FLOOR((IFNULL(SUM(H.good_quantity), 0) * 100) / A.production_quantity)
+                END AS progressRate
+
+        FROM production_plan A
+                 JOIN production_request_item B
+                      ON A.pr_item_id = B.id
+                 JOIN production_request C
+                      ON B.pr_id = C.id
+                 JOIN sales_order_item D
+                      ON B.so_item_id = D.id
+                 JOIN material E
+                      ON E.material_code = D.item_code
+                          AND E.type = 'MAT_FG'
+                 LEFT JOIN production_line F
+                           ON A.production_line_id = F.id
+                 LEFT JOIN work_order G
+                           ON G.pp_id = A.id
+                 LEFT JOIN work_order_result H
+                           ON H.wo_id = G.id
+
+        WHERE A.status = 'PP_CONFIRMED'
+          AND A.start_date &lt;= #{date}
+          AND A.end_date   &gt;= #{date}
+
+        GROUP BY
+            A.id, A.pp_code,
+            C.id, C.pr_code,
+            F.id, F.line_name,
+            E.id, E.material_code, E.name,
+            A.start_date, A.end_date,
+            A.production_quantity
+
+        ORDER BY
+            F.line_name ASC,
+            CASE
+                WHEN IFNULL(SUM(
+                                    CASE WHEN G.work_date = #{date} THEN 1 ELSE 0 END
+                                ), 0) &gt; 0 THEN 0
+                ELSE 1
+                END ASC,
+            A.pp_code ASC
+    </select>
 
 
 </mapper>

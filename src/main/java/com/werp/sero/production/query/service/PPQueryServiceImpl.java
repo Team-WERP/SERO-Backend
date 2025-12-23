@@ -73,4 +73,10 @@ public class PPQueryServiceImpl implements PPQueryService{
 
         return ppQueryMapper.selectMonthlyPlans(monthStart, monthEnd);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PPDailyPreviewResponseDTO> getDailyPreview(String date) {
+        return ppQueryMapper.selectDailyPreview(date);
+    }
 }
