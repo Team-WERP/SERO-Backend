@@ -49,6 +49,16 @@
             <if test="refType != null and refType != ''">
                 AND A.ref_code LIKE CONCAT(#{refType}, '%')
             </if>
+            <if test="approvalRole == 'approver' and isRead != null">
+                <choose>
+                    <when test="isRead == true">
+                        AND E.viewed IS NOT NULL
+                    </when>
+                    <otherwise>
+                        AND E.viewed IS NULL
+                    </otherwise>
+                </choose>
+            </if>
         </where>
     </select>
 
@@ -111,6 +121,16 @@
             </if>
             <if test="refType != null and refType != ''">
                 AND A.ref_code LIKE CONCAT(#{refType}, '%')
+            </if>
+            <if test="approvalRole == 'approver' and isRead != null">
+                <choose>
+                    <when test="isRead == true">
+                        AND E.viewed IS NOT NULL
+                    </when>
+                    <otherwise>
+                        AND E.viewed IS NULL
+                    </otherwise>
+                </choose>
             </if>
         </where>
           ORDER By A.id DESC

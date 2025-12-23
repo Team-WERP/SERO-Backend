@@ -102,6 +102,7 @@ public class ApprovalQueryServiceImpl implements ApprovalQueryService {
                 .startDate(filterDTO.getStartDate())
                 .endDate(filterDTO.getEndDate())
                 .refType(filterDTO.getRefType())
+                .isRead(filterDTO.getIsRead())
                 .approvalStatus(APPROVAL_IN_PROGRESS_CODE)
                 .approvalLineStatusList(List.of(APPROVAL_LINE_REVIEW_CODE))
                 .limit(pageable.getPageSize())

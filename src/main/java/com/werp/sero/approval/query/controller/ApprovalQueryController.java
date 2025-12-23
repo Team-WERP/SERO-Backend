@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ApprovalQueryController {
     private final ApprovalQueryService approvalQueryService;
 
-    @Operation(summary = "기안 문서함 목록 조회")
+    @Operation(summary = "기안 목록 조회")
     @GetMapping("/submitted")
     public ResponseEntity<ApprovalListResponseDTO> getSubmittedApprovals(@CurrentUser Employee employee,
                                                                          @ModelAttribute ApprovalFilterRequestDTO filterDTO,
@@ -32,7 +32,7 @@ public class ApprovalQueryController {
         return ResponseEntity.ok(approvalQueryService.getSubmittedApprovals(employee, filterDTO, pageable));
     }
 
-    @Operation(summary = "결재 문서 목록 조회")
+    @Operation(summary = "결재 목록 조회")
     @GetMapping("/archived")
     public ResponseEntity<ApprovalListResponseDTO> getArchivedApprovals(@CurrentUser final Employee employee,
                                                                                  @ModelAttribute ApprovalFilterRequestDTO filterDTO,
