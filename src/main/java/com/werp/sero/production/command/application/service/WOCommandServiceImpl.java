@@ -99,7 +99,7 @@ public class WOCommandServiceImpl implements WOCommandService {
     @Transactional
     public void start(int woId, String note) {
         WorkOrder wo = woRepository.findByIdForUpdate(woId)
-                .orElseThrow(() -> new IllegalArgumentException("작업지시가 존재하지 않습니다."));
+                .orElseThrow(WorkOrderNotFoundException::new);
 
         wo.start();
         WorkOrderHistory woHistory = new WorkOrderHistory(
@@ -115,7 +115,7 @@ public class WOCommandServiceImpl implements WOCommandService {
     @Transactional
     public void pause(int woId, String note) {
         WorkOrder wo = woRepository.findByIdForUpdate(woId)
-                .orElseThrow(() -> new IllegalArgumentException("작업지시가 존재하지 않습니다."));
+                .orElseThrow(WorkOrderNotFoundException::new);
 
         wo.pause(); // WO_RUN → WO_PAUSE
         WorkOrderHistory woHistory = new WorkOrderHistory(
@@ -131,7 +131,7 @@ public class WOCommandServiceImpl implements WOCommandService {
     @Transactional
     public void resume(int woId, String note) {
         WorkOrder wo = woRepository.findByIdForUpdate(woId)
-                .orElseThrow(() -> new IllegalArgumentException("작업지시가 존재하지 않습니다."));
+                .orElseThrow(WorkOrderNotFoundException::new);
 
         wo.resume(); // WO_PAUSE → WO_RUN
         WorkOrderHistory woHistory = new WorkOrderHistory(
@@ -148,10 +148,10 @@ public class WOCommandServiceImpl implements WOCommandService {
     public void end(int woId, WorkOrderEndRequest request) {
 
         WorkOrder wo = woRepository.findByIdForUpdate(woId)
-                .orElseThrow(() -> new IllegalArgumentException("작업지시가 존재하지 않습니다."));
+                .orElseThrow(WorkOrderNotFoundException::new);
 
         if (workOrderResultRepository.existsByWorkOrderId(woId)) {
-            throw new IllegalStateException("이미 작업 실적이 등록되었습니다.");
+            throw new WorkOrderResultAlreadyExistsException();
         }
         wo.end(); // WO_RUN → WO_DONE
 
@@ -160,7 +160,7 @@ public class WOCommandServiceImpl implements WOCommandService {
                 request.getEndTime()
         );
         if (workMinutes <= 0) {
-            throw new IllegalArgumentException("작업 시간이 올바르지 않습니다.");
+            throw new WorkOrderInvalidWorkTimeException();
         }
 
         WorkOrderResult result = new WorkOrderResult(
