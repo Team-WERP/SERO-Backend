@@ -2,6 +2,7 @@ package com.werp.sero.production.command.domain.aggregate;
 
 import com.werp.sero.common.util.DateTimeUtils;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
+import com.werp.sero.production.exception.InvalidWorkOrderStatusException;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -71,28 +72,28 @@ public class WorkOrder {
 
     public void start() {
         if (!"WO_READY".equals(this.status)) {
-            throw new IllegalStateException("작업을 시작할 수 없는 상태입니다.");
+            throw new InvalidWorkOrderStatusException(this.status, "WO_READY");
         }
         this.status = "WO_RUN";
     }
 
     public void pause() {
         if (!"WO_RUN".equals(this.status)) {
-            throw new IllegalStateException("작업을 일시정지할 수 없는 상태입니다.");
+            throw new InvalidWorkOrderStatusException(this.status, "WO_RUN");
         }
         this.status = "WO_PAUSE";
     }
 
     public void resume() {
         if (!"WO_PAUSE".equals(this.status)) {
-            throw new IllegalStateException("작업을 재개할 수 없는 상태입니다.");
+            throw new InvalidWorkOrderStatusException(this.status, "WO_PAUSE");
         }
         this.status = "WO_RUN";
     }
 
     public void end() {
         if (!"WO_RUN".equals(this.status)) {
-            throw new IllegalStateException("작업을 종료할 수 없는 상태입니다.");
+            throw new InvalidWorkOrderStatusException(this.status, "WO_RUN");
         }
         this.status = "WO_DONE";
     }

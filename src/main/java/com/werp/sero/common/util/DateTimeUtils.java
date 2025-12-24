@@ -1,9 +1,13 @@
 package com.werp.sero.common.util;
 
+import com.werp.sero.production.exception.WorkOrderInvalidWorkTimeException;
+import com.werp.sero.production.exception.WorkOrderWorkTimeRequiredException;
+
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 public class DateTimeUtils {
     private static final DateTimeFormatter DATE_FORMATTER
@@ -30,18 +34,24 @@ public class DateTimeUtils {
     }
 
     public static int minutesBetween(String start, String end) {
+
         if (start == null || end == null) {
-            throw new IllegalArgumentException("작업 시작/종료 시간이 필요합니다.");
+            throw new WorkOrderWorkTimeRequiredException();
         }
 
-        LocalDateTime s = LocalDateTime.parse(start, DATE_TIME_SECOND_FORMATTER);
-        LocalDateTime e = LocalDateTime.parse(end, DATE_TIME_SECOND_FORMATTER);
+        try {
+            LocalDateTime s = LocalDateTime.parse(start, DATE_TIME_SECOND_FORMATTER);
+            LocalDateTime e = LocalDateTime.parse(end, DATE_TIME_SECOND_FORMATTER);
 
-        if (e.isBefore(s)) {
-            throw new IllegalArgumentException("종료 시간이 시작 시간보다 빠릅니다.");
+            if (e.isBefore(s)) {
+                throw new WorkOrderInvalidWorkTimeException();
+            }
+
+            return (int) Duration.between(s, e).toMinutes();
+
+        } catch (DateTimeParseException e) {
+            throw new WorkOrderInvalidWorkTimeException();
         }
-
-        return (int) Duration.between(s, e).toMinutes();
     }
 
 }

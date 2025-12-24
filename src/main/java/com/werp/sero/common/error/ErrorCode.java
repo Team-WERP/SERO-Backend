@@ -92,7 +92,10 @@ public enum ErrorCode {
     WO_INVALID_QUANTITY(HttpStatus.BAD_REQUEST, "PRODUCTION204", "작업지시 수량이 올바르지 않습니다."),
     WO_RESULT_NOT_FOUND(HttpStatus.NOT_FOUND, "PRODUCTION205", "작업지시 실적을 찾을 수 없습니다."),
     WO_RESULT_ALREADY_EXISTS(HttpStatus.CONFLICT, "PRODUCTION206", "이미 작업 실적이 등록된 작업지시입니다."),
-    WO_INVALID_WORK_TIME(HttpStatus.BAD_REQUEST, "PRODUCTION207", "작업 시간이 올바르지 않습니다.");
+    WO_INVALID_WORK_TIME(HttpStatus.BAD_REQUEST, "PRODUCTION207", "작업 시간이 올바르지 않습니다."),
+    WO_WORK_TIME_REQUIRED(HttpStatus.BAD_REQUEST, "PRODUCTION208", "작업 시작/종료 시간이 필요합니다."),
+    WO_INVALID_STATUS(HttpStatus.BAD_REQUEST, "PRODUCTION209", "작업지시 상태가 올바르지 않습니다.");
+
 
 
     private final HttpStatus status;
