@@ -22,12 +22,10 @@ public class WOCommandController {
     @Operation(
             summary = "생산계획 기반 작업지시 생성",
             description = """
-                확정된 생산계획(PP)을 기준으로
-                기간(start_date ~ end_date) 내 작업지시를 일자 단위로 자동 생성합니다.
+                확정된 생산계획(PP)을 기준으로 작업지시를 생성합니다.
                 
                 제약:
                 - PP 상태는 PP_CONFIRMED 이어야 함
-                - 동일 PP에 대해 중복 생성 불가
                 """
     )
     @PostMapping

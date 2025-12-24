@@ -79,23 +79,29 @@
     <!-- 작업일자 기준 작업지시 목록 조회                              -->
     <!-- ===================================================== -->
     <select id="selectByDate"
+            parameterType="string"
             resultType="com.werp.sero.production.query.dto.WOByDateResponseDTO">
 
         SELECT
-            A.id            AS woId,
-            A.wo_code       AS woCode,
-            A.work_date     AS workDate,
-            A.quantity      AS quantity,
+            A.id              AS woId,
+            A.wo_code         AS woCode,
+            A.status          AS woStatus,
 
-            B.id            AS ppId,
-            B.pp_code       AS ppCode,
-            B.status        AS ppStatus,
+            A.work_date       AS workDate,
+            A.quantity        AS quantity,
 
-            D.id            AS lineId,
-            D.line_name     AS lineName,
+            B.id              AS ppId,
+            B.pp_code         AS ppCode,
+            B.status          AS ppStatus,
 
-            C.id            AS prId,
-            C.pr_code       AS prCode
+            C.id              AS prId,
+            C.pr_code         AS prCode,
+
+            D.id              AS lineId,
+            D.line_name       AS lineName,
+
+            F.item_name     AS materialName,
+            F.item_code     AS materialCode
 
         FROM work_order A
                  JOIN production_plan B
@@ -104,10 +110,16 @@
                       ON A.pr_id = C.id
                  LEFT JOIN production_line D
                            ON B.production_line_id = D.id
+                 LEFT JOIN production_request_item E
+                           ON B.pr_item_id = E.id
+                 LEFT JOIN sales_order_item F
+                           ON E.so_item_id = F.id
 
         WHERE A.work_date = #{date}
 
-        ORDER BY D.line_name ASC, A.wo_code ASC
+        ORDER BY
+            D.line_name ASC,
+            A.wo_code ASC
 
     </select>
 
