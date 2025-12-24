@@ -4,7 +4,6 @@ import com.werp.sero.order.query.dto.SODetailsResponseDTO;
 import com.werp.sero.order.query.dto.SOItemsHistoryResponseDTO;
 import com.werp.sero.order.query.dto.SOResponseDTO;
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Map;

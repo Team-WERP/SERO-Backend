@@ -102,10 +102,6 @@ public class SOServiceImpl implements SOQueryService {
         validateOrderAndItem(orderId, itemId);
         SOItemsHistoryResponseDTO response =  soMapper.selectOrderItemHistory(orderId, itemId, true);
 
-        if (response == null) {
-            throw new SalesOrderItemHistoryNotFoundException();
-        }
-
         return response;
     }
 
