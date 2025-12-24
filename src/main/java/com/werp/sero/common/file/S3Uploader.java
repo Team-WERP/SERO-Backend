@@ -11,12 +11,9 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -48,36 +45,11 @@ public class S3Uploader {
         }
     }
 
-    public void delete(final String s3Url) {
-        try {
-            final String objectKey = extractKey(s3Url);
-
-            final DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder()
-                    .bucket(bucket)
-                    .key(objectKey)
-                    .build();
-
-            s3Client.deleteObject(deleteRequest);
-        } catch (Exception e) {
-            throw new SystemException(ErrorCode.S3_DELETE_ERROR);
-        }
-    }
-
     private String generateKey(final String path, final MultipartFile file) {
         final String extension = StringUtils.getFilenameExtension(file.getOriginalFilename());
         final String fileName = UUID.randomUUID() + "." + extension;
 
         return path + fileName;
-    }
-
-    private String extractKey(final String s3Url) {
-        try {
-            final URI uri = new URI(s3Url);
-
-            return uri.getPath().substring(1);
-        } catch (URISyntaxException e) {
-            throw new BusinessException(ErrorCode.S3_URL_INVALID);
-        }
     }
 
     private String generateS3Url(final String objectKey) {
