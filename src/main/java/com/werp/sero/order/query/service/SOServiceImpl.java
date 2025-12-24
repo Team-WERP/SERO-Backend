@@ -1,6 +1,9 @@
 package com.werp.sero.order.query.service;
 
+import com.werp.sero.order.command.domain.repository.SOItemRepository;
+import com.werp.sero.order.command.domain.repository.SORepository;
 import com.werp.sero.order.exception.SalesOrderItemHistoryNotFoundException;
+import com.werp.sero.order.exception.SalesOrderItemNotFoundException;
 import com.werp.sero.order.exception.SalesOrderNotFoundException;
 import com.werp.sero.order.query.dao.SOMapper;
 import com.werp.sero.order.query.dto.SOFilterDTO;
@@ -18,8 +21,12 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Service
 public class SOServiceImpl implements SOQueryService {
+
     private final SOMapper soMapper;
     private static final int DEFAULT_PAGE_SIZE = 20;
+
+    private final SORepository salesOrderRepository;
+    private final SOItemRepository salesOrderItemRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -65,6 +72,7 @@ public class SOServiceImpl implements SOQueryService {
     @Override
     @Transactional(readOnly = true)
     public SOItemsHistoryResponseDTO findAllItemsLatestHistory(final int orderId) {
+        validateOrderAndItem(orderId, null);
         SOItemsHistoryResponseDTO response =  soMapper.selectOrderItemHistory(orderId, null, true);
 
         if (response == null) {
@@ -77,6 +85,7 @@ public class SOServiceImpl implements SOQueryService {
     @Override
     @Transactional(readOnly = true)
     public SOItemsHistoryResponseDTO findItemFullHistory(final int orderId, final int itemId) {
+        validateOrderAndItem(orderId, itemId);
         SOItemsHistoryResponseDTO response = soMapper.selectOrderItemHistory(orderId, itemId, false);
 
         if (response == null) {
@@ -90,6 +99,7 @@ public class SOServiceImpl implements SOQueryService {
     @Override
     @Transactional(readOnly = true)
     public SOItemsHistoryResponseDTO findItemLatestHistory(final int orderId, final int itemId) {
+        validateOrderAndItem(orderId, itemId);
         SOItemsHistoryResponseDTO response =  soMapper.selectOrderItemHistory(orderId, itemId, true);
 
         if (response == null) {
@@ -97,5 +107,17 @@ public class SOServiceImpl implements SOQueryService {
         }
 
         return response;
+    }
+
+    private void validateOrderAndItem(int orderId, Integer itemId) {
+        if (!salesOrderRepository.existsById(orderId)) {
+            throw new SalesOrderNotFoundException();
+        }
+
+        if (itemId != null && itemId > 0) {
+            if (!salesOrderItemRepository.existsByIdAndSalesOrderId(itemId, orderId)) {
+                throw new SalesOrderItemNotFoundException();
+            }
+        }
     }
 }
