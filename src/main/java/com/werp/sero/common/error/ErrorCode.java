@@ -57,7 +57,7 @@ public enum ErrorCode {
 
     /* SALES ORDER ITEM */
     SALES_ORDER_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER004", "주문 품목 정보를 찾을 수 없습니다."),
-    SALES_ORDER_ITEM_HISTORY_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER005", "주문 품목 이력 정보를 찾을 수 없습니다."),
+    SALES_ORDER_ITEM_HISTORY_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER005", "주문 품목 수량 변동 이력 정보를 찾을 수 없습니다."),
 
     /* PRODUCTION */
     PR_DRAFT_NOT_FOUND(HttpStatus.NOT_FOUND, "PRODUCTION001", "임시 저장된 생산요청을 찾을 수 없습니다."),

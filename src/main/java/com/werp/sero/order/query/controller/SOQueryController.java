@@ -91,10 +91,10 @@ public class SOQueryController {
                     )
             )),
             @ApiResponse(responseCode = "404", content = @Content(mediaType = "application/json", examples = {
-                    @ExampleObject(name = "SALES_ORDER_NOT_FOUND", value = """
+                    @ExampleObject(name = "SALES_ORDER_ITEM_HISTORY_NOT_FOUND", value = """
                             {
-                                "code": "ORDER002",
-                                "message": "주문을 찾을 수 없습니다."
+                                "code": "ORDER005",
+                                "message": "주문 품목별 수량 변동 이력을 찾을 수 없습니다."
                             }
                             """)
             }))
@@ -117,10 +117,10 @@ public class SOQueryController {
                     )
             )),
             @ApiResponse(responseCode = "404", content = @Content(mediaType = "application/json", examples = {
-                    @ExampleObject(name = "SALES_ORDER_NOT_FOUND", value = """
+                    @ExampleObject(name = "SALES_ORDER_ITEM_HISTORY_NOT_FOUND", value = """
                             {
-                                "code": "ORDER002",
-                                "message": "주문을 찾을 수 없습니다."
+                                "code": "ORDER005",
+                                "message": "주문 품목별 수량 변동 이력을 찾을 수 없습니다."
                             }
                             """)
             }))
@@ -145,10 +145,10 @@ public class SOQueryController {
                     )
             )),
             @ApiResponse(responseCode = "404", content = @Content(mediaType = "application/json", examples = {
-                    @ExampleObject(name = "SALES_ORDER_NOT_FOUND", value = """
+                    @ExampleObject(name = "SALES_ORDER_ITEM_HISTORY_NOT_FOUND", value = """
                             {
-                                "code": "ORDER002",
-                                "message": "주문을 찾을 수 없습니다."
+                                "code": "ORDER005",
+                                "message": "주문 품목별 수량 변동 이력을 찾을 수 없습니다."
                             }
                             """)
             }))
