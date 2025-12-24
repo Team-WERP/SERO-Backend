@@ -1,5 +1,7 @@
 package com.werp.sero.approval.query.service;
 
+import com.werp.sero.approval.exception.ApprovalLineAccessDeniedException;
+import com.werp.sero.approval.exception.ApprovalNotCurrentSequenceException;
 import com.werp.sero.approval.exception.ApprovalNotFoundException;
 import com.werp.sero.approval.exception.ApprovalNotSubmittedException;
 import com.werp.sero.approval.query.dao.ApprovalMapper;
@@ -13,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -61,7 +62,6 @@ public class ApprovalQueryServiceImpl implements ApprovalQueryService {
                 .totalPages(totalPages)
                 .build();
     }
-
 
     @Transactional(readOnly = true)
     @Override
@@ -137,7 +137,7 @@ public class ApprovalQueryServiceImpl implements ApprovalQueryService {
                                                           final ApprovalFilterRequestDTO filterDTO,
                                                           final Pageable pageable) {
         final ApprovalFilterDTO approvalFilterDTO = ApprovalFilterDTO.builder()
-                .approvalRole(("RECIPIENT".equals(filterDTO.getViewType()) ? "receiver" : "referrer"))
+                .approvalRole(("recipient ".equals(filterDTO.getViewType()) ? "receiver" : "referrer"))
                 .approvalStatus(filterDTO.getStatus())
                 .employeeId(employee.getId())
                 .keyword(filterDTO.getKeyword())
@@ -145,8 +145,8 @@ public class ApprovalQueryServiceImpl implements ApprovalQueryService {
                 .endDate(filterDTO.getEndDate())
                 .refType(filterDTO.getRefType())
                 .isRead(filterDTO.getIsRead())
-                .approvalStatus(("RECIPIENT".equals(filterDTO.getViewType()) ? "AS_APPR" : filterDTO.getStatus()))
-                .approvalLineType(("RECIPIENT".equals(filterDTO.getViewType()) ? "AT_RCPT" : "AT_REF"))
+                .approvalStatus(("recipient".equals(filterDTO.getViewType()) ? "AS_APPR" : filterDTO.getStatus()))
+                .approvalLineType(("recipient".equals(filterDTO.getViewType()) ? APPROVAL_TYPE_RECIPIENT : APPROVAL_TYPE_REFERENCE))
                 .limit(pageable.getPageSize())
                 .offset(pageable.getOffset())
                 .build();
@@ -169,18 +169,11 @@ public class ApprovalQueryServiceImpl implements ApprovalQueryService {
     @Transactional
     @Override
     public ApprovalDetailResponseDTO getApprovalInfo(final Employee employee, final int approvalId) {
-        final ApprovalDetailResponseDTO responseDTO = approvalMapper.findApprovalByApprovalId(approvalId);
+        final ApprovalDetailResponseDTO responseDTO = findApprovalByApprovalId(approvalId);
 
-        if (responseDTO == null) {
-            throw new ApprovalNotFoundException();
-        }
+        final int refId = findRefDocIdByRefDocCode(responseDTO.getRefDocType(), responseDTO.getRefDocCode());
 
-        final Integer refId =
-                approvalMapper.findRefDocIdByRefDocCode(responseDTO.getRefDocType(), responseDTO.getRefDocCode());
-
-        if (refId == null) {
-            throw new ApprovalNotSubmittedException();
-        }
+        final ApprovalLineInfoResponseDTO myApprovalLine = getMyApprovalLine(employee, responseDTO);
 
         final List<ApprovalLineInfoResponseDTO> approvalLines = responseDTO.getTotalApprovalLines().stream()
                 .filter(line -> APPROVAL_TYPE_APPROVAL.equals(line.getLineType())
@@ -201,17 +194,57 @@ public class ApprovalQueryServiceImpl implements ApprovalQueryService {
         responseDTO.setRecipientLines(recipientLines);
         responseDTO.setRefDocId(refId);
 
-        final Optional<ApprovalLineInfoResponseDTO> approvalLineInfoResponseDTO = responseDTO.getTotalApprovalLines().stream()
-                .filter(line -> line.getApproverId() == employee.getId() && line.getViewedAt() == null)
-                .findFirst();
+        updateApprovalLineViewedAt(myApprovalLine);
 
-        if (approvalLineInfoResponseDTO.isPresent()) {
+        return responseDTO;
+    }
+
+    private void updateApprovalLineViewedAt(final ApprovalLineInfoResponseDTO myApprovalLine) {
+        if (myApprovalLine.getViewedAt() == null) {
             final String now = DateTimeUtils.nowDateTime();
+            approvalMapper.updateApprovalLineViewAt(now, myApprovalLine.getApprovalLineId());
+            myApprovalLine.setViewedAt(now);
+        }
+    }
 
-            approvalMapper.updateApprovalLineViewAt(now, approvalLineInfoResponseDTO.get().getApprovalLineId());
-            approvalLineInfoResponseDTO.get().setViewedAt(now);
+    private ApprovalDetailResponseDTO findApprovalByApprovalId(final int approvalId) {
+        final ApprovalDetailResponseDTO responseDTO = approvalMapper.findApprovalByApprovalId(approvalId);
+
+        if (responseDTO == null) {
+            throw new ApprovalNotFoundException();
         }
 
         return responseDTO;
+    }
+
+    private int findRefDocIdByRefDocCode(final String refDocType, final String refDocCode) {
+        final Integer refId =
+                approvalMapper.findRefDocIdByRefDocCode(refDocType, refDocCode);
+
+        if (refId == null) {
+            throw new ApprovalNotSubmittedException();
+        }
+
+        return refId;
+    }
+
+    private ApprovalLineInfoResponseDTO getMyApprovalLine(final Employee employee, final ApprovalDetailResponseDTO responseDTO) {
+        final ApprovalLineInfoResponseDTO approvalLineInfoResponseDTO = responseDTO.getTotalApprovalLines().stream()
+                .filter(line -> line.getApproverId() == employee.getId())
+                .findFirst()
+                .orElseThrow(ApprovalLineAccessDeniedException::new);
+
+        if ((APPROVAL_TYPE_APPROVAL.equals(approvalLineInfoResponseDTO.getLineType())
+                || APPROVAL_TYPE_REVIEWER.equals(approvalLineInfoResponseDTO.getLineType()))
+                && "ALS_PEND".equals(approvalLineInfoResponseDTO.getStatus())) {
+            throw new ApprovalNotCurrentSequenceException();
+        }
+
+        if (APPROVAL_TYPE_RECIPIENT.equals(approvalLineInfoResponseDTO.getLineType()) &&
+                !"AS_APPR".equals(approvalLineInfoResponseDTO.getStatus())) {
+            throw new ApprovalNotFoundException();
+        }
+
+        return approvalLineInfoResponseDTO;
     }
 }

@@ -23,7 +23,6 @@
             <id column="approval_attachment_id" property="approvalAttachmentId"/>
             <result column="approval_attachment_name" property="approvalAttachmentName"/>
             <result column="approval_attachment_url" property="approvalAttachmentUrl"/>
-            <result column="" property=""/>
         </collection>
 
         <collection property="totalApprovalLines" ofType="com.werp.sero.approval.query.dto.ApprovalLineInfoResponseDTO">
@@ -34,7 +33,7 @@
             <result column="approver_position_code" property="approverPositionCode"/>
             <result column="approver_rank_code" property="approverRankCode"/>
             <result column="sequence" property="sequence"/>
-            <result column="staus" property="status"/>
+            <result column="status" property="status"/>
             <result column="line_type" property="lineType"/>
             <result column="note" property="note"/>
             <result column="viewed_at" property="viewedAt"/>
@@ -76,10 +75,10 @@
                 AND A.status = #{approvalStatus}
             </if>
             <if test="startDate != null">
-                AND A.drafted_at >= #{startDate}
+                AND LEFT(A.drafted_at, 10) >= #{startDate}
             </if>
             <if test="endDate != null">
-                AND #{endDate} >= A.drafted_at
+                AND #{endDate} >= LEFT(A.drafted_at, 10)
             </if>
             <if test="keyword != null and keyword != ''">
                 AND (
@@ -92,13 +91,16 @@
             <if test="refType != null and refType != ''">
                 AND A.ref_code LIKE CONCAT(#{refType}, '%')
             </if>
+            <if test="approvalLineType != null and approvalLineType != ''">
+                AND E.line_type = #{approvalLineType}
+            </if>
             <if test="isRead != null">
                 <choose>
                     <when test="isRead == true">
-                        AND E.viewed IS NOT NULL
+                        AND E.viewed_at IS NOT NULL
                     </when>
                     <otherwise>
-                        AND E.viewed IS NULL
+                        AND E.viewed_at IS NULL
                     </otherwise>
                 </choose>
             </if>
@@ -121,6 +123,18 @@
              , B.rank_code AS drafterRankCode
              , C.dept_name AS drafterDepartment
              , D.dept_name AS drafterParentDepartment
+             , CASE
+                    WHEN EXISTS (
+                                  SELECT 1
+                                    FROM approval_attachment F
+                                   WHERE A.id = F.approval_id
+                                )
+                    THEN true
+                    ELSE false
+               END AS isApprovalAttachment
+        <if test="approvalRole == 'approver' or approvalRole == 'receiver' or approvalRole == 'referrer'">
+             , E.viewed_at AS viewedAt
+        </if>
           FROM approval A
           JOIN employee B
             ON A.drafter_id = B.id
@@ -152,10 +166,10 @@
                 AND A.status = #{approvalStatus}
             </if>
             <if test="startDate != null">
-                AND A.drafted_at >= #{startDate}
+                AND LEFT(A.drafted_at, 10) >= #{startDate}
             </if>
             <if test="endDate != null">
-                AND #{endDate} >= A.drafted_at
+                AND #{endDate} >= LEFT(A.drafted_at, 10)
             </if>
             <if test="keyword != null and keyword != ''">
                 AND (
@@ -174,10 +188,10 @@
             <if test="isRead != null">
                 <choose>
                     <when test="isRead == true">
-                        AND E.viewed IS NOT NULL
+                        AND E.viewed_at IS NOT NULL
                     </when>
                     <otherwise>
-                        AND E.viewed IS NULL
+                        AND E.viewed_at IS NULL
                     </otherwise>
                 </choose>
             </if>

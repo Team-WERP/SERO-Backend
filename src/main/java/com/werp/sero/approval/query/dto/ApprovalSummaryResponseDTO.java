@@ -37,4 +37,6 @@ public class ApprovalSummaryResponseDTO {
     private String drafterParentDepartment;
 
     private Boolean isApprovalAttachment;
+
+    private String viewedAt;
 }
