@@ -35,7 +35,7 @@ public class ApprovalTemplateServiceImpl implements ApprovalTemplateService {
     @Transactional
     @Override
     public ApprovalTemplateResponseDTO registerApprovalTemplate(final Employee employee, final ApprovalTemplateCreateRequestDTO requestDTO) {
-        validateApprovalTemplateName(requestDTO.getName());
+        validateApprovalTemplateName(employee, requestDTO.getName());
 
         ApprovalTemplate approvalTemplate = new ApprovalTemplate(requestDTO.getName(), requestDTO.getDescription(),
                 employee, DateTimeUtils.nowDateTime());
@@ -95,8 +95,8 @@ public class ApprovalTemplateServiceImpl implements ApprovalTemplateService {
         return approvalTemplateLineRepository.saveAll(approvalTemplateLines);
     }
 
-    private void validateApprovalTemplateName(final String name) {
-        if (approvalTemplateRepository.existsByName(name)) {
+    private void validateApprovalTemplateName(final Employee employee, final String name) {
+        if (approvalTemplateRepository.existsByEmployeeAndName(employee, name)) {
             throw new ApprovalTemplateNameDuplicatedException();
         }
     }
