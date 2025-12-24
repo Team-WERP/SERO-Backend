@@ -10,10 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "결재선 템플릿 - Command", description = "결재선 템플릿 관련 API")
 @RequestMapping("/approval-templates")
@@ -27,5 +24,14 @@ public class ApprovalTemplateController {
     public ResponseEntity<ApprovalTemplateResponseDTO> registerApprovalTemplate(@CurrentUser final Employee employee,
                                                                                 @Valid @RequestBody ApprovalTemplateCreateRequestDTO requestDTO) {
         return ResponseEntity.ok(approvalTemplateService.registerApprovalTemplate(employee, requestDTO));
+    }
+
+    @Operation(summary = "결재선 템플릿 삭제")
+    @DeleteMapping("/{approvalTemplateId}")
+    public ResponseEntity<Void> deleteApprovalTemplate(@CurrentUser final Employee employee,
+                                                       @PathVariable("approvalTemplateId") int approvalTemplateId) {
+        approvalTemplateService.deleteApprovalTemplate(employee, approvalTemplateId);
+
+        return ResponseEntity.noContent().build();
     }
 }

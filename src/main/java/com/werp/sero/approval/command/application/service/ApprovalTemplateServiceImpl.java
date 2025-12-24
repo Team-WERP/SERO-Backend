@@ -5,10 +5,7 @@ import com.werp.sero.approval.command.domain.aggregate.ApprovalTemplate;
 import com.werp.sero.approval.command.domain.aggregate.ApprovalTemplateLine;
 import com.werp.sero.approval.command.domain.repository.ApprovalTemplateLineRepository;
 import com.werp.sero.approval.command.domain.repository.ApprovalTemplateRepository;
-import com.werp.sero.approval.exception.ApprovalLineSequenceDuplicatedException;
-import com.werp.sero.approval.exception.ApprovalLineSequenceNotAllowedException;
-import com.werp.sero.approval.exception.ApprovalLineSequenceRequiredException;
-import com.werp.sero.approval.exception.ApprovalTemplateNameDuplicatedException;
+import com.werp.sero.approval.exception.*;
 import com.werp.sero.common.util.DateTimeUtils;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.employee.command.domain.repository.EmployeeRepository;
@@ -64,6 +61,21 @@ public class ApprovalTemplateServiceImpl implements ApprovalTemplateService {
                 .collect(Collectors.toList());
 
         return ApprovalTemplateResponseDTO.of(approvalTemplate, approvalLines, referenceLines, recipientLines);
+    }
+
+    @Transactional
+    @Override
+    public void deleteApprovalTemplate(final Employee employee, final int approvalTemplateId) {
+        final ApprovalTemplate approvalTemplate = findApprovalTemplateByIdAndEmployee(employee, approvalTemplateId);
+
+        approvalTemplateLineRepository.deleteByApprovalTemplate(approvalTemplate);
+
+        approvalTemplateRepository.delete(approvalTemplate);
+    }
+
+    private ApprovalTemplate findApprovalTemplateByIdAndEmployee(final Employee employee, final int approvalTemplateId) {
+        return approvalTemplateRepository.findByIdAndEmployee(approvalTemplateId, employee)
+                .orElseThrow(ApprovalTemplateNotFoundException::new);
     }
 
     private List<ApprovalTemplateLine> saveApprovalTemplateLines(final ApprovalTemplate approvalTemplate,

@@ -7,4 +7,6 @@ import com.werp.sero.employee.command.domain.aggregate.Employee;
 public interface ApprovalTemplateService {
     ApprovalTemplateResponseDTO registerApprovalTemplate(final Employee employee,
                                                          final ApprovalTemplateCreateRequestDTO requestDTO);
+
+    void deleteApprovalTemplate(final Employee employee, final int approvalTemplateId);
 }
