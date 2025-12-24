@@ -44,4 +44,14 @@ public class DOQueryController {
         DODetailResponseDTO response = DODetailQueryService.getDeliveryOrderDetail(doCode);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/search/{orderId}")
+    @Operation(summary = "납품서 목록 조회", description = "주문 코드로 납품서 목록을 조회합니다.")
+    public ResponseEntity<List<DOListResponseDTO>> getDeliveryOrderListByOrderId(
+            @Parameter(description = "주문 코드")
+            @PathVariable int orderId
+    ) {
+        List<DOListResponseDTO> response = DODetailQueryService.getDeliveryOrderListByOrderId(orderId);
+        return ResponseEntity.ok(response);
+    }
 }

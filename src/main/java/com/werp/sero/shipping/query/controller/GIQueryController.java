@@ -53,4 +53,12 @@ public class GIQueryController {
         return ResponseEntity.ok(giDetailQueryService.getGoodsIssueDetail(giCode));
     }
 
+
+    @Operation(summary = "주문별 출고지시 목록 조회", description = "주문 id에 대한 출고지시 목록 조회")
+    @GetMapping("/search/{orderId}")
+    public ResponseEntity<List<GIListResponseDTO>> findGIListByOrderId(
+            @PathVariable("orderId") final int orderId) {
+
+        return ResponseEntity.ok(giListQueryService.findGIListByOrderId(orderId));
+    }
 }
