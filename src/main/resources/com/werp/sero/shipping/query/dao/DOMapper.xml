@@ -24,9 +24,11 @@
 
         <!-- 납품서 품목 목록 (Collection) -->
         <collection property="items" ofType="com.werp.sero.shipping.query.dto.DODetailResponseDTO$DODetailItemDTO">
+            <result property="itemCode" column="item_code"/>
             <result property="itemName" column="item_name"/>
             <result property="spec" column="spec"/>
             <result property="quantity" column="quantity"/>
+            <result property="unit" column="unit"/>
             <result property="unitPrice" column="unit_price"/>
             <result property="amount" column="amount"/>
         </collection>
@@ -55,9 +57,11 @@
             B.address AS delivery_location,
 
             /* 품목 정보 (sales_order_item에서 직접 가져오기) */
+            F.item_code,
             F.item_name,
             F.spec,
             E.do_quantity AS quantity,
+            F.unit,
             F.unit_price,
             (E.do_quantity * F.unit_price) AS amount,
 

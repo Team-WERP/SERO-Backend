@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.werp.sero.shipping.query.dao.GIMapper">
+
+    <!-- 출고지시서 상세 조회용 ResultMap -->
+    <resultMap id="GIDetailResultMap" type="com.werp.sero.shipping.query.dto.GIDetailResponseDTO">
+        <!-- 기본 출고 지시 정보 -->
+        <result property="giCode" column="gi_code"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="scheduledAt" column="scheduled_at"/>
+        <result property="status" column="status"/>
+
+        <!-- 배송지 정보 -->
+        <result property="companyName" column="company_name"/>
+        <result property="address" column="address"/>
+        <result property="recipientName" column="recipient_name"/>
+        <result property="recipientContact" column="recipient_contact"/>
+
+        <!-- 관련 주문 정보 -->
+        <result property="soCode" column="so_code"/>
+        <result property="clientName" column="client_name"/>
+        <result property="shippedAt" column="shipped_at"/>
+
+        <!-- 출고 창고 정보 -->
+        <result property="warehouseName" column="warehouse_name"/>
+
+        <!-- 특이사항 -->
+        <result property="note" column="note"/>
+
+        <!-- 결재 정보 -->
+        <result property="approvalCode" column="approval_code"/>
+        <result property="drafterName" column="drafter_name"/>
+        <result property="managerName" column="manager_name"/>
+
+        <!-- 출고지시 품목 목록 (Collection) -->
+        <collection property="items" ofType="com.werp.sero.shipping.query.dto.GIDetailResponseDTO$GIDetailItemDTO">
+            <result property="giItemCode" column="gi_item_code"/>
+            <result property="itemCode" column="item_code"/>
+            <result property="itemName" column="item_name"/>
+            <result property="spec" column="spec"/>
+            <result property="quantityAUn" column="quantity_aun"/>
+            <result property="quantityBUn" column="quantity_bun"/>
+            <result property="totalQuantity" column="total_quantity"/>
+            <result property="unit" column="unit"/>
+        </collection>
+    </resultMap>
+
+    <!-- 출고지시서 상세 조회 -->
+    <select id="findByGiCode" resultMap="GIDetailResultMap">
+        SELECT
+            /* 기본 출고 지시 정보 */
+            A.gi_code,
+            A.created_at,
+            K.shipped_at AS scheduled_at,
+            A.status,
+
+            /* 배송지 정보 (수주의 배송지 주소) */
+            C.company_name,
+            B.address,
+            D.name AS recipient_name,
+            D.contact AS recipient_contact,
+
+            /* 관련 주문 정보 */
+            B.so_code,
+            C.company_name AS client_name,
+            B.shipped_at,
+
+            /* 출고 창고 정보 */
+            E.name AS warehouse_name,
+
+            /* 특이사항 */
+            A.note,
+
+            /* 결재 정보 */
+            A.approval_code,
+            F.name AS drafter_name,
+            G.name AS manager_name,
+
+            /* 품목 정보 */
+            CONCAT(A.gi_code, '-', LPAD(H.id, 3, '0')) AS gi_item_code,
+            I.item_code,
+            I.item_name,
+            I.spec,
+            H.quantity AS quantity_aun,
+            (H.quantity * J.conversion_rate) AS quantity_bun,
+            H.quantity AS total_quantity,
+            I.unit
+
+        FROM goods_issue A
+        INNER JOIN sales_order B ON A.so_id = B.id
+        INNER JOIN client C ON B.client_id = C.id
+        LEFT JOIN client_employee D ON B.client_manager_id = D.id
+        INNER JOIN warehouse E ON A.warehouse_id = E.id
+        INNER JOIN employee F ON A.drafter_id = F.id
+        LEFT JOIN employee G ON A.gi_manager_id = G.id
+        INNER JOIN goods_issue_item H ON A.id = H.gi_id
+        INNER JOIN sales_order_item I ON H.so_item_id = I.id
+        LEFT JOIN material J ON I.item_code = J.material_code
+        INNER JOIN delivery_order K ON A.do_code = K.do_code
+
+        WHERE A.gi_code = #{giCode}
+        ORDER BY H.id
+    </select>
+
+</mapper>
