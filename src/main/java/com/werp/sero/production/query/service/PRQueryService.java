@@ -12,4 +12,6 @@ public interface PRQueryService {
     List<PRListResponseDTO> getPRList(PRListSearchCondition condition);
 
     PRDetailResponseDTO getDetail(int prId);
+
+    PRPlanItemListResponseDTO getPlanItems(int prId);
 }

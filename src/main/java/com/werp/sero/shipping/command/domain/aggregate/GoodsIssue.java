@@ -57,8 +57,12 @@ public class GoodsIssue {
     @JoinColumn(name = "warehouse_id", nullable = false)
     private Warehouse warehouse;
 
-    public void updatedApprovalInfo(final String approvalCode, final String status) {
+    public void updateApprovalInfo(final String approvalCode, final String status) {
         this.approvalCode = approvalCode;
+        this.status = status;
+    }
+
+    public void updateStatus(final String status) {
         this.status = status;
     }
 }

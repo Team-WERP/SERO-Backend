@@ -50,6 +50,7 @@ public class DeliveryOrderCommandServiceImpl implements DeliveryOrderCommandServ
                 .note(requestDTO.getNote())
                 .createdAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))
                 .shippedAt(requestDTO.getShippedAt())
+                .status("DO_BEFORE_GI") // 기본 상태: 출고지시서 작성 이전
                 .salesOrder(salesOrder)
                 .manager(manager)
                 .build();

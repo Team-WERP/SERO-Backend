@@ -4,6 +4,8 @@ import com.werp.sero.client.command.application.dto.ClientAddressCreateResponse;
 import com.werp.sero.client.command.application.dto.ClientAddressUpdateRequest;
 import com.werp.sero.client.command.application.dto.ClientAddressUpdateResponse;
 import com.werp.sero.client.command.application.service.ClientAddressCommandService;
+import com.werp.sero.employee.command.domain.aggregate.ClientEmployee;
+import com.werp.sero.security.annotation.CurrentUser;
 import lombok.AccessLevel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,39 +28,42 @@ public class ClientAddressCommandController {
     @Operation(summary = "고객사 신규 배송지 등록" , description = "모달창을 통해 신규 배송지 등록")
     @PostMapping("/addresses")
     public ResponseEntity<ClientAddressCreateResponse> createNewAddress(
-        
         @PathVariable int clientId,
-        @RequestBody @Valid ClientAddressCreateRequest request
-
+        @RequestBody @Valid ClientAddressCreateRequest request,
+        @CurrentUser ClientEmployee clientEmployee
     ) {
+        clientAddressCommandService.validateClientAccess(clientEmployee, clientId);
+
         ClientAddressCreateResponse response =
-            clientAddressCommandService.createAddress(clientId,request);
-        return ResponseEntity.ok(response);    
-            
+            clientAddressCommandService.createAddress(clientId, request);
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "고객사 배송지 수정" , description = "모달창을 통해 배송지 정보 수정")
     @PutMapping("/addresses/{addressId}")
     public ResponseEntity<ClientAddressUpdateResponse> updateAddress(
-
-            @PathVariable int clientId,
-            @PathVariable int addressId,
-            @RequestBody ClientAddressUpdateRequest request
-
+        @PathVariable int clientId,
+        @PathVariable int addressId,
+        @RequestBody ClientAddressUpdateRequest request,
+        @CurrentUser ClientEmployee clientEmployee
     ) {
+        clientAddressCommandService.validateClientAccess(clientEmployee, clientId);
+
         ClientAddressUpdateResponse response =
-                clientAddressCommandService.updateAddress(clientId,addressId,request);
+                clientAddressCommandService.updateAddress(clientId, addressId, request);
         return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "고객사 배송지 삭제", description = "배송지 정보 삭제")
     @DeleteMapping("/addresses/{addressId}")
     public ResponseEntity<Void> deleteAddress(
-
         @PathVariable int clientId,
-        @PathVariable int addressId
+        @PathVariable int addressId,
+        @CurrentUser ClientEmployee clientEmployee
     ) {
-        clientAddressCommandService.deleteAddress(clientId,addressId);
+        clientAddressCommandService.validateClientAccess(clientEmployee, clientId);
+
+        clientAddressCommandService.deleteAddress(clientId, addressId);
         return ResponseEntity.ok().build();
     }
 }

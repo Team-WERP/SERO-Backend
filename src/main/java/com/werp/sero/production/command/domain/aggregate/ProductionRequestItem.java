@@ -49,4 +49,8 @@ public class ProductionRequestItem {
     public void changeQuantity(int quantity) {
         this.quantity = quantity;
     }
+
+    public void changeStatus(String newStatus) {
+        this.status = newStatus;
+    }
 }

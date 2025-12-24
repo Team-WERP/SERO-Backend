@@ -39,13 +39,22 @@ public class ApprovalLine {
     @JoinColumn(name = "approver_id", nullable = false)
     private Employee employee;
 
-    public ApprovalLine(final String lineType, final Integer sequence, final String status, final String note,
-                        final Approval approval, final Employee employee) {
+    public ApprovalLine(final String lineType, final Integer sequence, final String status, final Approval approval,
+                        final Employee employee) {
         this.lineType = lineType;
         this.sequence = sequence;
         this.status = status;
-        this.note = note;
         this.approval = approval;
         this.employee = employee;
+    }
+
+    public void updateApprovalLine(final String status, final String note, final String processedAt) {
+        this.status = status;
+        this.note = note;
+        this.processedAt = processedAt;
+    }
+
+    public void updateStatus(final String status) {
+        this.status = status;
     }
 }

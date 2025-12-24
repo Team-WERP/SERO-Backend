@@ -2,7 +2,7 @@ package com.werp.sero.production.query.service;
 
 import com.werp.sero.common.error.ErrorCode;
 import com.werp.sero.common.error.exception.BusinessException;
-import com.werp.sero.production.exception.ProductionNotFoundException;
+import com.werp.sero.production.exception.ProductionRequestNotFoundException;
 import com.werp.sero.production.query.dao.PRQueryMapper;
 import com.werp.sero.production.query.dto.*;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +42,24 @@ public class PRQueryServiceImpl implements PRQueryService{
 
         return list.stream()
                 .findFirst()
-                .orElseThrow(ProductionNotFoundException::new);
+                .orElseThrow(ProductionRequestNotFoundException::new);
+    }
+
+    @Override
+    public PRPlanItemListResponseDTO getPlanItems(int prId) {
+
+        PRBasicInfoDTO pr = Optional
+                .ofNullable(prQueryMapper.selectPRBasicInfo(prId))
+                .orElseThrow(ProductionRequestNotFoundException::new);
+
+        List<PRPlanItemResponseDTO> items
+                = prQueryMapper.selectPRPlanItems(prId);
+
+        return new PRPlanItemListResponseDTO(
+                pr.getPrId(),
+                pr.getPrCode(),
+                pr.getStatus(),
+                items
+        );
     }
 }

@@ -105,7 +105,11 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
 
         goodsIssueRepository.save(goodsIssue);
 
-        // 8. 재고 검증, 할당 및 출고지시 품목 생성
+        // 8. 납품서 상태를 DO_AFTER_GI로 변경
+        deliveryOrder.updateStatus("DO_AFTER_GI");
+        deliveryOrderRepository.save(deliveryOrder);
+
+        // 9. 재고 검증, 할당 및 출고지시 품목 생성
         List<String> insufficientItems = new ArrayList<>();
         List<GoodsIssueItem> goodsIssueItems = new ArrayList<>();
         List<WarehouseStock> stocksToUpdate = new ArrayList<>();
@@ -145,17 +149,17 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
             stocksToUpdate.add(stock);
         }
 
-        // 9. 재고 부족 시 예외 발생
+        // 10. 재고 부족 시 예외 발생
         if (!insufficientItems.isEmpty()) {
             String message = "재고가 부족합니다: " + String.join(", ", insufficientItems);
             throw new InsufficientStockException(message);
         }
 
-        // 10. 배치 저장 (출고지시 품목 및 재고)
+        // 11. 배치 저장 (출고지시 품목 및 재고)
         goodsIssueItemRepository.saveAll(goodsIssueItems);
         warehouseStockRepository.saveAll(stocksToUpdate);
 
-        // 11. 주문 품목별 이력 기록 (출고지시 수량)
+        // 12. 주문 품목별 이력 기록 (출고지시 수량)
         for (DeliveryOrderItem doItem : deliveryOrderItems) {
             SalesOrderItemHistory history = SalesOrderItemHistory.builder()
                     .prQuantity(0)
@@ -182,7 +186,7 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.GOODS_ISSUE_NOT_FOUND));
 
         // 상태 검증: 결재 승인된 출고지시만 출고 처리 가능
-        if (!"GI_APPR_PEND".equals(goodsIssue.getStatus())) {
+        if (!"GI_APPR_DONE".equals(goodsIssue.getStatus())) {
             throw new BusinessException(ErrorCode.INVALID_GOODS_ISSUE_STATUS);
         }
 
@@ -258,7 +262,7 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
         salesOrderItemHistoryRepository.saveAll(salesHistoriesToSave);
 
         // 5. 출고지시 상태를 출고완료(GI_ISSUED)로 변경
-        goodsIssue.updatedApprovalInfo(goodsIssue.getApprovalCode(), "GI_ISSUED");
+        goodsIssue.updateApprovalInfo(goodsIssue.getApprovalCode(), "GI_ISSUED");
         goodsIssueRepository.save(goodsIssue);
 
         // 6. 배송 정보 생성
