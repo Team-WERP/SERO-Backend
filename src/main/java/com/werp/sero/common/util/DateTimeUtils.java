@@ -1,11 +1,13 @@
 package com.werp.sero.common.util;
 
+import com.werp.sero.production.exception.InvalidMonthFormatException;
 import com.werp.sero.production.exception.WorkOrderInvalidWorkTimeException;
 import com.werp.sero.production.exception.WorkOrderWorkTimeRequiredException;
 
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
@@ -28,6 +30,10 @@ public class DateTimeUtils {
 
     public static String nowDateTimeSecond() {
         return LocalDateTime.now().format(DATE_TIME_SECOND_FORMATTER);
+    }
+
+    public static LocalDate parse(String date) {
+        return LocalDate.parse(date); // yyyy-MM-dd
     }
 
     public static YearMonth parseYearMonth(String month) {
