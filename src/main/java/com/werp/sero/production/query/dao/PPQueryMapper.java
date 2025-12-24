@@ -1,10 +1,7 @@
 package com.werp.sero.production.query.dao;
 
 import com.werp.sero.production.command.application.dto.PPMonthlyPlanResponseDTO;
-import com.werp.sero.production.query.dto.PPUnassignedResponseDTO;
-import com.werp.sero.production.query.dto.PRItemPlanningBaseDTO;
-import com.werp.sero.production.query.dto.ProductionLineResponseDTO;
-import com.werp.sero.production.query.dto.ProductionPlanSummaryDTO;
+import com.werp.sero.production.query.dto.*;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -31,4 +28,6 @@ public interface PPQueryMapper {
             @Param("monthStart") String monthStart,
             @Param("monthEnd") String monthEnd
     );
+
+    List<PPDailyPreviewResponseDTO> selectDailyPreview(String date);
 }
