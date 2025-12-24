@@ -4,6 +4,7 @@ import com.werp.sero.approval.exception.ApprovalNotFoundException;
 import com.werp.sero.approval.exception.ApprovalNotSubmittedException;
 import com.werp.sero.approval.query.dao.ApprovalMapper;
 import com.werp.sero.approval.query.dto.*;
+import com.werp.sero.common.util.DateTimeUtils;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -12,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -164,7 +166,7 @@ public class ApprovalQueryServiceImpl implements ApprovalQueryService {
                 .build();
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     @Override
     public ApprovalDetailResponseDTO getApprovalInfo(final Employee employee, final int approvalId) {
         final ApprovalDetailResponseDTO responseDTO = approvalMapper.findApprovalByApprovalId(approvalId);
@@ -198,6 +200,17 @@ public class ApprovalQueryServiceImpl implements ApprovalQueryService {
         responseDTO.setReferenceLines(referenceLines);
         responseDTO.setRecipientLines(recipientLines);
         responseDTO.setRefDocId(refId);
+
+        final Optional<ApprovalLineInfoResponseDTO> approvalLineInfoResponseDTO = responseDTO.getTotalApprovalLines().stream()
+                .filter(line -> line.getApproverId() == employee.getId() && line.getViewedAt() == null)
+                .findFirst();
+
+        if (approvalLineInfoResponseDTO.isPresent()) {
+            final String now = DateTimeUtils.nowDateTime();
+
+            approvalMapper.updateApprovalLineViewAt(now, approvalLineInfoResponseDTO.get().getApprovalLineId());
+            approvalLineInfoResponseDTO.get().setViewedAt(now);
+        }
 
         return responseDTO;
     }

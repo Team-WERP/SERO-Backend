@@ -18,4 +18,7 @@ public interface ApprovalMapper {
 
     Integer findRefDocIdByRefDocCode(@Param("refDocType") final String refDocType,
                                      @Param("refDocCode") final String refDocCode);
+
+    void updateApprovalLineViewAt(@Param("viewedAt") final String viewedAt,
+                                  @Param("approvalLineId") final int approvalLineId);
 }
