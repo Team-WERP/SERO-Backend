@@ -12,5 +12,7 @@ public interface SOQueryService {
 
     SODetailsResponseDTO findOrderDetailsById(final int orderId);
 
-    SOItemsHistoryResponseDTO findOrderItemhistoryById(final int orderId);
+    SOItemsHistoryResponseDTO findLatestOrderItemhistoryById(final int orderId);
+
+    List<SOItemsHistoryResponseDTO> findOrderItemhistory(final int orderId, final int itemId);
 }

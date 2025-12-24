@@ -8,6 +8,7 @@ import com.werp.sero.order.query.dto.SOItemsHistoryResponseDTO;
 import com.werp.sero.order.query.dto.SOResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +21,7 @@ public class SOServiceImpl implements SOQueryService {
     private static final int DEFAULT_PAGE_SIZE = 20;
 
     @Override
+    @Transactional(readOnly = true)
     public List<SOResponseDTO> findOrderList(
     SOFilterDTO filter,
     Integer page) {
@@ -48,6 +50,7 @@ public class SOServiceImpl implements SOQueryService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public SODetailsResponseDTO findOrderDetailsById(int orderId) {
         SODetailsResponseDTO orderDetails = soMapper.selectOrderDetailWithItems(orderId);
 
@@ -59,8 +62,19 @@ public class SOServiceImpl implements SOQueryService {
     }
 
     @Override
-    public SOItemsHistoryResponseDTO findOrderItemhistoryById(final int orderId) {
-        SOItemsHistoryResponseDTO orderItemHistory = soMapper.selectOrderItemHistory(orderId);
+    @Transactional(readOnly = true)
+    public SOItemsHistoryResponseDTO findLatestOrderItemhistoryById(final int orderId) {
+        SOItemsHistoryResponseDTO orderItemHistory = soMapper.selectLatestOrderItemHistory(orderId);
+
+        if (orderItemHistory == null) {
+            throw new SalesOrderNotFoundException();
+        }
+        return orderItemHistory;
+    }
+
+    @Override
+    public List<SOItemsHistoryResponseDTO> findOrderItemhistory(final int orderId, final int itemId) {
+        List<SOItemsHistoryResponseDTO> orderItemHistory = soMapper.selectOrderItemHistory(orderId, itemId);
 
         if (orderItemHistory == null) {
             throw new SalesOrderNotFoundException();

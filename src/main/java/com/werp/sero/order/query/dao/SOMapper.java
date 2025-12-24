@@ -14,5 +14,7 @@ public interface SOMapper {
 
     SODetailsResponseDTO selectOrderDetailWithItems(final int orderId);
 
-    SOItemsHistoryResponseDTO selectOrderItemHistory(final int orderId);
+    SOItemsHistoryResponseDTO selectLatestOrderItemHistory(final int orderId);
+
+    List<SOItemsHistoryResponseDTO> selectOrderItemHistory(final int orderId, final int itemId);
 }

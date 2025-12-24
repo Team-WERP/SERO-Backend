@@ -1,5 +1,6 @@
 package com.werp.sero.order.query.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -40,6 +41,10 @@ public class SOItemsHistoryResponseDTO {
         @Schema(description = "품목 id")
         private int itemId;
 
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        @Schema(description = "이력 고유 ID")
+        private Integer historyId;
+
         @Schema(description = "품목 정보")
         private SOItemInfoDTO item;
 
@@ -61,6 +66,8 @@ public class SOItemsHistoryResponseDTO {
         @Schema(description = "배송 완료 수량")
         private int completedQuantity;
 
+        @Schema(description = "이력 생성일자")
+        private String createdAt;
     }
 
 
