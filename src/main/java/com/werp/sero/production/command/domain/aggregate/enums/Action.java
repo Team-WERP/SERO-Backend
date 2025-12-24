@@ -4,5 +4,5 @@ import lombok.Getter;
 
 @Getter
 public enum Action {
-    START, PAUSE, RESUME, STOP
+    START, PAUSE, RESUME, END
 }
