@@ -9,6 +9,12 @@ import com.werp.sero.order.command.domain.aggregate.SalesOrder;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItemHistory;
 import com.werp.sero.order.command.domain.repository.SalesOrderItemHistoryRepository;
 import com.werp.sero.order.command.domain.repository.SORepository;
+import com.werp.sero.approval.command.application.dto.ApprovalCreateRequestDTO;
+import com.werp.sero.approval.command.application.dto.ApprovalLineRequestDTO;
+import com.werp.sero.approval.command.application.dto.ApprovalResponseDTO;
+import com.werp.sero.approval.command.application.service.ApprovalCommandService;
+import com.werp.sero.shipping.command.application.dto.GIApprovalRequestDTO;
+import com.werp.sero.shipping.command.application.dto.GIApprovalResponseDTO;
 import com.werp.sero.shipping.command.application.dto.GIAssignManagerResponseDTO;
 import com.werp.sero.shipping.command.application.dto.GICompleteResponseDTO;
 import com.werp.sero.shipping.command.application.dto.GICreateRequestDTO;
@@ -59,6 +65,7 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
     private final SalesOrderItemHistoryRepository salesOrderItemHistoryRepository;
     private final EmployeeRepository employeeRepository;
     private final DocumentSequenceCommandService documentSequenceCommandService;
+    private final ApprovalCommandService approvalCommandService;
 
     @Override
     @Transactional
@@ -334,6 +341,95 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
                 .managerName(manager.getName())
                 .managerDepartment(manager.getDepartment().getDeptName())
                 .assignedAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public GIApprovalResponseDTO submitForApproval(String giCode, GIApprovalRequestDTO requestDTO, Employee manager) {
+        // 1. 출고지시 조회
+        GoodsIssue goodsIssue = goodsIssueRepository.findByGiCode(giCode)
+                .orElseThrow(() -> new BusinessException(ErrorCode.GOODS_ISSUE_NOT_FOUND));
+
+        // 2. 출고지시 담당자 확인 (담당자만 결재 요청 가능)
+        if (goodsIssue.getManager() == null || goodsIssue.getManager().getId() != manager.getId()) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED);
+        }
+
+        // 3. 출고지시 상태 확인 (검토 중 상태만 결재 요청 가능)
+        if (!"GI_RVW".equals(goodsIssue.getStatus())) {
+            throw new BusinessException(ErrorCode.INVALID_GOODS_ISSUE_STATUS);
+        }
+
+        // 4. 결재선 DTO 변환
+        List<ApprovalLineRequestDTO> approvalLines = requestDTO.getApprovalLines().stream()
+                .map(line -> {
+                    ApprovalLineRequestDTO dto = new ApprovalLineRequestDTO();
+                    try {
+                        // Reflection을 사용하여 private 필드에 값 설정
+                        java.lang.reflect.Field approverIdField = ApprovalLineRequestDTO.class.getDeclaredField("approverId");
+                        approverIdField.setAccessible(true);
+                        approverIdField.set(dto, line.getApproverId());
+
+                        java.lang.reflect.Field lineTypeField = ApprovalLineRequestDTO.class.getDeclaredField("lineType");
+                        lineTypeField.setAccessible(true);
+                        lineTypeField.set(dto, line.getLineType());
+
+                        java.lang.reflect.Field sequenceField = ApprovalLineRequestDTO.class.getDeclaredField("sequence");
+                        sequenceField.setAccessible(true);
+                        sequenceField.set(dto, line.getSequence());
+                    } catch (Exception e) {
+                        throw new RuntimeException("결재선 DTO 변환 실패", e);
+                    }
+                    return dto;
+                })
+                .toList();
+
+        // 5. 결재 요청 DTO 생성
+        ApprovalCreateRequestDTO approvalRequestDTO = new ApprovalCreateRequestDTO();
+        try {
+            java.lang.reflect.Field titleField = ApprovalCreateRequestDTO.class.getDeclaredField("title");
+            titleField.setAccessible(true);
+            titleField.set(approvalRequestDTO, requestDTO.getTitle());
+
+            java.lang.reflect.Field contentField = ApprovalCreateRequestDTO.class.getDeclaredField("content");
+            contentField.setAccessible(true);
+            contentField.set(approvalRequestDTO, requestDTO.getContent());
+
+            java.lang.reflect.Field refCodeField = ApprovalCreateRequestDTO.class.getDeclaredField("refCode");
+            refCodeField.setAccessible(true);
+            refCodeField.set(approvalRequestDTO, giCode);
+
+            java.lang.reflect.Field approvalTargetTypeField = ApprovalCreateRequestDTO.class.getDeclaredField("approvalTargetType");
+            approvalTargetTypeField.setAccessible(true);
+            approvalTargetTypeField.set(approvalTargetTypeField, "GI");
+
+            java.lang.reflect.Field approvalLinesField = ApprovalCreateRequestDTO.class.getDeclaredField("approvalLines");
+            approvalLinesField.setAccessible(true);
+            approvalLinesField.set(approvalRequestDTO, approvalLines);
+        } catch (Exception e) {
+            throw new RuntimeException("결재 요청 DTO 생성 실패", e);
+        }
+
+        // 6. 결재 상신
+        ApprovalResponseDTO approvalResponse = approvalCommandService.submitForApproval(
+                manager,
+                approvalRequestDTO,
+                null  // 첨부파일 없음
+        );
+
+        // 7. 출고지시 상태 업데이트 (GI_APPR_PEND: 결재 대기)
+        goodsIssue.updateApprovalInfo(approvalResponse.getApprovalCode(), "GI_APPR_PEND");
+        goodsIssueRepository.save(goodsIssue);
+
+        // 8. 응답 DTO 생성 및 반환
+        return GIApprovalResponseDTO.builder()
+                .giCode(giCode)
+                .approvalCode(approvalResponse.getApprovalCode())
+                .title(requestDTO.getTitle())
+                .submittedAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))
+                .status("AS_ING")  // 결재 진행 중
+                .giStatus("GI_APPR_PEND")  // 출고지시 결재 대기
                 .build();
     }
 }

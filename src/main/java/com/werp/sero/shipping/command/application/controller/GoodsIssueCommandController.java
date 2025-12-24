@@ -2,6 +2,8 @@ package com.werp.sero.shipping.command.application.controller;
 
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.security.annotation.CurrentUser;
+import com.werp.sero.shipping.command.application.dto.GIApprovalRequestDTO;
+import com.werp.sero.shipping.command.application.dto.GIApprovalResponseDTO;
 import com.werp.sero.shipping.command.application.dto.GIAssignManagerResponseDTO;
 import com.werp.sero.shipping.command.application.dto.GICompleteResponseDTO;
 import com.werp.sero.shipping.command.application.dto.GICreateRequestDTO;
@@ -238,6 +240,74 @@ public class GoodsIssueCommandController {
             @CurrentUser Employee currentEmployee
     ) {
         GIAssignManagerResponseDTO response = goodsIssueCommandService.assignManager(giCode, currentEmployee);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+            summary = "출고지시서 결재 요청",
+            description = "출고지시 담당자가 결재를 요청합니다. 담당자만 요청 가능하며, 검토 중(GI_RVW) 상태만 가능합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "결재 요청 성공",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = GIApprovalResponseDTO.class),
+                            examples = @ExampleObject(value = """
+                                    {
+                                        "giCode": "GI-20251224-001",
+                                        "approvalCode": "APV-20251224-001",
+                                        "title": "출고지시 결재 요청 (GI-20251224-001)",
+                                        "submittedAt": "2025-12-24 15:00",
+                                        "status": "AS_ING",
+                                        "giStatus": "GI_APPR_PEND"
+                                    }
+                                    """)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 상태 또는 권한 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(name = "INVALID_STATUS", value = """
+                                            {
+                                                "code": "SHIPPING004",
+                                                "message": "출고 처리할 수 없는 상태입니다."
+                                            }
+                                            """),
+                                    @ExampleObject(name = "UNAUTHORIZED", value = """
+                                            {
+                                                "code": "AUTH002",
+                                                "message": "권한이 없습니다."
+                                            }
+                                            """)
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "출고지시를 찾을 수 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(name = "GOODS_ISSUE_NOT_FOUND", value = """
+                                    {
+                                        "code": "SHIPPING001",
+                                        "message": "출고지시 정보를 찾을 수 없습니다."
+                                    }
+                                    """)
+                    )
+            )
+    })
+    @PostMapping("/{giCode}/submit-approval")
+    public ResponseEntity<GIApprovalResponseDTO> submitForApproval(
+            @PathVariable String giCode,
+            @Valid @RequestBody GIApprovalRequestDTO requestDTO,
+            @CurrentUser Employee currentEmployee
+    ) {
+        GIApprovalResponseDTO response = goodsIssueCommandService.submitForApproval(giCode, requestDTO, currentEmployee);
         return ResponseEntity.ok(response);
     }
 }
