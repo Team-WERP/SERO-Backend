@@ -103,7 +103,7 @@ public class SOQueryController {
     public ResponseEntity<SOItemsHistoryResponseDTO> findLatestOrderItemHistory(
             @PathVariable("orderId") final int orderId
     ) {
-        final SOItemsHistoryResponseDTO response = orderService.findLatestOrderItemhistoryById(orderId);
+        final SOItemsHistoryResponseDTO response = orderService.findAllItemsLatestHistory(orderId);
 
         return ResponseEntity.ok(response);
     }
@@ -126,13 +126,43 @@ public class SOQueryController {
             }))
     })
     @GetMapping("/{orderId}/item-history/{itemId}")
-    public ResponseEntity<List<SOItemsHistoryResponseDTO>> findOrderItemHistory(
+    public ResponseEntity <SOItemsHistoryResponseDTO> findOrderItemHistory(
             @PathVariable("orderId") final int orderId,
             @PathVariable("itemId") final int itemId
     ) {
-        final List<SOItemsHistoryResponseDTO> response = orderService.findOrderItemhistory(orderId, itemId);
+        final SOItemsHistoryResponseDTO response = orderService.findItemFullHistory(orderId, itemId);
 
         return ResponseEntity.ok(response);
     }
+
+
+    @Operation(summary = "주문 특정 품목의 최신 수량 변동 이력 조회")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "주문 특정 품목의 최신 수량 변동 이력 조회", content = @Content(
+                    mediaType = "application/json",
+                    array = @ArraySchema(
+                            schema = @Schema(implementation = SOItemsHistoryResponseDTO.class)
+                    )
+            )),
+            @ApiResponse(responseCode = "404", content = @Content(mediaType = "application/json", examples = {
+                    @ExampleObject(name = "SALES_ORDER_NOT_FOUND", value = """
+                            {
+                                "code": "ORDER002",
+                                "message": "주문을 찾을 수 없습니다."
+                            }
+                            """)
+            }))
+    })
+    @GetMapping("/{orderId}/item-history/{itemId}/latest")
+    public ResponseEntity<SOItemsHistoryResponseDTO> findOrderItemLatestHistory(
+            @PathVariable("orderId") final int orderId,
+            @PathVariable("itemId") final int itemId
+    ) {
+        final SOItemsHistoryResponseDTO response = orderService.findItemLatestHistory(orderId, itemId);
+
+        return ResponseEntity.ok(response);
+    }
+
+
 
 }

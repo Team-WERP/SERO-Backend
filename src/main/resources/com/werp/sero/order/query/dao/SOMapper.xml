@@ -198,56 +198,6 @@
         ORDER BY D.id ASC
     </select>
 
-    <resultMap id="SOLatestItemHistoryResultMap"
-               type="com.werp.sero.order.query.dto.SOItemsHistoryResponseDTO">
-        <id property="orderId" column="order_id"/>
-        <collection property="items"
-                    ofType="com.werp.sero.order.query.dto.SOItemsHistoryResponseDTO$SOItemHistoryDTO">
-
-            <id property="itemId" column="item_id"/>
-            <result property="prQuantity" column="pr_quantity"/>
-            <result property="piQuantity" column="pi_quantity"/>
-            <result property="doQuantity" column="do_quantity"/>
-            <result property="giQuantity" column="gi_quantity"/>
-            <result property="shippedQuantity" column="shipped_quantity"/>
-            <result property="completedQuantity" column="completed_quantity"/>
-            <result property="createdAt" column="created_at"/>
-
-            <association property="item"
-                         resultMap="SOItemInfoMap"/>
-        </collection>
-    </resultMap>
-
-
-    <select id="selectLatestOrderItemHistory" resultMap="SOLatestItemHistoryResultMap">
-        SELECT
-            A.id AS order_id,
-            B.id AS item_id,
-            B.item_code,
-            B.item_name,
-            B.spec,
-            B.unit,
-            B.quantity AS order_quantity,
-            (SELECT IFNULL(SUM(E.available_stock), 0)
-             FROM material D
-                      INNER JOIN warehouse_stock E ON D.id = E.material_id
-             WHERE D.material_code = B.item_code) AS available_stock,
-            IFNULL(C.pr_quantity, 0) AS pr_quantity,
-            IFNULL(C.pi_quantity, 0) AS pi_quantity,
-            IFNULL(C.gi_quantity, 0) AS gi_quantity,
-            IFNULL(C.shipped_quantity, 0) AS shipped_quantity,
-            IFNULL(C.do_quantity, 0) AS do_quantity,
-            IFNULL(C.completed_quantity, 0) AS completed_quantity,
-            C.created_at
-        FROM sales_order A
-                 INNER JOIN sales_order_item B ON A.id = B.so_id
-                 LEFT JOIN sales_order_item_history C ON C.id = (
-                    SELECT MAX(id)
-                    FROM sales_order_item_history
-                    WHERE so_item_id = B.id
-                )
-        WHERE A.id = #{orderId};
-    </select>
 
     <resultMap id="SOItemInfoMap" type="com.werp.sero.order.query.dto.SOItemsHistoryResponseDTO$SOItemInfoDTO">
         <constructor>
@@ -283,30 +233,48 @@
 
     <select id="selectOrderItemHistory" resultMap="SOItemHistoryListResultMap">
         SELECT
-            A.id AS order_id,
-            B.id AS item_id,
-            C.id AS history_id,
-            B.item_code,
-            B.item_name,
-            B.spec,
-            B.unit,
-            B.quantity AS order_quantity,
-            (SELECT IFNULL(SUM(E.available_stock), 0)
-             FROM material D
-                      INNER JOIN warehouse_stock E ON D.id = E.material_id
-             WHERE D.material_code = B.item_code) AS available_stock,
-            IFNULL(C.pr_quantity, 0) AS pr_quantity,
-            IFNULL(C.pi_quantity, 0) AS pi_quantity,
-            IFNULL(C.gi_quantity, 0) AS gi_quantity,
-            IFNULL(C.shipped_quantity, 0) AS shipped_quantity,
-            IFNULL(C.do_quantity, 0) AS do_quantity,
-            IFNULL(C.completed_quantity, 0) AS completed_quantity,
-            C.created_at
+        A.id AS order_id,
+        B.id AS item_id,
+        C.id AS history_id,
+        B.item_code,
+        B.item_name,
+        B.spec,
+        B.unit,
+        B.quantity AS order_quantity,
+        (SELECT IFNULL(SUM(E.available_stock), 0)
+        FROM material D
+        INNER JOIN warehouse_stock E ON D.id = E.material_id
+        WHERE D.material_code = B.item_code) AS available_stock,
+        IFNULL(C.pr_quantity, 0) AS pr_quantity,
+        IFNULL(C.pi_quantity, 0) AS pi_quantity,
+        IFNULL(C.gi_quantity, 0) AS gi_quantity,
+        IFNULL(C.shipped_quantity, 0) AS shipped_quantity,
+        IFNULL(C.do_quantity, 0) AS do_quantity,
+        IFNULL(C.completed_quantity, 0) AS completed_quantity,
+        C.created_at
         FROM sales_order A
-                 INNER JOIN sales_order_item B ON A.id = B.so_id
-                 LEFT JOIN sales_order_item_history C ON B.id = C.so_item_id
-        WHERE A.id = #{orderId} AND B.id = #{itemId}
-        ORDER BY C.id DESC;
+        INNER JOIN sales_order_item B ON A.id = B.so_id
+
+        <choose>
+            <when test="isLatestOnly == true">
+                LEFT JOIN sales_order_item_history C ON C.id = (
+                SELECT MAX(id)
+                FROM sales_order_item_history
+                WHERE so_item_id = B.id
+                )
+            </when>
+            <otherwise>
+                INNER JOIN sales_order_item_history C ON B.id = C.so_item_id
+            </otherwise>
+        </choose>
+
+        <where>
+            A.id = #{orderId}
+            <if test="itemId != null and itemId > 0">
+                AND B.id = #{itemId}
+            </if>
+        </where>
+        ORDER BY B.id ASC, C.id DESC
     </select>
 
 </mapper>

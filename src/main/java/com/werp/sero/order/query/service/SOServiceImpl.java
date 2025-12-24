@@ -1,5 +1,6 @@
 package com.werp.sero.order.query.service;
 
+import com.werp.sero.order.exception.SalesOrderItemHistoryNotFoundException;
 import com.werp.sero.order.exception.SalesOrderNotFoundException;
 import com.werp.sero.order.query.dao.SOMapper;
 import com.werp.sero.order.query.dto.SOFilterDTO;
@@ -63,22 +64,38 @@ public class SOServiceImpl implements SOQueryService {
 
     @Override
     @Transactional(readOnly = true)
-    public SOItemsHistoryResponseDTO findLatestOrderItemhistoryById(final int orderId) {
-        SOItemsHistoryResponseDTO orderItemHistory = soMapper.selectLatestOrderItemHistory(orderId);
+    public SOItemsHistoryResponseDTO findAllItemsLatestHistory(final int orderId) {
+        SOItemsHistoryResponseDTO response =  soMapper.selectOrderItemHistory(orderId, null, true);
 
-        if (orderItemHistory == null) {
-            throw new SalesOrderNotFoundException();
+        if (response == null) {
+            throw new SalesOrderItemHistoryNotFoundException();
         }
-        return orderItemHistory;
+
+        return response;
     }
 
     @Override
-    public List<SOItemsHistoryResponseDTO> findOrderItemhistory(final int orderId, final int itemId) {
-        List<SOItemsHistoryResponseDTO> orderItemHistory = soMapper.selectOrderItemHistory(orderId, itemId);
+    @Transactional(readOnly = true)
+    public SOItemsHistoryResponseDTO findItemFullHistory(final int orderId, final int itemId) {
+        SOItemsHistoryResponseDTO response = soMapper.selectOrderItemHistory(orderId, itemId, false);
 
-        if (orderItemHistory == null) {
-            throw new SalesOrderNotFoundException();
+        if (response == null) {
+            throw new SalesOrderItemHistoryNotFoundException();
         }
-        return orderItemHistory;
+
+        return response;
+    }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public SOItemsHistoryResponseDTO findItemLatestHistory(final int orderId, final int itemId) {
+        SOItemsHistoryResponseDTO response =  soMapper.selectOrderItemHistory(orderId, itemId, true);
+
+        if (response == null) {
+            throw new SalesOrderItemHistoryNotFoundException();
+        }
+
+        return response;
     }
 }
