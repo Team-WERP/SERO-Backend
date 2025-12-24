@@ -1,12 +1,17 @@
 package com.werp.sero.shipping.command.domain.aggregate;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @Table(name = "delivery")
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder
 @Entity
 public class Delivery {
     @Id
@@ -37,4 +42,16 @@ public class Delivery {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "gi_id", nullable = false)
     private GoodsIssue goodsIssue;
+
+    public void startDelivery() {
+        this.status = "SHIP_ING";
+        this.departedAt = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        this.goodsIssue.updateStatus("GI_SHIP_ING");
+    }
+
+    public void completeDelivery() {
+        this.status = "SHIP_DONE";
+        this.arrivedAt = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        this.goodsIssue.updateStatus("GI_SHIP_DONE");
+    }
 }

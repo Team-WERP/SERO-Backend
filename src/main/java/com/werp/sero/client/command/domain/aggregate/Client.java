@@ -52,4 +52,8 @@ public class Client {
 
     @Column(name = "updated_at")
     private String updatedAt;
+
+    public void addReceivables(long orderAmount) {
+        this.receivables += orderAmount;
+    }
 }

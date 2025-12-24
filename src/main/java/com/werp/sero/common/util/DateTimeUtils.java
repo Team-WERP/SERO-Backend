@@ -17,6 +17,7 @@ public class DateTimeUtils {
     private static final DateTimeFormatter DATE_TIME_SECOND_FORMATTER
             = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+
     public static String nowDate() {
         return LocalDateTime.now().format(DATE_FORMATTER);
     }
@@ -29,8 +30,16 @@ public class DateTimeUtils {
         return LocalDateTime.now().format(DATE_TIME_SECOND_FORMATTER);
     }
 
-    public static LocalDate parse(String date) {
-        return LocalDate.parse(date); // yyyy-MM-dd
+    public static YearMonth parseYearMonth(String month) {
+        if (month == null || month.isBlank()) {
+            throw new InvalidMonthFormatException();
+        }
+
+        try {
+            return YearMonth.parse(month, DateTimeFormatter.ofPattern("yyyy-MM"));
+        } catch (DateTimeParseException e) {
+            throw new InvalidMonthFormatException();
+        }
     }
 
     public static int minutesBetween(String start, String end) {

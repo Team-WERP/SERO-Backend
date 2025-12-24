@@ -4,13 +4,14 @@ import com.werp.sero.client.command.domain.aggregate.Client;
 import com.werp.sero.employee.command.domain.aggregate.ClientEmployee;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
 @Table(name = "sales_order")
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 @Entity
+@Builder
 public class SalesOrder {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -95,6 +96,14 @@ public class SalesOrder {
     }
 
     public void updateManager(Employee manager) {
+        final String UPDATE_STATUS = "ORD_RVW";
+
         this.employee = manager;
+        this.status = UPDATE_STATUS;
+    }
+
+    public void updateApprovalInfo(final String approvalCode, final String status) {
+        this.approvalCode = approvalCode;
+        this.status = status;
     }
 }

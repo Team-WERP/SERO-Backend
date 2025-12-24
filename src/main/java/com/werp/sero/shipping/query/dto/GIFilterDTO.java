@@ -15,7 +15,7 @@ public class GIFilterDTO {
 
     @Schema(description = "상태 (null이면 전체 조회)",
             example = "GI_RVW",
-            allowableValues = {"GI_RVW", "GI_APV_PEND", "GI_APV_APPR", "GI_APV_RJCT", "GI_ISSUED", "GI_SHIP_ING", "GI_SHIP_DONE", "GI_CANCEL"})
+            allowableValues = {"GI_RVW", "GI_APPR_PEND", "GI_APPR_DONE", "GI_APPR_RJCT", "GI_ISSUED", "GI_SHIP_ING", "GI_SHIP_DONE", "GI_CANCEL"})
     private String status;
 
     @Schema(description = "납기일 시작일 (shipped_at)", example = "2025-01-01")

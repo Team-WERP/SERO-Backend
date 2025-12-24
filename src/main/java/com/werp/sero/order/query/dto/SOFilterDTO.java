@@ -16,7 +16,7 @@ public class SOFilterDTO {
     @Schema(description = "주문 상태 그룹코드", example = "ORD_PEND")
     private String statusType;
 
-    @Schema(description = "주문일 또는 납기일(ordered_at / shipped_at)", example = "ordered_at")
+    @Schema(description = "주문일 또는 납기일(orderedAt / shippedAt)", example = "orderedAt")
     private String dateField;
 
     @Schema(description = "날짜 범위 시작일", example = "2025-01-01")
