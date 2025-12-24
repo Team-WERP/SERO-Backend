@@ -1,5 +1,6 @@
 package com.werp.sero.approval.query.service;
 
+import com.werp.sero.approval.query.dto.ApprovalDetailResponseDTO;
 import com.werp.sero.approval.query.dto.ApprovalFilterRequestDTO;
 import com.werp.sero.approval.query.dto.ApprovalListResponseDTO;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
@@ -17,4 +18,6 @@ public interface ApprovalQueryService {
 
     ApprovalListResponseDTO getReferencedApprovals(final Employee employee, final ApprovalFilterRequestDTO filterDTO,
                                                    final Pageable pageable);
+
+    ApprovalDetailResponseDTO getApprovalInfo(final Employee employee, final int approvalId);
 }

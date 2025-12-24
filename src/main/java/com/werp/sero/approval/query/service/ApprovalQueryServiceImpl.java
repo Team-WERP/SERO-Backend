@@ -1,17 +1,18 @@
 package com.werp.sero.approval.query.service;
 
+import com.werp.sero.approval.exception.ApprovalNotFoundException;
+import com.werp.sero.approval.exception.ApprovalNotSubmittedException;
 import com.werp.sero.approval.query.dao.ApprovalMapper;
-import com.werp.sero.approval.query.dto.ApprovalFilterDTO;
-import com.werp.sero.approval.query.dto.ApprovalFilterRequestDTO;
-import com.werp.sero.approval.query.dto.ApprovalListResponseDTO;
-import com.werp.sero.approval.query.dto.ApprovalSummaryResponseDTO;
+import com.werp.sero.approval.query.dto.*;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -20,6 +21,10 @@ public class ApprovalQueryServiceImpl implements ApprovalQueryService {
     private static final String APPROVAL_LINE_REJECTED_CODE = "ALS_RJCT";
     private static final String APPROVAL_LINE_APPROVED_CODE = "ALS_APPR";
     private static final String APPROVAL_LINE_REVIEW_CODE = "ALS_RVW";
+    private static final String APPROVAL_TYPE_APPROVAL = "AT_APPR";
+    private static final String APPROVAL_TYPE_REVIEWER = "AT_RVW";
+    private static final String APPROVAL_TYPE_REFERENCE = "AT_REF";
+    private static final String APPROVAL_TYPE_RECIPIENT = "AT_RCPT";
 
     private final ApprovalMapper approvalMapper;
 
@@ -157,5 +162,43 @@ public class ApprovalQueryServiceImpl implements ApprovalQueryService {
                 .number(pageable.getPageNumber())
                 .totalPages(totalPages)
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public ApprovalDetailResponseDTO getApprovalInfo(final Employee employee, final int approvalId) {
+        final ApprovalDetailResponseDTO responseDTO = approvalMapper.findApprovalByApprovalId(approvalId);
+
+        if (responseDTO == null) {
+            throw new ApprovalNotFoundException();
+        }
+
+        final Integer refId =
+                approvalMapper.findRefDocIdByRefDocCode(responseDTO.getRefDocType(), responseDTO.getRefDocCode());
+
+        if (refId == null) {
+            throw new ApprovalNotSubmittedException();
+        }
+
+        final List<ApprovalLineInfoResponseDTO> approvalLines = responseDTO.getTotalApprovalLines().stream()
+                .filter(line -> APPROVAL_TYPE_APPROVAL.equals(line.getLineType())
+                        || APPROVAL_TYPE_REVIEWER.equals(line.getLineType()))
+                .sorted(Comparator.comparingInt(ApprovalLineInfoResponseDTO::getSequence))
+                .collect(Collectors.toList());
+
+        final List<ApprovalLineInfoResponseDTO> referenceLines = responseDTO.getTotalApprovalLines().stream()
+                .filter(line -> APPROVAL_TYPE_REFERENCE.equals(line.getLineType()))
+                .collect(Collectors.toList());
+
+        final List<ApprovalLineInfoResponseDTO> recipientLines = responseDTO.getTotalApprovalLines().stream()
+                .filter(line -> APPROVAL_TYPE_RECIPIENT.equals(line.getLineType()))
+                .collect(Collectors.toList());
+
+        responseDTO.setApprovalLines(approvalLines);
+        responseDTO.setReferenceLines(referenceLines);
+        responseDTO.setRecipientLines(recipientLines);
+        responseDTO.setRefDocId(refId);
+
+        return responseDTO;
     }
 }

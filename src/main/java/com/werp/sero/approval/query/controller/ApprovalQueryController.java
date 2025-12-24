@@ -1,5 +1,6 @@
 package com.werp.sero.approval.query.controller;
 
+import com.werp.sero.approval.query.dto.ApprovalDetailResponseDTO;
 import com.werp.sero.approval.query.dto.ApprovalFilterRequestDTO;
 import com.werp.sero.approval.query.dto.ApprovalListResponseDTO;
 import com.werp.sero.approval.query.service.ApprovalQueryService;
@@ -12,10 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "결재 - Query", description = "결재 관련 조회 API")
 @RequestMapping("/approvals")
@@ -35,24 +33,31 @@ public class ApprovalQueryController {
     @Operation(summary = "결재함 목록 조회")
     @GetMapping("/archived")
     public ResponseEntity<ApprovalListResponseDTO> getArchivedApprovals(@CurrentUser final Employee employee,
-                                                                                 @ModelAttribute ApprovalFilterRequestDTO filterDTO,
-                                                                                 @PageableDefault(sort = "id", direction = Sort.Direction.DESC) final Pageable pageable) {
+                                                                        @ModelAttribute ApprovalFilterRequestDTO filterDTO,
+                                                                        @PageableDefault(sort = "id", direction = Sort.Direction.DESC) final Pageable pageable) {
         return ResponseEntity.ok(approvalQueryService.getArchivedApprovals(employee, filterDTO, pageable));
     }
 
     @Operation(summary = "결재 요청함 목록 조회")
     @GetMapping("/received")
     public ResponseEntity<ApprovalListResponseDTO> getReceivedApprovals(@CurrentUser final Employee employee,
-                                                                                 @ModelAttribute ApprovalFilterRequestDTO filterDTO,
-                                                                                 @PageableDefault(sort = "id", direction = Sort.Direction.DESC) final Pageable pageable) {
+                                                                        @ModelAttribute ApprovalFilterRequestDTO filterDTO,
+                                                                        @PageableDefault(sort = "id", direction = Sort.Direction.DESC) final Pageable pageable) {
         return ResponseEntity.ok(approvalQueryService.getReceivedApprovals(employee, filterDTO, pageable));
     }
 
     @Operation(summary = "수신/참조함 목록 조회")
     @GetMapping("/referenced")
     public ResponseEntity<ApprovalListResponseDTO> getReferencedApprovals(@CurrentUser final Employee employee,
-                                                                        @ModelAttribute ApprovalFilterRequestDTO filterDTO,
-                                                                        @PageableDefault(sort = "id", direction = Sort.Direction.DESC) final Pageable pageable) {
+                                                                          @ModelAttribute ApprovalFilterRequestDTO filterDTO,
+                                                                          @PageableDefault(sort = "id", direction = Sort.Direction.DESC) final Pageable pageable) {
         return ResponseEntity.ok(approvalQueryService.getReferencedApprovals(employee, filterDTO, pageable));
+    }
+
+    @Operation(summary = "결재 상세 조회")
+    @GetMapping("/{approvalId}")
+    public ResponseEntity<ApprovalDetailResponseDTO> getApprovalInfo(@CurrentUser final Employee employee,
+                                                                     @PathVariable("approvalId") final int approvalId) {
+        return ResponseEntity.ok(approvalQueryService.getApprovalInfo(employee, approvalId));
     }
 }

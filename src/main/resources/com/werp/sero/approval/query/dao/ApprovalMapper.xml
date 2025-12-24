@@ -2,6 +2,46 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.werp.sero.approval.query.dao.ApprovalMapper">
+    <resultMap id="approvalDetailResponseResultMap" type="com.werp.sero.approval.query.dto.ApprovalDetailResponseDTO">
+        <id column="approval_id" property="approvalId"/>
+        <result column="approval_code" property="approvalCode"/>
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+        <result column="ref_doc_code" property="refDocCode"/>
+        <result column="ref_doc_type" property="refDocType"/>
+        <result column="drafted_at" property="draftedAt"/>
+        <result column="status" property="status"/>
+        <result column="completed_at" property="completedAt"/>
+        <result column="total_line" property="totalLine"/>
+        <result column="drafter_id" property="drafterId"/>
+        <result column="drafter_name" property="drafterName"/>
+        <result column="drafter_department" property="drafterDepartment"/>
+        <result column="drafter_position_code" property="drafterPositionCode"/>
+        <result column="drafter_rank_code" property="drafterRankCode"/>
+
+        <collection property="approvalAttachments" ofType="com.werp.sero.approval.query.dto.ApprovalAttachmentInfoResponseDTO">
+            <id column="approval_attachment_id" property="approvalAttachmentId"/>
+            <result column="approval_attachment_name" property="approvalAttachmentName"/>
+            <result column="approval_attachment_url" property="approvalAttachmentUrl"/>
+            <result column="" property=""/>
+        </collection>
+
+        <collection property="totalApprovalLines" ofType="com.werp.sero.approval.query.dto.ApprovalLineInfoResponseDTO">
+            <id column="approval_line_id" property="approvalLineId"/>
+            <result column="approver_id" property="approverId"/>
+            <result column="approver_name" property="approverName"/>
+            <result column="approver_department" property="approverDepartment"/>
+            <result column="approver_position_code" property="approverPositionCode"/>
+            <result column="approver_rank_code" property="approverRankCode"/>
+            <result column="sequence" property="sequence"/>
+            <result column="staus" property="status"/>
+            <result column="line_type" property="lineType"/>
+            <result column="note" property="note"/>
+            <result column="viewed_at" property="viewedAt"/>
+            <result column="processed_at" property="processedAt"/>
+        </collection>
+    </resultMap>
+
     <select id="countByFilterDTO" resultType="_long">
         SELECT
                COUNT(DISTINCT A.id)
@@ -139,5 +179,74 @@
           ORDER By A.id DESC
           LIMIT #{limit}
          OFFSET #{offset}
+    </select>
+
+    <select id="findApprovalByApprovalId" parameterType="_int" resultMap="approvalDetailResponseResultMap">
+        SELECT
+               A.id AS approval_id
+             , A.approval_code AS approval_code
+             , A.title as title
+             , A.content as conent
+             , A.ref_code as ref_doc_code
+             , LEFT(A.ref_code, 2) AS ref_doc_type
+             , A.drafted_at AS drafted_at
+             , A.status AS status
+             , A.completed_at AS completed_at
+             , A.total_line AS total_line
+             , C.id AS drafter_id
+             , C.name AS drafter_name
+             , D.dept_name AS drafter_department
+             , C.position_code AS drafter_position_code
+             , C.rank_code AS drafter_rank_code
+             , B.id AS approval_attachment_id
+             , B.name AS approval_attachment_name
+             , B.url AS approval_attachment_url
+             , E.id AS approval_line_id
+             , E.approver_id AS approver_id
+             , F.name AS approver_name
+             , G.dept_name AS approver_department
+             , F.position_code AS approver_position_code
+             , F.rank_code AS approver_rank_code
+             , E.sequence AS sequence
+             , E.status AS staus
+             , E.line_type AS line_type
+             , E.note AS note
+             , E.viewed_at AS viewed_at
+             , E.processed_at AS processed_at
+          FROM approval A
+          LEFT JOIN approval_attachment B
+            ON A.id = B.approval_id
+          JOIN employee C
+            ON A.drafter_id = C.id
+          JOIN department D
+            ON C.dept_id = D.id
+          LEFT JOIN approval_line E
+            ON A.id = E.approval_id
+          JOIN employee F
+            ON E.approver_id = F.id
+          JOIN department G
+            ON F.dept_id = G.id
+         WHERE A.id = #{approvalId}
+    </select>
+
+    <select id="findRefDocIdByRefDocCode" resultType="_int">
+        SELECT
+               B.id
+          FROM approval A
+        <if test="refDocType == 'SO'">
+          JOIN sales_order B
+            ON A.ref_code = B.so_code
+        </if>
+        <if test="refDocType == 'PR'">
+          JOIN production_request B
+            ON A.ref_code = B.pr_code
+        </if>
+        <if test="refDocType == 'GI'">
+            JOIN goods_issue B
+            ON A.ref_code = B.gi_code
+        </if>
+        <where>
+            A.ref_code = #{refDocCode}
+        </where>
     </select>
 </mapper>
