@@ -102,10 +102,10 @@ public enum ErrorCode {
     FILE_INVALID_EXTENSION(HttpStatus.BAD_REQUEST, "FILE002", "허용되지 않은 파일 형식입니다."),
     S3_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "FILE003", "S3 파일 업로드에 실패했습니다."),
     S3_DELETE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "FILE004", "S3 파일 삭제에 실패했습니다."),
-    S3_URL_INVALID(HttpStatus.BAD_REQUEST, "FILE005", "유효하지 않은 S3 URL입니다.");
+    S3_URL_INVALID(HttpStatus.BAD_REQUEST, "FILE005", "유효하지 않은 S3 URL입니다."),
 
-    PR_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "PRODUCTION007", "생산요청 품목을 찾을 수 없습니다"),
-    PR_LINE_NOT_FOUND(HttpStatus.NOT_FOUND, "PRODUCTION008", "생산 라인을 찾을 수 없습니다"),
+    PR_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "PRODUCTION007", "생산요청 품목을 찾을 수 없습니다."),
+    PR_LINE_NOT_FOUND(HttpStatus.NOT_FOUND, "PRODUCTION008", "생산 라인을 찾을 수 없습니다."),
 
     /* PRODUCTION PLAN */
     PP_ALREADY_EXISTS(HttpStatus.CONFLICT, "PRODUCTION101", "이미 해당 생산요청 품목에 대한 생산계획이 존재합니다."),
