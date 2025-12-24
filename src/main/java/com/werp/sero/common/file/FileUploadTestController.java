@@ -80,18 +80,4 @@ public class FileUploadTestController {
 
         return ResponseEntity.ok(response);
     }
-
-    @Operation(summary = "S3 파일 삭제 테스트", description = "S3 URL을 받아서 파일을 삭제합니다.")
-    @DeleteMapping("/delete")
-    public ResponseEntity<Map<String, String>> deleteFile(
-            @RequestParam("s3Url") String s3Url) {
-
-        s3Uploader.delete(s3Url);
-
-        Map<String, String> response = new HashMap<>();
-        response.put("deletedUrl", s3Url);
-        response.put("message", "파일 삭제 성공!");
-
-        return ResponseEntity.ok(response);
-    }
 }
