@@ -103,7 +103,6 @@ public class ApprovalQueryServiceImpl implements ApprovalQueryService {
                                                         final Pageable pageable) {
         final ApprovalFilterDTO approvalFilterDTO = ApprovalFilterDTO.builder()
                 .approvalRole("approver")
-                .approvalStatus(filterDTO.getStatus())
                 .employeeId(employee.getId())
                 .keyword(filterDTO.getKeyword())
                 .startDate(filterDTO.getStartDate())
@@ -138,7 +137,6 @@ public class ApprovalQueryServiceImpl implements ApprovalQueryService {
                                                           final Pageable pageable) {
         final ApprovalFilterDTO approvalFilterDTO = ApprovalFilterDTO.builder()
                 .approvalRole(("recipient ".equals(filterDTO.getViewType()) ? "receiver" : "referrer"))
-                .approvalStatus(filterDTO.getStatus())
                 .employeeId(employee.getId())
                 .keyword(filterDTO.getKeyword())
                 .startDate(filterDTO.getStartDate())
