@@ -10,7 +10,9 @@ import com.werp.sero.notification.command.domain.repository.SseEmitterRepository
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SseCommandServiceImpl implements SseCommandService{
@@ -61,11 +63,11 @@ public class SseCommandServiceImpl implements SseCommandService{
                         .name("notification")
                         .data(data));
         } catch (IOException e) {
-            emitterRepository.deleteById(emitterId);  // emitterId 사용
-            log.error("SSE 전송 실패: {}", emitterId);
+            emitterRepository.deleteById(emitterId);
+            log.warn("SSE 전송 실패 (연결 끊김): emitterId={}", emitterId);
         }
     });
-    
+
     }
     
 }
