@@ -73,7 +73,7 @@ public enum ErrorCode {
     INVALID_GOODS_ISSUE_STATUS(HttpStatus.BAD_REQUEST, "SHIPPING004", "출고 처리할 수 없는 상태입니다. 결재 승인된 출고지시만 처리 가능합니다."),
 
     /* APPROVAL */
-    INVALID_DOCUMENT_TYPE(HttpStatus.NOT_FOUND, "APPROVAL001", "지원하지 않는 결재 문서 유형입니다."),
+    INVALID_DOCUMENT_TYPE(HttpStatus.BAD_REQUEST, "APPROVAL001", "지원하지 않는 결재 문서 유형입니다."),
     APPROVAL_DUPLICATED(HttpStatus.CONFLICT, "APPROVAL002", "이미 존재하는 결재입니다."),
     APPROVAL_LINE_SEQUENCE_REQUIRED(HttpStatus.BAD_REQUEST, "APPROVAL003", "결재 및 협조는 결재 순서 지정이 필수입니다."),
     APPROVAL_LINE_SEQUENCE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "APPROVAL004", "수신 및 참조는 결재 순서를 지정할 수 없습니다."),
@@ -86,6 +86,9 @@ public enum ErrorCode {
     APPROVAL_NOT_CURRENT_SEQUENCE(HttpStatus.BAD_REQUEST, "APPROVAL011", "본인의 결재 순서가 아닙니다."),
     APPROVAL_LINE_NOT_FOUND(HttpStatus.NOT_FOUND, "APPROVAL012", "결재자 정보를 찾을 수 없습니다."),
     APPROVAL_NOT_SUBMITTED(HttpStatus.BAD_REQUEST, "APPROVAL013", "결재가 상신되지 않은 문서입니다."),
+    INVALID_APPROVAL_STATUS(HttpStatus.BAD_REQUEST, "APPROVAL014", "유효하지 않는 결재 상태입니다."),
+    INVALID_APPROVER_TYPE(HttpStatus.BAD_REQUEST, "APPROVAL015", "잘못된 결재자 타입입니다. 결재 또는 협조 타입만 허용됩니다."),
+    INVALID_PROCESSED_APPROVAL_LINE_STATUS(HttpStatus.BAD_REQUEST, "APPROVAL016", "잘못된 결재선 상태입니다. 승인 또는 반려 상태만 허용됩니다."),
 
     /* DELIVERY ORDER */
     DELIVERY_ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "SHIPPING002", "납품서 정보를 찾을 수 없습니다."),

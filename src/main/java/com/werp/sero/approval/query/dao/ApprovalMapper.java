@@ -10,10 +10,6 @@ import java.util.List;
 
 @Mapper
 public interface ApprovalMapper {
-    long countByFilterDTO(final ApprovalFilterDTO filterDTO);
-
-    List<ApprovalSummaryResponseDTO> findApprovalsByFilterDTO(final ApprovalFilterDTO approvalFilterDTO);
-
     ApprovalDetailResponseDTO findApprovalByApprovalId(@Param("approvalId") final int approvalId);
 
     Integer findRefDocIdByRefDocCode(@Param("refDocType") final String refDocType,
@@ -21,4 +17,24 @@ public interface ApprovalMapper {
 
     void updateApprovalLineViewAt(@Param("viewedAt") final String viewedAt,
                                   @Param("approvalLineId") final int approvalLineId);
+
+    long countSubmittedApprovalsByFilterDTO(final ApprovalFilterDTO approvalFilterDTO);
+
+    List<ApprovalSummaryResponseDTO> findSubmittedApprovalsByFilterDTO(final ApprovalFilterDTO approvalFilterDTO);
+
+    long countArchivedApprovalsByFilterDTO(final ApprovalFilterDTO approvalFilterDTO);
+
+    List<ApprovalSummaryResponseDTO> findArchivedApprovalsByFilterDTO(final ApprovalFilterDTO approvalFilterDTO);
+
+    long countRequestedApprovalsByFilterDTO(final ApprovalFilterDTO approvalFilterDTO);
+
+    List<ApprovalSummaryResponseDTO> findRequestedApprovalsByFilterDTO(final ApprovalFilterDTO approvalFilterDTO);
+
+    long countReceivedApprovalsByFilterDTO(final ApprovalFilterDTO approvalFilterDTO);
+
+    List<ApprovalSummaryResponseDTO> findReceivedApprovalsByFilterDTO(final ApprovalFilterDTO approvalFilterDTO);
+
+    List<ApprovalSummaryResponseDTO> findReferencedApprovalsByFilterDTO(final ApprovalFilterDTO approvalFilterDTO);
+
+    long countReferencedApprovalsByFilterDTO(final ApprovalFilterDTO approvalFilterDTO);
 }

@@ -1,9 +1,6 @@
 package com.werp.sero.approval.query.service;
 
-import com.werp.sero.approval.exception.ApprovalLineAccessDeniedException;
-import com.werp.sero.approval.exception.ApprovalNotCurrentSequenceException;
-import com.werp.sero.approval.exception.ApprovalNotFoundException;
-import com.werp.sero.approval.exception.ApprovalNotSubmittedException;
+import com.werp.sero.approval.exception.*;
 import com.werp.sero.approval.query.dao.ApprovalMapper;
 import com.werp.sero.approval.query.dto.*;
 import com.werp.sero.common.util.DateTimeUtils;
@@ -20,37 +17,43 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 public class ApprovalQueryServiceImpl implements ApprovalQueryService {
-    private static final String APPROVAL_IN_PROGRESS_CODE = "AS_ING";
-    private static final String APPROVAL_LINE_REJECTED_CODE = "ALS_RJCT";
-    private static final String APPROVAL_LINE_APPROVED_CODE = "ALS_APPR";
-    private static final String APPROVAL_LINE_REVIEW_CODE = "ALS_RVW";
-    private static final String APPROVAL_TYPE_APPROVAL = "AT_APPR";
-    private static final String APPROVAL_TYPE_REVIEWER = "AT_RVW";
-    private static final String APPROVAL_TYPE_REFERENCE = "AT_REF";
-    private static final String APPROVAL_TYPE_RECIPIENT = "AT_RCPT";
+    private static final List<String> REF_DOC_TYPE = List.of("SO", "PR", "GI");
+    private static final List<String> APPROVAL_STATUS_CODES = List.of("AS_ING", "AS_APPR", "AS_RJCT");
+    private static final List<String> ALLOWED_PROCESSED_STATUSES = List.of("ALS_APPR", "ALS_RJCT");
+
+    private static final String APPROVAL_TYPE_APPROVAL_CODE = "AT_APPR";
+    private static final String APPROVAL_TYPE_REVIEWER_CODE = "AT_RVW";
+    private static final String APPROVAL_TYPE_REFERENCE_CODE = "AT_REF";
+    private static final String APPROVAL_TYPE_RECIPIENT_CODE = "AT_RCPT";
+
+    private static final List<String> ALLOWED_APPROVER_TYPES = List.of(APPROVAL_TYPE_APPROVAL_CODE, APPROVAL_TYPE_REVIEWER_CODE);
 
     private final ApprovalMapper approvalMapper;
+
 
     @Transactional(readOnly = true)
     @Override
     public ApprovalListResponseDTO getSubmittedApprovals(final Employee employee,
-                                                         final ApprovalFilterRequestDTO filterDTO,
+                                                         final SubmittedApprovalFilterRequestDTO filterDTO,
                                                          final Pageable pageable) {
+        validateApprovalStatus(filterDTO.getStatus());
+
+        validateRefDocType(filterDTO.getRefDocType());
+
         final ApprovalFilterDTO approvalFilterDTO = ApprovalFilterDTO.builder()
-                .approvalRole("drafter")
-                .approvalStatus(filterDTO.getStatus())
                 .employeeId(employee.getId())
+                .approvalStatus(filterDTO.getStatus())
                 .keyword(filterDTO.getKeyword())
                 .startDate(filterDTO.getStartDate())
                 .endDate(filterDTO.getEndDate())
-                .refType(filterDTO.getRefType())
+                .refDocType(filterDTO.getRefDocType())
                 .limit(pageable.getPageSize())
                 .offset(pageable.getOffset())
                 .build();
 
-        final long totalElements = approvalMapper.countByFilterDTO(approvalFilterDTO);
+        final long totalElements = approvalMapper.countSubmittedApprovalsByFilterDTO(approvalFilterDTO);
 
-        final List<ApprovalSummaryResponseDTO> approvals = approvalMapper.findApprovalsByFilterDTO(approvalFilterDTO);
+        final List<ApprovalSummaryResponseDTO> approvals = approvalMapper.findSubmittedApprovalsByFilterDTO(approvalFilterDTO);
 
         final int totalPages = (int) ((totalElements + pageable.getPageSize() - 1) / pageable.getPageSize());
 
@@ -66,24 +69,77 @@ public class ApprovalQueryServiceImpl implements ApprovalQueryService {
     @Transactional(readOnly = true)
     @Override
     public ApprovalListResponseDTO getArchivedApprovals(final Employee employee,
-                                                        final ApprovalFilterRequestDTO filterDTO,
+                                                        final ArchivedApprovalFilterRequestDTO filterDTO,
                                                         final Pageable pageable) {
+        validateApprovalStatus(filterDTO.getApprovalStatus());
+
+        validateApproverType(filterDTO.getApprovalType());
+
+        validateProcessedApprovalLineStatus(filterDTO.getApprovalLineStatus());
+
+        validateRefDocType(filterDTO.getRefDocType());
+
         final ApprovalFilterDTO approvalFilterDTO = ApprovalFilterDTO.builder()
-                .approvalRole("approver")
-                .approvalStatus(filterDTO.getStatus())
                 .employeeId(employee.getId())
+                .approvalStatus(filterDTO.getApprovalStatus())
                 .keyword(filterDTO.getKeyword())
-                .approvalLineStatusList(List.of(APPROVAL_LINE_APPROVED_CODE, APPROVAL_LINE_REJECTED_CODE))
+                .approvalTypeList(
+                        (filterDTO.getApprovalType() != null && !filterDTO.getApprovalType().isEmpty())
+                                ? List.of(filterDTO.getApprovalType())
+                                : null)
+                .approvalLineStatusList(
+                        (filterDTO.getApprovalLineStatus() != null && !filterDTO.getApprovalLineStatus().isEmpty())
+                                ? List.of(filterDTO.getApprovalLineStatus())
+                                : null)
                 .startDate(filterDTO.getStartDate())
                 .endDate(filterDTO.getEndDate())
-                .refType(filterDTO.getRefType())
+                .refDocType(filterDTO.getRefDocType())
                 .limit(pageable.getPageSize())
                 .offset(pageable.getOffset())
                 .build();
 
-        final long totalElements = approvalMapper.countByFilterDTO(approvalFilterDTO);
+        final long totalElements = approvalMapper.countArchivedApprovalsByFilterDTO(approvalFilterDTO);
 
-        final List<ApprovalSummaryResponseDTO> approvals = approvalMapper.findApprovalsByFilterDTO(approvalFilterDTO);
+        final List<ApprovalSummaryResponseDTO> approvals = approvalMapper.findArchivedApprovalsByFilterDTO(approvalFilterDTO);
+
+        final int totalPages = (int) ((totalElements + pageable.getPageSize() - 1) / pageable.getPageSize());
+
+        return ApprovalListResponseDTO.builder()
+                .approvals(approvals)
+                .totalElements(totalElements)
+                .size(pageable.getPageSize())
+                .number(pageable.getPageNumber())
+                .totalPages(totalPages)
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public ApprovalListResponseDTO getRequestedApprovals(final Employee employee,
+                                                         final RequestedApprovalFilterRequestDTO filterDTO,
+                                                         final Pageable pageable) {
+        validateApproverType(filterDTO.getApprovalType());
+
+        validateRefDocType(filterDTO.getRefDocType());
+
+        final ApprovalFilterDTO approvalFilterDTO = ApprovalFilterDTO.builder()
+                .employeeId(employee.getId())
+                .keyword(filterDTO.getKeyword())
+                .startDate(filterDTO.getStartDate())
+                .endDate(filterDTO.getEndDate())
+                .refDocType(filterDTO.getRefDocType())
+                .isRead(filterDTO.getIsRead())
+                .approvalTypeList(
+                        (filterDTO.getApprovalType() != null && !filterDTO.getApprovalType().isEmpty())
+                                ? List.of(filterDTO.getApprovalType())
+                                : null)
+                .limit(pageable.getPageSize())
+                .offset(pageable.getOffset())
+                .build();
+
+        final long totalElements = approvalMapper.countRequestedApprovalsByFilterDTO(approvalFilterDTO);
+
+        final List<ApprovalSummaryResponseDTO> approvals = approvalMapper.findRequestedApprovalsByFilterDTO(approvalFilterDTO);
 
         final int totalPages = (int) ((totalElements + pageable.getPageSize() - 1) / pageable.getPageSize());
 
@@ -99,25 +155,24 @@ public class ApprovalQueryServiceImpl implements ApprovalQueryService {
     @Transactional(readOnly = true)
     @Override
     public ApprovalListResponseDTO getReceivedApprovals(final Employee employee,
-                                                        final ApprovalFilterRequestDTO filterDTO,
+                                                        final ReceivedApprovalFilterRequestDTO filterDTO,
                                                         final Pageable pageable) {
+        validateRefDocType(filterDTO.getRefDocType());
+
         final ApprovalFilterDTO approvalFilterDTO = ApprovalFilterDTO.builder()
-                .approvalRole("approver")
                 .employeeId(employee.getId())
                 .keyword(filterDTO.getKeyword())
                 .startDate(filterDTO.getStartDate())
                 .endDate(filterDTO.getEndDate())
-                .refType(filterDTO.getRefType())
+                .refDocType(filterDTO.getRefDocType())
                 .isRead(filterDTO.getIsRead())
-                .approvalStatus(APPROVAL_IN_PROGRESS_CODE)
-                .approvalLineStatusList(List.of(APPROVAL_LINE_REVIEW_CODE))
                 .limit(pageable.getPageSize())
                 .offset(pageable.getOffset())
                 .build();
 
-        final long totalElements = approvalMapper.countByFilterDTO(approvalFilterDTO);
+        final long totalElements = approvalMapper.countReceivedApprovalsByFilterDTO(approvalFilterDTO);
 
-        final List<ApprovalSummaryResponseDTO> approvals = approvalMapper.findApprovalsByFilterDTO(approvalFilterDTO);
+        final List<ApprovalSummaryResponseDTO> approvals = approvalMapper.findReceivedApprovalsByFilterDTO(approvalFilterDTO);
 
         final int totalPages = (int) ((totalElements + pageable.getPageSize() - 1) / pageable.getPageSize());
 
@@ -133,25 +188,27 @@ public class ApprovalQueryServiceImpl implements ApprovalQueryService {
     @Transactional(readOnly = true)
     @Override
     public ApprovalListResponseDTO getReferencedApprovals(final Employee employee,
-                                                          final ApprovalFilterRequestDTO filterDTO,
+                                                          final ReferencedApprovalFilterRequestDTO filterDTO,
                                                           final Pageable pageable) {
+        validateApprovalStatus(filterDTO.getApprovalStatus());
+
+        validateRefDocType(filterDTO.getRefDocType());
+
         final ApprovalFilterDTO approvalFilterDTO = ApprovalFilterDTO.builder()
-                .approvalRole(("recipient ".equals(filterDTO.getViewType()) ? "receiver" : "referrer"))
                 .employeeId(employee.getId())
                 .keyword(filterDTO.getKeyword())
                 .startDate(filterDTO.getStartDate())
                 .endDate(filterDTO.getEndDate())
-                .refType(filterDTO.getRefType())
+                .refDocType(filterDTO.getRefDocType())
                 .isRead(filterDTO.getIsRead())
-                .approvalStatus(("recipient".equals(filterDTO.getViewType()) ? "AS_APPR" : filterDTO.getStatus()))
-                .approvalLineType(("recipient".equals(filterDTO.getViewType()) ? APPROVAL_TYPE_RECIPIENT : APPROVAL_TYPE_REFERENCE))
+                .approvalStatus(filterDTO.getApprovalStatus())
                 .limit(pageable.getPageSize())
                 .offset(pageable.getOffset())
                 .build();
 
-        final long totalElements = approvalMapper.countByFilterDTO(approvalFilterDTO);
+        final long totalElements = approvalMapper.countReferencedApprovalsByFilterDTO(approvalFilterDTO);
 
-        final List<ApprovalSummaryResponseDTO> approvals = approvalMapper.findApprovalsByFilterDTO(approvalFilterDTO);
+        final List<ApprovalSummaryResponseDTO> approvals = approvalMapper.findReferencedApprovalsByFilterDTO(approvalFilterDTO);
 
         final int totalPages = (int) ((totalElements + pageable.getPageSize() - 1) / pageable.getPageSize());
 
@@ -174,17 +231,17 @@ public class ApprovalQueryServiceImpl implements ApprovalQueryService {
         final ApprovalLineInfoResponseDTO myApprovalLine = getMyApprovalLine(employee, responseDTO);
 
         final List<ApprovalLineInfoResponseDTO> approvalLines = responseDTO.getTotalApprovalLines().stream()
-                .filter(line -> APPROVAL_TYPE_APPROVAL.equals(line.getLineType())
-                        || APPROVAL_TYPE_REVIEWER.equals(line.getLineType()))
+                .filter(line -> APPROVAL_TYPE_APPROVAL_CODE.equals(line.getLineType())
+                        || APPROVAL_TYPE_REVIEWER_CODE.equals(line.getLineType()))
                 .sorted(Comparator.comparingInt(ApprovalLineInfoResponseDTO::getSequence))
                 .collect(Collectors.toList());
 
         final List<ApprovalLineInfoResponseDTO> referenceLines = responseDTO.getTotalApprovalLines().stream()
-                .filter(line -> APPROVAL_TYPE_REFERENCE.equals(line.getLineType()))
+                .filter(line -> APPROVAL_TYPE_REFERENCE_CODE.equals(line.getLineType()))
                 .collect(Collectors.toList());
 
         final List<ApprovalLineInfoResponseDTO> recipientLines = responseDTO.getTotalApprovalLines().stream()
-                .filter(line -> APPROVAL_TYPE_RECIPIENT.equals(line.getLineType()))
+                .filter(line -> APPROVAL_TYPE_RECIPIENT_CODE.equals(line.getLineType()))
                 .collect(Collectors.toList());
 
         responseDTO.setApprovalLines(approvalLines);
@@ -232,17 +289,41 @@ public class ApprovalQueryServiceImpl implements ApprovalQueryService {
                 .findFirst()
                 .orElseThrow(ApprovalLineAccessDeniedException::new);
 
-        if ((APPROVAL_TYPE_APPROVAL.equals(approvalLineInfoResponseDTO.getLineType())
-                || APPROVAL_TYPE_REVIEWER.equals(approvalLineInfoResponseDTO.getLineType()))
+        if ((APPROVAL_TYPE_APPROVAL_CODE.equals(approvalLineInfoResponseDTO.getLineType())
+                || APPROVAL_TYPE_REVIEWER_CODE.equals(approvalLineInfoResponseDTO.getLineType()))
                 && "ALS_PEND".equals(approvalLineInfoResponseDTO.getStatus())) {
             throw new ApprovalNotCurrentSequenceException();
         }
 
-        if (APPROVAL_TYPE_RECIPIENT.equals(approvalLineInfoResponseDTO.getLineType()) &&
+        if (APPROVAL_TYPE_RECIPIENT_CODE.equals(approvalLineInfoResponseDTO.getLineType()) &&
                 !"AS_APPR".equals(approvalLineInfoResponseDTO.getStatus())) {
             throw new ApprovalNotFoundException();
         }
 
         return approvalLineInfoResponseDTO;
+    }
+
+    private void validateRefDocType(final String refDocType) {
+        if (refDocType != null && !REF_DOC_TYPE.contains(refDocType)) {
+            throw new InvalidDocumentTypeException();
+        }
+    }
+
+    private void validateApprovalStatus(final String status) {
+        if (status != null && !APPROVAL_STATUS_CODES.contains(status)) {
+            throw new InvalidApprovalStatusException();
+        }
+    }
+
+    private void validateApproverType(final String approvalType) {
+        if (approvalType != null && !ALLOWED_APPROVER_TYPES.contains(approvalType)) {
+            throw new InvalidApproverTypeException();
+        }
+    }
+
+    private void validateProcessedApprovalLineStatus(final String lineStatus) {
+        if (lineStatus != null && !ALLOWED_PROCESSED_STATUSES.contains(lineStatus)) {
+            throw new InvalidProcessedApprovalLineStatusException();
+        }
     }
 }
