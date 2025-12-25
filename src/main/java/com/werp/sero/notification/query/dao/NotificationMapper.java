@@ -8,6 +8,8 @@ import java.util.List;
 
 @Mapper
 public interface NotificationMapper {
-    List<NotificationResponse> findByReceiverId(@Param("receiverId") int receiverId);
+    List<NotificationResponse> findByReceiverId(
+        
+    @Param("receiverId") int receiverId);
     int countUnreadByReceiverId(@Param("receiverId") int receiverId);
 }
