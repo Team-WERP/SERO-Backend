@@ -66,7 +66,9 @@ public enum ErrorCode {
     PR_ITEM_NOT_IN_SALES_ORDER(HttpStatus.BAD_REQUEST, "PRODUCTION004", "해당 주문에 속하지 않은 품목입니다."),
     PR_REQUEST_EMPTY(HttpStatus.BAD_REQUEST, "PRODUCTION005", "생산요청 수량이 없어 요청할 수 없습니다."),
     PR_NOT_FOUND(HttpStatus.NOT_FOUND, "PRODUCTION006", "생산요청을 찾을 수 없습니다."),
-
+    PR_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "PRODUCTION007", "생산요청 품목을 찾을 수 없습니다."),
+    PR_LINE_NOT_FOUND(HttpStatus.NOT_FOUND, "PRODUCTION008", "생산 라인을 찾을 수 없습니다."),
+    
     /* GOODS ISSUE */
     GOODS_ISSUE_NOT_FOUND(HttpStatus.NOT_FOUND, "SHIPPING001", "출고지시 정보를 찾을 수 없습니다."),
     GOODS_ISSUE_ALREADY_EXISTS(HttpStatus.CONFLICT, "SHIPPING003", "해당 납품서로 이미 출고지시가 생성되었습니다."),
@@ -97,8 +99,13 @@ public enum ErrorCode {
     UNAUTHORIZED_DELIVERY_UPDATE(HttpStatus.FORBIDDEN, "DELIVERY002", "배송 상태를 변경할 권한이 없습니다."),
     INVALID_DELIVERY_STATUS_TRANSITION(HttpStatus.BAD_REQUEST, "DELIVERY003", "잘못된 배송 상태 전환입니다."),
 
-    PR_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "PRODUCTION007", "생산요청 품목을 찾을 수 없습니다"),
-    PR_LINE_NOT_FOUND(HttpStatus.NOT_FOUND, "PRODUCTION008", "생산 라인을 찾을 수 없습니다"),
+    /* FILE */
+    FILE_NOT_FOUND(HttpStatus.BAD_REQUEST, "FILE001", "파일이 존재하지 않습니다."),
+    FILE_INVALID_EXTENSION(HttpStatus.BAD_REQUEST, "FILE002", "허용되지 않은 파일 형식입니다."),
+    S3_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "FILE003", "S3 파일 업로드에 실패했습니다."),
+    S3_URL_INVALID(HttpStatus.BAD_REQUEST, "FILE005", "유효하지 않은 S3 URL입니다."),
+
+
 
     /* PRODUCTION PLAN */
     PP_ALREADY_EXISTS(HttpStatus.CONFLICT, "PRODUCTION101", "이미 해당 생산요청 품목에 대한 생산계획이 존재합니다."),
