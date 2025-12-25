@@ -45,6 +45,9 @@ public class GIDetailResponseDTO {
     @Schema(description = "수주 번호", example = "SO-20251201-001")
     private String soCode;
 
+    @Schema(description = "납품서 번호", example = "DO-20251201-001")
+    private String doCode;
+
     @Schema(description = "고객사명", example = "현대모비스")
     private String clientName;
 
@@ -70,8 +73,55 @@ public class GIDetailResponseDTO {
     @Schema(description = "기안자명", example = "김철수")
     private String drafterName;
 
+    @Schema(description = "기안자 부서", example = "물류재고관리부")
+    private String drafterDepartment;
+
+    @Schema(description = "기안자 직책", example = "과장")
+    private String drafterPosition;
+
+    @Schema(description = "기안자 직급", example = "사원")
+    private String drafterRank;
+
     @Schema(description = "출고 담당자명", example = "이영희")
     private String managerName;
+
+    @Schema(description = "결재선 목록")
+    private List<GIApprovalLineDTO> approvalLines;
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    @Schema(description = "출고지시 결재선 정보")
+    public static class GIApprovalLineDTO {
+
+        @Schema(description = "결재자명", example = "김철수")
+        private String approverName;
+
+        @Schema(description = "결재자 부서", example = "물류재고관리부")
+        private String approverDepartment;
+
+        @Schema(description = "결재자 직책", example = "과장")
+        private String approverPosition;
+
+        @Schema(description = "결재자 직급", example = "사원")
+        private String approverRank;
+
+        @Schema(description = "결재 순서", example = "1")
+        private Integer sequence;
+
+        @Schema(description = "결재 상태", example = "ALS_APPR")
+        private String status;
+
+        @Schema(description = "결재 구분", example = "AT_APPR")
+        private String lineType;
+
+        @Schema(description = "결재 처리일시", example = "2025-12-07 15:30")
+        private String processedAt;
+
+        @Schema(description = "비고", example = "승인합니다")
+        private String note;
+    }
 
     @Getter
     @NoArgsConstructor
