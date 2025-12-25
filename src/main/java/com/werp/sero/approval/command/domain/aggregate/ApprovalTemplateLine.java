@@ -14,8 +14,7 @@ public class ApprovalTemplateLine {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(nullable = false)
-    private int sequence;
+    private Integer sequence;
 
     @Column(name = "line_type", nullable = false)
     private String lineType;
@@ -29,4 +28,13 @@ public class ApprovalTemplateLine {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "approver_id", nullable = false)
     private Employee employee;
+
+    public ApprovalTemplateLine(final Integer sequence, final String lineType, final String note,
+                                final ApprovalTemplate approvalTemplate, Employee employee) {
+        this.sequence = sequence;
+        this.lineType = lineType;
+        this.note = note;
+        this.approvalTemplate = approvalTemplate;
+        this.employee = employee;
+    }
 }
