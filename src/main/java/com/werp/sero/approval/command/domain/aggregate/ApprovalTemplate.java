@@ -28,4 +28,12 @@ public class ApprovalTemplate {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "creator_id", nullable = false)
     private Employee employee;
+
+    public ApprovalTemplate(final String name, final String description, final Employee employee,
+                            final String createdAt) {
+        this.name = name;
+        this.description = description;
+        this.employee = employee;
+        this.createdAt = createdAt;
+    }
 }

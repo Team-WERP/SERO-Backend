@@ -15,4 +15,6 @@ public interface DOMapper {
     List<DOListResponseDTO> findByStatusAndManager(@Param("status") String status, @Param("managerId") int managerId);
 
     List<String> selectDeliveryUrlsBySoId(final int orderId);
+
+    List<DOListResponseDTO> selectDOListByOrderId(final int orderId);
 }

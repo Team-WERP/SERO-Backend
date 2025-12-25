@@ -58,6 +58,7 @@ public enum ErrorCode {
 
     /* SALES ORDER ITEM */
     SALES_ORDER_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER004", "주문 품목 정보를 찾을 수 없습니다."),
+    SALES_ORDER_ITEM_HISTORY_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER005", "주문 품목 수량 변동 이력 정보를 찾을 수 없습니다."),
 
     /* PRODUCTION */
     PR_DRAFT_NOT_FOUND(HttpStatus.NOT_FOUND, "PRODUCTION001", "임시 저장된 생산요청을 찾을 수 없습니다."),
@@ -66,7 +67,9 @@ public enum ErrorCode {
     PR_ITEM_NOT_IN_SALES_ORDER(HttpStatus.BAD_REQUEST, "PRODUCTION004", "해당 주문에 속하지 않은 품목입니다."),
     PR_REQUEST_EMPTY(HttpStatus.BAD_REQUEST, "PRODUCTION005", "생산요청 수량이 없어 요청할 수 없습니다."),
     PR_NOT_FOUND(HttpStatus.NOT_FOUND, "PRODUCTION006", "생산요청을 찾을 수 없습니다."),
-
+    PR_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "PRODUCTION007", "생산요청 품목을 찾을 수 없습니다."),
+    PR_LINE_NOT_FOUND(HttpStatus.NOT_FOUND, "PRODUCTION008", "생산 라인을 찾을 수 없습니다."),
+    
     /* GOODS ISSUE */
     GOODS_ISSUE_NOT_FOUND(HttpStatus.NOT_FOUND, "SHIPPING001", "출고지시 정보를 찾을 수 없습니다."),
     GOODS_ISSUE_ALREADY_EXISTS(HttpStatus.CONFLICT, "SHIPPING003", "해당 납품서로 이미 출고지시가 생성되었습니다."),
@@ -89,19 +92,22 @@ public enum ErrorCode {
     INVALID_APPROVAL_STATUS(HttpStatus.BAD_REQUEST, "APPROVAL014", "유효하지 않는 결재 상태입니다."),
     INVALID_APPROVER_TYPE(HttpStatus.BAD_REQUEST, "APPROVAL015", "잘못된 결재자 타입입니다. 결재 또는 협조 타입만 허용됩니다."),
     INVALID_PROCESSED_APPROVAL_LINE_STATUS(HttpStatus.BAD_REQUEST, "APPROVAL016", "잘못된 결재선 상태입니다. 승인 또는 반려 상태만 허용됩니다."),
+    APPROVAL_TEMPLATE_NAME_DUPLICATED(HttpStatus.CONFLICT, "APPROVAL017", "이미 존재하는 결재선 템플릿 이름입니다."),
+    APPROVAL_TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND, "APPROVAL018", "결재선 템플릿 정보를 찾을 수 없습니다."),
 
     /* DELIVERY ORDER */
     DELIVERY_ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "SHIPPING002", "납품서 정보를 찾을 수 없습니다."),
-
-
 
     /* DELIVERY */
     DELIVERY_NOT_FOUND(HttpStatus.NOT_FOUND, "DELIVERY001", "배송 정보를 찾을 수 없습니다."),
     UNAUTHORIZED_DELIVERY_UPDATE(HttpStatus.FORBIDDEN, "DELIVERY002", "배송 상태를 변경할 권한이 없습니다."),
     INVALID_DELIVERY_STATUS_TRANSITION(HttpStatus.BAD_REQUEST, "DELIVERY003", "잘못된 배송 상태 전환입니다."),
 
-    PR_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "PRODUCTION007", "생산요청 품목을 찾을 수 없습니다"),
-    PR_LINE_NOT_FOUND(HttpStatus.NOT_FOUND, "PRODUCTION008", "생산 라인을 찾을 수 없습니다"),
+    /* FILE */
+    FILE_NOT_FOUND(HttpStatus.BAD_REQUEST, "FILE001", "파일이 존재하지 않습니다."),
+    FILE_INVALID_EXTENSION(HttpStatus.BAD_REQUEST, "FILE002", "허용되지 않은 파일 형식입니다."),
+    S3_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "FILE003", "S3 파일 업로드에 실패했습니다."),
+    S3_URL_INVALID(HttpStatus.BAD_REQUEST, "FILE005", "유효하지 않은 S3 URL입니다."),
 
     /* PRODUCTION PLAN */
     PP_ALREADY_EXISTS(HttpStatus.CONFLICT, "PRODUCTION101", "이미 해당 생산요청 품목에 대한 생산계획이 존재합니다."),

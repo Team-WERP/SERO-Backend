@@ -2,6 +2,8 @@ package com.werp.sero.production.query.service;
 
 import com.werp.sero.common.error.ErrorCode;
 import com.werp.sero.common.error.exception.BusinessException;
+import com.werp.sero.order.command.domain.repository.SORepository;
+import com.werp.sero.order.exception.SalesOrderNotFoundException;
 import com.werp.sero.production.exception.ProductionRequestNotFoundException;
 import com.werp.sero.production.query.dao.PRQueryMapper;
 import com.werp.sero.production.query.dto.*;
@@ -16,6 +18,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class PRQueryServiceImpl implements PRQueryService{
     private final PRQueryMapper prQueryMapper;
+    private final SORepository soRepository;
 
     @Override
     public List<PRDraftListResponseDTO> getDraftsByDrafter(int drafterId, Integer soId, String soCode) {
@@ -61,5 +64,14 @@ public class PRQueryServiceImpl implements PRQueryService{
                 pr.getStatus(),
                 items
         );
+    }
+
+    @Override
+    public List<PRListResponseDTO> getListByOrderId(final int orderId) {
+        soRepository.findById(orderId).orElseThrow(SalesOrderNotFoundException::new);
+
+        List<PRListResponseDTO> prList = prQueryMapper.selectPRListByOrderId(orderId);
+
+        return prList;
     }
 }
