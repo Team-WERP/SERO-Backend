@@ -51,6 +51,7 @@ public class Notification {
     private String redirectUrl; // 이동할 URL
 
     @Column(name = "is_read", nullable = false)
+    @Builder.Default
     private boolean isRead = false; // 읽음 여부 (기본값 false)
 
     @Column(name = "created_at", nullable = false)
