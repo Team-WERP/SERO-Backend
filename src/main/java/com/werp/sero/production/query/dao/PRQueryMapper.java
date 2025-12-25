@@ -30,4 +30,6 @@ public interface PRQueryMapper {
     List<PRPlanItemResponseDTO> selectPRPlanItems(
             @Param("prId") int prId
     );
+
+    List<PRListResponseDTO> selectPRListByOrderId( @Param("orderId") final int orderId);
 }

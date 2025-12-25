@@ -14,4 +14,6 @@ public interface PRQueryService {
     PRDetailResponseDTO getDetail(int prId);
 
     PRPlanItemListResponseDTO getPlanItems(int prId);
+
+    List<PRListResponseDTO> getListByOrderId(final int orderId);
 }

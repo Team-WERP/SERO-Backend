@@ -12,4 +12,5 @@ public interface GIListMapper {
 
     List<GIListResponseDTO> selectAllGoodsIssues(Map<String, Object> params);
 
+    List<GIListResponseDTO> selectGIListByOrderId(final int orderId);
 }
