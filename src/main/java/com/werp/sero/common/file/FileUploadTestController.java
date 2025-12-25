@@ -51,16 +51,16 @@ public class FileUploadTestController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "PDF 파일 업로드 테스트 (단일/다중)", description = "PDF 파일(들)을 S3에 업로드하고 URL을 반환.")
-    @PostMapping("/upload/pdf")
-    public ResponseEntity<Map<String, Object>> uploadPdf(
+    @Operation(summary = "문서 파일 업로드 테스트 (단일/다중)", description = "문서 파일(들)을 S3에 업로드하고 URL을 반환. 지원 형식: PDF, 한글(HWP), MS Word(doc/docx), MS Excel(xls/xlsx)")
+    @PostMapping("/upload/document")
+    public ResponseEntity<Map<String, Object>> uploadDocument(
             @RequestParam("files") List<MultipartFile> files) {
 
         List<Map<String, String>> uploadedFiles = new ArrayList<>();
 
         for (MultipartFile file : files) {
-            // PDF 파일 검증
-            fileValidator.validatePdf(file);
+            // 문서 파일 검증
+            fileValidator.validateDocument(file);
 
             // S3에 업로드
             String s3Url = s3Uploader.upload("sero/documents/", file);
@@ -79,5 +79,13 @@ public class FileUploadTestController {
         response.put("message", uploadedFiles.size() + "개 파일 업로드 성공!");
 
         return ResponseEntity.ok(response);
+    }
+
+    @Deprecated
+    @Operation(summary = "[Deprecated] PDF 파일 업로드 테스트", description = "deprecated - /upload/document 사용 권장")
+    @PostMapping("/upload/pdf")
+    public ResponseEntity<Map<String, Object>> uploadPdf(
+            @RequestParam("files") List<MultipartFile> files) {
+        return uploadDocument(files);
     }
 }

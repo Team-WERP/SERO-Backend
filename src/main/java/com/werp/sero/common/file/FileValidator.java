@@ -13,26 +13,47 @@ public class FileValidator {
     private static final List<String> ALLOWED_IMAGE_MIME_TYPES =
             Arrays.asList("image/gif", "image/jpeg", "image/png", "image/webp");
 
-    private static final List<String> ALLOWED_PDF_MIME_TYPES =
-            List.of("application/pdf");
+    private static final List<String> ALLOWED_DOCUMENT_MIME_TYPES =
+            Arrays.asList(
+                    "application/pdf",
+                    // 한글 (HWP)
+                    "application/x-hwp", "application/haansofthwp",
+                    // MS Word
+                    "application/msword", // .doc
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .docx
+                    // MS Excel
+                    "application/vnd.ms-excel", // .xls
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" // .xlsx
+            );
 
     private static final List<String> ALLOWED_ALL_MIME_TYPES;
 
     static {
         ALLOWED_ALL_MIME_TYPES = new java.util.ArrayList<>(ALLOWED_IMAGE_MIME_TYPES);
-        ALLOWED_ALL_MIME_TYPES.addAll(ALLOWED_PDF_MIME_TYPES);
+        ALLOWED_ALL_MIME_TYPES.addAll(ALLOWED_DOCUMENT_MIME_TYPES);
     }
 
     public void validateImage(final MultipartFile file) {
         validateFile(file, ALLOWED_IMAGE_MIME_TYPES);
     }
 
-    public void validatePdf(final MultipartFile file) {
-        validateFile(file, ALLOWED_PDF_MIME_TYPES);
+    public void validateDocument(final MultipartFile file) {
+        validateFile(file, ALLOWED_DOCUMENT_MIME_TYPES);
     }
 
-    public void validateImageOrPdf(final MultipartFile file) {
+    public void validateImageOrDocument(final MultipartFile file) {
         validateFile(file, ALLOWED_ALL_MIME_TYPES);
+    }
+
+    // deprecated - 하위 호환성 유지
+    @Deprecated
+    public void validatePdf(final MultipartFile file) {
+        validateDocument(file);
+    }
+
+    @Deprecated
+    public void validateImageOrPdf(final MultipartFile file) {
+        validateImageOrDocument(file);
     }
 
     private void validateFile(final MultipartFile file, final List<String> allowedMimeTypes) {
