@@ -27,6 +27,7 @@ public class PRDetailResponseDTO {
         private String requestedAt;
         private String dueAt;
         private String drafterName;
+        private Integer managerId;
         private String managerName;
         private int totalQuantity;
     }

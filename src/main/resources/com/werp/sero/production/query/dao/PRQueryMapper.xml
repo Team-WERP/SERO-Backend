@@ -252,6 +252,7 @@
             <result property="requestedAt" column="requested_at"/>
             <result property="dueAt" column="due_at"/>
             <result property="drafterName" column="drafter_name"/>
+            <result property="managerId" column="manager_id"/>
             <result property="managerName" column="manager_name"/>
             <result property="totalQuantity" column="total_quantity"/>
         </association>
@@ -288,6 +289,7 @@
         A.due_at         AS due_at,
         A.total_quantity AS total_quantity,
 
+        A.manager_id     AS manager_id,
         C.name           AS drafter_name,
         D.name           AS manager_name,
 
