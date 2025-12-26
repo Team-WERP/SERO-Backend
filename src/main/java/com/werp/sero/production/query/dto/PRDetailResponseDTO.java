@@ -23,6 +23,7 @@ public class PRDetailResponseDTO {
         private String prCode;
         private String soCode;
         private String status;
+        private String productionProgress;
         private String requestedAt;
         private String dueAt;
         private String drafterName;
@@ -39,6 +40,7 @@ public class PRDetailResponseDTO {
         private String itemCode;
         private String itemName;
         private String spec;
+        private String unit;
         private int requestedQuantity;
         private String status;
     }

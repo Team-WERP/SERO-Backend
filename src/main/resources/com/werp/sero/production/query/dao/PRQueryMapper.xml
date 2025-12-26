@@ -248,6 +248,7 @@
             <result property="prCode" column="pr_code"/>
             <result property="soCode" column="so_code"/>
             <result property="status" column="pr_status"/>
+            <result property="productionProgress" column="production_progress"/>
             <result property="requestedAt" column="requested_at"/>
             <result property="dueAt" column="due_at"/>
             <result property="drafterName" column="drafter_name"/>
@@ -263,6 +264,7 @@
             <result property="itemCode" column="item_code"/>
             <result property="itemName" column="item_name"/>
             <result property="spec" column="spec"/>
+            <result property="unit" column="unit"/>
 
             <result property="requestedQuantity" column="requested_quantity"/>
             <result property="status" column="pr_item_status"/>
@@ -289,6 +291,8 @@
         C.name           AS drafter_name,
         D.name           AS manager_name,
 
+        G.production_progress AS production_progress,
+
         E.id             AS pr_item_id,
         E.so_item_id     AS so_item_id,
         E.quantity       AS requested_quantity,
@@ -296,7 +300,8 @@
 
         F.item_code      AS item_code,
         F.item_name      AS item_name,
-        F.spec           AS spec
+        F.spec           AS spec,
+        F.unit           AS unit
 
         FROM production_request A
         JOIN sales_order B
@@ -310,6 +315,21 @@
         ON E.pr_id = A.id
         JOIN sales_order_item F
         ON F.id = E.so_item_id
+
+        LEFT JOIN (
+        SELECT
+        pr_id,
+        CASE
+        WHEN SUM(status = 'PIS_PRODUCING') > 0 THEN 'PRODUCING'
+        WHEN SUM(status = 'PIS_PLANNED')   > 0 THEN 'PLANNED'
+        WHEN SUM(status = 'PIS_TARGET')    > 0 THEN 'PLANNING'
+        WHEN COUNT(*) = SUM(status = 'PIS_DONE') THEN 'COMPLETED'
+        ELSE 'NOT_STARTED'
+        END AS production_progress
+        FROM production_request_item
+        GROUP BY pr_id
+        ) G
+        ON G.pr_id = A.id
 
         WHERE A.id = #{prId}
         AND A.status NOT IN ('PR_TMP')
