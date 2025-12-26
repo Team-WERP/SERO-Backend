@@ -1,8 +1,6 @@
 package com.werp.sero.approval.query.dao;
 
-import com.werp.sero.approval.query.dto.ApprovalDetailResponseDTO;
-import com.werp.sero.approval.query.dto.ApprovalFilterDTO;
-import com.werp.sero.approval.query.dto.ApprovalSummaryResponseDTO;
+import com.werp.sero.approval.query.dto.*;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -37,4 +35,8 @@ public interface ApprovalMapper {
     List<ApprovalSummaryResponseDTO> findReferencedApprovalsByFilterDTO(final ApprovalFilterDTO approvalFilterDTO);
 
     long countReferencedApprovalsByFilterDTO(final ApprovalFilterDTO approvalFilterDTO);
+
+    List<ApprovalLineInfoResponseDTO> findApprovalLineByApprovalCode(@Param("approvalCode") final String approvalCode);
+
+    ApprovalLineSummaryInfoResponseDTO findApprovalByApprovalCode(@Param("approvalCode") final String approvalCode);
 }

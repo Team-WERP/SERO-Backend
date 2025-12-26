@@ -254,6 +254,24 @@ public class ApprovalQueryServiceImpl implements ApprovalQueryService {
         return responseDTO;
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public ApprovalLineSummaryInfoResponseDTO getApprovalSummaryInfo(final String approvalCode) {
+        final ApprovalLineSummaryInfoResponseDTO responseDTO =
+                approvalMapper.findApprovalByApprovalCode(approvalCode);
+
+        if (responseDTO == null) {
+            throw new ApprovalNotFoundException();
+        }
+
+        final List<ApprovalLineInfoResponseDTO> approvers =
+                approvalMapper.findApprovalLineByApprovalCode(approvalCode);
+
+        responseDTO.setApprovers(approvers);
+
+        return responseDTO;
+    }
+
     private void updateApprovalLineViewedAt(final ApprovalLineInfoResponseDTO myApprovalLine) {
         if (myApprovalLine.getViewedAt() == null) {
             final String now = DateTimeUtils.nowDateTime();

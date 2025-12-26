@@ -67,4 +67,10 @@ public class ApprovalQueryController {
                                                                      @PathVariable("approvalId") final int approvalId) {
         return ResponseEntity.ok(approvalQueryService.getApprovalInfo(employee, approvalId));
     }
+
+    @Operation(summary = "결재에 대한 결재선 요약 조회")
+    @GetMapping("/{approvalCode}/summary")
+    public ResponseEntity<ApprovalLineSummaryInfoResponseDTO> getApprovalSummaryInfo(@PathVariable("approvalCode") final String approvalCode) {
+        return ResponseEntity.ok(approvalQueryService.getApprovalSummaryInfo(approvalCode));
+    }
 }

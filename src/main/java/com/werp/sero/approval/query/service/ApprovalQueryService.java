@@ -26,4 +26,6 @@ public interface ApprovalQueryService {
                                                   final Pageable pageable);
 
     ApprovalDetailResponseDTO getApprovalInfo(final Employee employee, final int approvalId);
+
+    ApprovalLineSummaryInfoResponseDTO getApprovalSummaryInfo(final String approvalCode);
 }

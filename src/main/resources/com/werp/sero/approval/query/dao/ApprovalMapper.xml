@@ -407,4 +407,53 @@
                A.viewed_at = #{viewedAt}
          WHERE A.id = #{approvalLineId}
     </update>
+
+    <select id="findApprovalLineByApprovalCode" resultType="com.werp.sero.approval.query.dto.ApprovalLineInfoResponseDTO">
+        SELECT
+               B.id AS approvalLineId
+             , C.id AS approverId
+             , C.name AS approverName
+             , D.dept_name AS approverDepartment
+             , C.position_code AS approverPositionCode
+             , C.rank_code AS approverRankCode
+             , B.sequence AS sequence
+             , B.status AS status
+             , B.line_type AS lineType
+             , B.note AS note
+             , B.viewed_at AS viewedAt
+             , B.processed_at AS processedAt
+          FROM approval A
+          JOIN approval_line B
+            ON A.id = B.approval_id
+          JOIN employee C
+            ON B.approver_id = C.id
+          LEFT JOIN department D
+            ON C.dept_id = D.id
+        WHERE A.approval_code = #{approvalCode}
+          AND B.line_type IN ('AT_APPR', 'AT_RVW')
+        ORDER BY B.sequence;
+    </select>
+
+    <select id="findApprovalByApprovalCode"
+            resultType="com.werp.sero.approval.query.dto.ApprovalLineSummaryInfoResponseDTO">
+        SELECT
+               A.id AS approvalId
+             , A.title AS title
+             , A.status AS approvalStatus
+             , A.completed_at AS completedAt
+             , A.total_line AS totalLine
+             , A.drafted_at AS draftedAt
+             , B.id AS drafterId
+             , B.name AS drafterName
+             , C.dept_name AS drafterDepartment
+             , B.position_code AS drafterPositionCode
+             , B.rank_code AS drafterRankCode
+             , B.position_code AS approverPositionCode
+          FROM approval A
+          JOIN employee B
+            ON A.drafter_id = B.id
+          LEFT JOIN department C
+            ON B.dept_id = C.id
+        WHERE A.approval_code = #{approvalCode};
+    </select>
 </mapper>
