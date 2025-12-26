@@ -30,6 +30,9 @@ public class ApprovalSummaryResponseDTO {
     @Schema(description = "현재 검토 중인 결재자 이름")
     private String currentApproverName;
 
+    @Schema(description = "결재 반려 처리한 결재자 이름")
+    private String rejecterName;
+
     @Schema(description = "참조 문서 타입")
     private String refDocType;
 

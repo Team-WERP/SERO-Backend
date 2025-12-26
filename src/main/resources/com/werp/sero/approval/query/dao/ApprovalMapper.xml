@@ -59,6 +59,13 @@
            FROM approval_line AA
            JOIN employee BB ON AA.approver_id = BB.id
           WHERE AA.approval_id = A.id
+            AND AA.status = 'ALS_RJCT'
+        ) AS rejecterName
+      , (SELECT
+                BB.name
+           FROM approval_line AA
+           JOIN employee BB ON AA.approver_id = BB.id
+          WHERE AA.approval_id = A.id
             AND AA.status = 'ALS_RVW'
         ) AS currentApproverName
       , LEFT(A.ref_code, 2) AS refDocType
