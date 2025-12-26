@@ -245,6 +245,7 @@
         <association property="header"
                      javaType="com.werp.sero.production.query.dto.PRDetailResponseDTO$Header">
             <result property="prId" column="pr_id"/>
+            <result property="soId" column="so_id"/>
             <result property="prCode" column="pr_code"/>
             <result property="soCode" column="so_code"/>
             <result property="status" column="pr_status"/>
@@ -255,6 +256,11 @@
             <result property="managerId" column="manager_id"/>
             <result property="managerName" column="manager_name"/>
             <result property="totalQuantity" column="total_quantity"/>
+            <result property="approvalId" column="approval_id"/>
+            <result property="approvalCode" column="approval_code"/>
+            <result property="drafterDepartment" column="drafter_department"/>
+            <result property="drafterPosition" column="drafter_position"/>
+            <result property="drafterRank" column="drafter_rank"/>
         </association>
 
         <collection property="items"
@@ -271,6 +277,20 @@
             <result property="status" column="pr_item_status"/>
         </collection>
 
+        <collection property="approvalLines"
+                    ofType="com.werp.sero.production.query.dto.PRDetailResponseDTO$ApprovalLine"
+                    notNullColumn="approval_line_id">
+            <id property="sequence" column="approval_sequence"/>
+            <result property="approverName" column="approver_name"/>
+            <result property="approverDepartment" column="approver_department"/>
+            <result property="approverPosition" column="approver_position"/>
+            <result property="approverRank" column="approver_rank"/>
+            <result property="status" column="approval_status"/>
+            <result property="lineType" column="line_type"/>
+            <result property="processedAt" column="approval_processed_at"/>
+            <result property="note" column="approval_note"/>
+        </collection>
+
     </resultMap>
 
     <!-- ===================================================== -->
@@ -282,6 +302,7 @@
 
         SELECT
         A.id             AS pr_id,
+        A.so_id          AS so_id,
         A.pr_code        AS pr_code,
         B.so_code        AS so_code,
         A.status         AS pr_status,
@@ -292,6 +313,11 @@
         A.manager_id     AS manager_id,
         C.name           AS drafter_name,
         D.name           AS manager_name,
+        L.id             AS approval_id,
+        A.approval_code  AS approval_code,
+        P.dept_name      AS drafter_department,
+        Q.name           AS drafter_position,
+        R.name           AS drafter_rank,
 
         G.production_progress AS production_progress,
 
@@ -303,24 +329,30 @@
         F.item_code      AS item_code,
         F.item_name      AS item_name,
         F.spec           AS spec,
-        F.unit           AS unit
+        F.unit           AS unit,
+
+        M.id             AS approval_line_id,
+        M.sequence       AS approval_sequence,
+        M.status         AS approval_status,
+        M.line_type      AS line_type,
+        M.processed_at   AS approval_processed_at,
+        M.note           AS approval_note,
+
+        N.name           AS approver_name,
+        O.dept_name      AS approver_department,
+        S.name           AS approver_position,
+        T.name           AS approver_rank
 
         FROM production_request A
-        JOIN sales_order B
-        ON A.so_id = B.id
-        JOIN employee C
-        ON A.drafter_id = C.id
-        LEFT JOIN employee D
-        ON A.manager_id = D.id
+        JOIN sales_order B ON A.so_id = B.id
+        JOIN employee C ON A.drafter_id = C.id
+        LEFT JOIN employee D ON A.manager_id = D.id
 
-        JOIN production_request_item E
-        ON E.pr_id = A.id
-        JOIN sales_order_item F
-        ON F.id = E.so_item_id
+        JOIN production_request_item E ON E.pr_id = A.id
+        JOIN sales_order_item F ON F.id = E.so_item_id
 
         LEFT JOIN (
-        SELECT
-        pr_id,
+        SELECT pr_id,
         CASE
         WHEN SUM(status = 'PIS_PRODUCING') > 0 THEN 'PRODUCING'
         WHEN SUM(status = 'PIS_PLANNED')   > 0 THEN 'PLANNED'
@@ -330,13 +362,24 @@
         END AS production_progress
         FROM production_request_item
         GROUP BY pr_id
-        ) G
-        ON G.pr_id = A.id
+        ) G ON G.pr_id = A.id
+
+        LEFT JOIN approval L ON A.approval_code = L.approval_code
+        LEFT JOIN approval_line M
+        ON L.id = M.approval_id
+        AND (M.line_type = 'AT_APPR' OR M.line_type = 'AT_RVW')
+        LEFT JOIN employee N ON M.approver_id = N.id
+        LEFT JOIN department O ON N.dept_id = O.id
+        LEFT JOIN common_code S ON N.position_code = S.code
+        LEFT JOIN common_code T ON N.rank_code = T.code
+
+        LEFT JOIN department P ON C.dept_id = P.id
+        LEFT JOIN common_code Q ON C.position_code = Q.code
+        LEFT JOIN common_code R ON C.rank_code = R.code
 
         WHERE A.id = #{prId}
         AND A.status NOT IN ('PR_TMP')
-
-        ORDER BY E.id ASC
+        ORDER BY E.id, M.sequence
     </select>
 
     <!-- ===================================================== -->
