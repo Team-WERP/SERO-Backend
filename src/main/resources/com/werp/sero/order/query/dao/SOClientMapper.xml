@@ -107,6 +107,7 @@
         A.po_code,
         A.main_item_name,
         A.total_price,
+        A.total_item_count,
         A.ordered_at,
         A.shipped_at,
         A.status,
@@ -114,28 +115,42 @@
         A.note
         FROM sales_order A
         WHERE A.client_id = #{clientId}
-        <if test="startDate != null and startDate != ''">
+        <if test="startDate != null and startDate != '' and endDate != null and endDate != ''">
             <choose>
-                <when test="dateField == 'shippedAt'">
-                    AND A.shipped_at >= #{startDate}
+                <when test='dateField == "orderedAt"'>
+                    AND A.ordered_at BETWEEN CONCAT(#{startDate}, ' 00:00') AND CONCAT(#{endDate}, ' 23:59')
                 </when>
-                <otherwise>
-                    AND A.ordered_at >= #{startDate}
-                </otherwise>
-            </choose>
-        </if>
-        <if test="endDate != null and endDate != ''">
-            <choose>
-                <when test="dateField == 'shippedAt'">
-                    AND A.shipped_at &lt;= #{endDate}
+                <when test='dateField == "shippedAt"'>
+                    AND A.shipped_at BETWEEN CONCAT(#{startDate}, ' 00:00') AND CONCAT(#{endDate}, ' 23:59')
                 </when>
-                <otherwise>
-                    AND A.ordered_at &lt;= #{endDate}
-                </otherwise>
             </choose>
         </if>
         <if test="status != null and status != ''">
-            AND A.status = #{status}
+            <choose>
+                <when test="status == 'CLI_SO_RED'">
+                    AND A.status = 'ORD_RED'
+                </when>
+
+                <when test="status == 'CLI_SO_ING'">
+                    AND A.status IN ('ORD_RVW', 'ORD_APPR_PEND', 'ORD_APPR_DONE', 'ORD_WORK_REQ', 'ORD_PRO', 'ORD_SHIP_READY')
+                </when>
+
+                <when test="status == 'CLI_SO_SHIPPING'">
+                    AND A.status = 'ORD_SHIPPING'
+                </when>
+
+                <when test="status == 'CLI_SO_DONE'">
+                    AND A.status = 'ORD_DONE'
+                </when>
+
+                <when test="status == 'CLI_SO_CANCEL'">
+                    AND A.status = 'ORD_CANCEL'
+                </when>
+
+                <otherwise>
+                    AND A.status = #{status}
+                </otherwise>
+            </choose>
         </if>
         <if test="searchKeyword != null and searchKeyword != ''">
             AND (

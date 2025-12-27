@@ -82,6 +82,7 @@ public class SOClientQueryServiceImpl implements SOClientQueryService {
                         .poCode(order.getPoCode())
                         .mainItemName(order.getMainItemName())
                         .totalPrice(order.getTotalPrice())
+                        .totalItemCount(order.getTotalItemCount())
                         .orderedAt(order.getOrderedAt())
                         .shippedAt(order.getShippedAt())
                         .status(SOClientListResponseDTO.convertStatus(order.getStatus()))
