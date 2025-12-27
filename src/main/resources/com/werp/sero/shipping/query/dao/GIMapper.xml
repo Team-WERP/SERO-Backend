@@ -7,8 +7,10 @@
 
     <!-- 출고지시서 상세 조회용 ResultMap -->
     <resultMap id="GIDetailResultMap" type="com.werp.sero.shipping.query.dto.GIDetailResponseDTO">
+        <!-- 기본 출고 지시 정보 (PK 역할) -->
+        <id property="giCode" column="gi_code"/>
+
         <!-- 기본 출고 지시 정보 -->
-        <result property="giCode" column="gi_code"/>
         <result property="createdAt" column="created_at"/>
         <result property="scheduledAt" column="scheduled_at"/>
         <result property="status" column="status"/>
@@ -21,6 +23,7 @@
 
         <!-- 관련 주문 정보 -->
         <result property="soCode" column="so_code"/>
+        <result property="doCode" column="do_code"/>
         <result property="clientName" column="client_name"/>
         <result property="shippedAt" column="shipped_at"/>
 
@@ -33,11 +36,14 @@
         <!-- 결재 정보 -->
         <result property="approvalCode" column="approval_code"/>
         <result property="drafterName" column="drafter_name"/>
+        <result property="drafterDepartment" column="drafter_department"/>
+        <result property="drafterPosition" column="drafter_position"/>
+        <result property="drafterRank" column="drafter_rank"/>
         <result property="managerName" column="manager_name"/>
 
         <!-- 출고지시 품목 목록 (Collection) -->
         <collection property="items" ofType="com.werp.sero.shipping.query.dto.GIDetailResponseDTO$GIDetailItemDTO">
-            <result property="giItemCode" column="gi_item_code"/>
+            <id property="giItemCode" column="gi_item_code"/>
             <result property="itemCode" column="item_code"/>
             <result property="itemName" column="item_name"/>
             <result property="spec" column="spec"/>
@@ -45,6 +51,20 @@
             <result property="quantityBUn" column="quantity_bun"/>
             <result property="totalQuantity" column="total_quantity"/>
             <result property="unit" column="unit"/>
+        </collection>
+
+        <!-- 결재선 목록 (Collection) -->
+        <collection property="approvalLines" ofType="com.werp.sero.shipping.query.dto.GIDetailResponseDTO$GIApprovalLineDTO" notNullColumn="approval_line_id">
+            <id property="sequence" column="approval_line_id"/>
+            <result property="approverName" column="approver_name"/>
+            <result property="approverDepartment" column="approver_department"/>
+            <result property="approverPosition" column="approver_position"/>
+            <result property="approverRank" column="approver_rank"/>
+            <result property="sequence" column="approval_sequence"/>
+            <result property="status" column="approval_status"/>
+            <result property="lineType" column="line_type"/>
+            <result property="processedAt" column="approval_processed_at"/>
+            <result property="note" column="approval_note"/>
         </collection>
     </resultMap>
 
@@ -65,6 +85,7 @@
 
             /* 관련 주문 정보 */
             B.so_code,
+            A.do_code,
             C.company_name AS client_name,
             B.shipped_at,
 
@@ -77,6 +98,9 @@
             /* 결재 정보 */
             A.approval_code,
             F.name AS drafter_name,
+            P.dept_name AS drafter_department,
+            Q.name AS drafter_position,
+            R.name AS drafter_rank,
             G.name AS manager_name,
 
             /* 품목 정보 */
@@ -87,7 +111,19 @@
             H.quantity AS quantity_aun,
             (H.quantity * J.conversion_rate) AS quantity_bun,
             H.quantity AS total_quantity,
-            I.unit
+            I.unit,
+
+            /* 결재선 정보 */
+            M.id AS approval_line_id,
+            N.name AS approver_name,
+            O.dept_name AS approver_department,
+            S.name AS approver_position,
+            T.name AS approver_rank,
+            M.sequence AS approval_sequence,
+            M.status AS approval_status,
+            M.line_type AS line_type,
+            M.processed_at AS approval_processed_at,
+            M.note AS approval_note
 
         FROM goods_issue A
         INNER JOIN sales_order B ON A.so_id = B.id
@@ -95,14 +131,23 @@
         LEFT JOIN client_employee D ON B.client_manager_id = D.id
         INNER JOIN warehouse E ON A.warehouse_id = E.id
         INNER JOIN employee F ON A.drafter_id = F.id
+        LEFT JOIN department P ON F.dept_id = P.id
+        LEFT JOIN common_code Q ON F.position_code = Q.code
+        LEFT JOIN common_code R ON F.rank_code = R.code
         LEFT JOIN employee G ON A.gi_manager_id = G.id
         INNER JOIN goods_issue_item H ON A.id = H.gi_id
         INNER JOIN sales_order_item I ON H.so_item_id = I.id
         LEFT JOIN material J ON I.item_code = J.material_code
         INNER JOIN delivery_order K ON A.do_code = K.do_code
+        LEFT JOIN approval L ON A.approval_code = L.approval_code
+        LEFT JOIN approval_line M ON L.id = M.approval_id AND (M.line_type = 'AT_APPR' OR M.line_type = 'AT_RVW')
+        LEFT JOIN employee N ON M.approver_id = N.id
+        LEFT JOIN department O ON N.dept_id = O.id
+        LEFT JOIN common_code S ON N.position_code = S.code
+        LEFT JOIN common_code T ON N.rank_code = T.code
 
         WHERE A.gi_code = #{giCode}
-        ORDER BY H.id
+        ORDER BY H.id, M.sequence
     </select>
 
 </mapper>
