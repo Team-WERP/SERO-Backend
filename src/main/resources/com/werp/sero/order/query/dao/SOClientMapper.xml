@@ -177,6 +177,7 @@
         <result property="totalPrice" column="total_price"/>
         <result property="managerName" column="manager_name"/>
         <result property="managerContact" column="manager_contact"/>
+        <result property="clientManagerName" column="client_manager_name"/>
         <result property="shippingName" column="shipping_name"/>
         <result property="address" column="address"/>
         <result property="recipientName" column="recipient_name"/>
@@ -225,10 +226,13 @@
             C.quantity,
             C.unit,
             C.unit_price,
-            C.total_price AS item_total_price
+            C.total_price AS item_total_price,
+
+            D.manager_name AS client_manager_name
         FROM sales_order A
                  LEFT JOIN employee B ON A.manager_id = B.id
                  LEFT JOIN sales_order_item C ON A.id = C.so_id
+                 LEFT JOIN client D ON A.client_id = D.id
         WHERE A.id = #{orderId}
         ORDER BY C.id ASC
     </select>

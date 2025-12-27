@@ -122,6 +122,7 @@ public class SOClientQueryServiceImpl implements SOClientQueryService {
                 .totalPrice(order.getTotalPrice())
                 .managerName(order.getManagerName())
                 .managerContact(order.getManagerContact())
+                .clientManagerName(order.getClientManagerName())
                 .shippingName(order.getShippingName())
                 .address(order.getAddress())
                 .recipientName(order.getRecipientName())
