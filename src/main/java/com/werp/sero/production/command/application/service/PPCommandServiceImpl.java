@@ -99,7 +99,11 @@ public class PPCommandServiceImpl implements PPCommandService{
                             d.toString()
                     );
             if (existingDailyQty + newDailyQty > dailyCapa) {
-                throw new ProductionPlanCapacityExceededException();
+                return PPValidationResponseDTO.capacityExceeded(
+                        d.toString(),
+                        dailyCapa,
+                        existingDailyQty + newDailyQty
+                );
             }
         }
 
