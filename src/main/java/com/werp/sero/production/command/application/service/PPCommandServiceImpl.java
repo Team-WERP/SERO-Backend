@@ -70,16 +70,6 @@ public class PPCommandServiceImpl implements PPCommandService{
             throw new MaterialNotFoundException();
         }
 
-        // cycle time
-        Integer cycleTime =
-                ppValidateMapper.selectCycleTime(
-                        materialId,
-                        request.getProductionLineId()
-                );
-        if (cycleTime == null || cycleTime <= 0) {
-            throw new ProductionPlanLineNotCapableException();
-        }
-
         // 기간 유효성
         LocalDate start = LocalDate.parse(request.getStartDate());
         LocalDate end = LocalDate.parse(request.getEndDate());
@@ -88,14 +78,29 @@ public class PPCommandServiceImpl implements PPCommandService{
         }
 
         long days = ChronoUnit.DAYS.between(start, end) + 1;
-        long capa = (days * DAILY_AVAILABLE_SECONDS) / cycleTime;
+        int dailyCapa = productionLineRepository
+                        .findDailyCapacityById(request.getProductionLineId());
+
+        // 신규 계획 일일 생산량
+        int newDailyQty = (int) Math.ceil(
+                (double) request.getProductionQuantity() / days
+        );
 
         // 수량 검증
         if (request.getProductionQuantity() <= 0) {
             throw new ProductionPlanInvalidQuantityException();
         }
-        if (request.getProductionQuantity() > capa) {
-            throw new ProductionPlanCapacityExceededException();
+
+        // 날짜별 검증
+        for (LocalDate d = start; !d.isAfter(end); d = d.plusDays(1)) {
+            int existingDailyQty =
+                    ppValidateMapper.sumDailyPlannedQty(
+                            request.getProductionLineId(),
+                            d.toString()
+                    );
+            if (existingDailyQty + newDailyQty > dailyCapa) {
+                throw new ProductionPlanCapacityExceededException();
+            }
         }
 
         return PPValidationResponseDTO.ok();
