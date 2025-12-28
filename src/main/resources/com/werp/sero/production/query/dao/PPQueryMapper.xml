@@ -55,11 +55,23 @@
             resultType="com.werp.sero.production.query.dto.ProductionLineResponseDTO">
 
         SELECT
-        A.id        AS lineId,
-        A.line_name AS lineName,
-        A.status    AS status,
-        A.daily_capacity AS dailyCapacity
+        A.id            AS lineId,
+        A.line_name     AS lineName,
+        A.status        AS status,
+        A.daily_capacity AS dailyCapacity,
+
+        C.id             AS materialId,
+        C.material_code  AS materialCode,
+        C.name           AS materialName,
+        C.base_unit      AS unit
+
         FROM production_line A
+        JOIN line_material B
+          ON B.line_id = A.id
+        JOIN material C
+          ON C.id = B.material_id
+        AND C.type = 'MAT_FG'
+
         WHERE A.status = 'PL_ACTIVE'
         <if test="factoryId != null">
             AND A.factory_id = #{factoryId}
