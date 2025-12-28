@@ -15,4 +15,10 @@ public interface PPValidateMapper {
             @Param("materialId") int materialId,
             @Param("lineId") int lineId
     );
+
+    // 라인 + 날짜 기준 기존 계획 수량 합계
+    int sumDailyPlannedQty(
+            @Param("lineId") int lineId,
+            @Param("date") String date
+    );
 }

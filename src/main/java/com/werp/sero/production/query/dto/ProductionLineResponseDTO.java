@@ -8,4 +8,5 @@ public class ProductionLineResponseDTO {
     private int lineId;
     private String lineName;
     private String status;
+    private int dailyCapacity;
 }

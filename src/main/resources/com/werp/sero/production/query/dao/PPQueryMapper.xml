@@ -57,7 +57,8 @@
         SELECT
         A.id        AS lineId,
         A.line_name AS lineName,
-        A.status    AS status
+        A.status    AS status,
+        A.daily_capacity AS dailyCapacity
         FROM production_line A
         WHERE A.status = 'PL_ACTIVE'
         <if test="factoryId != null">
