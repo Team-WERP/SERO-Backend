@@ -143,17 +143,35 @@
 
         SELECT
             A.id                  AS ppId,
+            A.pp_code             AS ppCode,
             A.production_line_id  AS productionLineId,
-            C.item_name           AS itemName,
+
+            C.id                  AS prId,
+            C.pr_code             AS prCode,
+
+            B.id                 AS prItemId,
+            B.quantity           AS plannedQuantity,
+
+            D.material_code        AS materialCode,
+            D.name        AS materialName,
+            D.base_unit                 AS unit,
+
             A.start_date          AS startDate,
             A.end_date            AS endDate,
             A.production_quantity AS productionQuantity,
             A.status              AS status
+
         FROM production_plan A
                  JOIN production_request_item B
                       ON A.pr_item_id = B.id
-                 JOIN sales_order_item C
-                      ON B.so_item_id = C.id
+                 JOIN production_request C
+                      ON B.pr_id = C.id
+                 JOIN material D
+                      ON D.material_code = (
+                          SELECT E.item_code
+                          FROM sales_order_item E
+                          WHERE E.id = B.so_item_id
+                      )
         WHERE
             A.start_date &lt;= #{monthEnd}
           AND A.end_date   &gt;= #{monthStart}
