@@ -92,6 +92,8 @@
             A.quantity          AS requestedQuantity,
             A.status            AS prItemStatus,
 
+            B.pr_code           AS prCode,
+            B.requested_at      AS requestedAt,
             B.due_at            AS dueAt,
 
             C.item_code         AS itemCode,
@@ -104,7 +106,9 @@
             E.id                AS lineMaterialId,
 
             F.id                AS productionLineId,
-            F.line_name         AS productionLineName
+            F.line_name         AS productionLineName,
+            F.daily_capacity    AS dailyCapacity,
+            D.base_unit              AS unit
 
         FROM production_request_item A
                  JOIN production_request B
