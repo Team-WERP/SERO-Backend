@@ -33,7 +33,7 @@
             <result column="approver_position_code" property="approverPositionCode"/>
             <result column="approver_rank_code" property="approverRankCode"/>
             <result column="sequence" property="sequence"/>
-            <result column="status" property="status"/>
+            <result column="line_status" property="status"/>
             <result column="line_type" property="lineType"/>
             <result column="note" property="note"/>
             <result column="viewed_at" property="viewedAt"/>
@@ -358,7 +358,7 @@
              , F.position_code AS approver_position_code
              , F.rank_code AS approver_rank_code
              , E.sequence AS sequence
-             , E.status AS status
+             , E.status AS line_status
              , E.line_type AS line_type
              , E.note AS note
              , E.viewed_at AS viewed_at

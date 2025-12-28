@@ -249,7 +249,9 @@ public class ApprovalQueryServiceImpl implements ApprovalQueryService {
         responseDTO.setRecipientLines(recipientLines);
         responseDTO.setRefDocId(refId);
 
-        updateApprovalLineViewedAt(myApprovalLine);
+        if (myApprovalLine != null) {
+            updateApprovalLineViewedAt(myApprovalLine);
+        }
 
         return responseDTO;
     }
@@ -305,20 +307,33 @@ public class ApprovalQueryServiceImpl implements ApprovalQueryService {
         final ApprovalLineInfoResponseDTO approvalLineInfoResponseDTO = responseDTO.getTotalApprovalLines().stream()
                 .filter(line -> line.getApproverId() == employee.getId())
                 .findFirst()
-                .orElseThrow(ApprovalLineAccessDeniedException::new);
+                .orElse(null);
 
+        if (responseDTO.getDrafterId() != employee.getId() && approvalLineInfoResponseDTO == null) {
+            throw new ApprovalLineAccessDeniedException();
+        }
+
+        if (approvalLineInfoResponseDTO != null) {
+            validateCurrentApproverSequence(approvalLineInfoResponseDTO);
+            validateRecipientApproval(approvalLineInfoResponseDTO);
+        }
+
+        return approvalLineInfoResponseDTO;
+    }
+
+    private void validateRecipientApproval(final ApprovalLineInfoResponseDTO approvalLineInfoResponseDTO) {
+        if (APPROVAL_TYPE_RECIPIENT_CODE.equals(approvalLineInfoResponseDTO.getLineType()) &&
+                !"AS_APPR".equals(approvalLineInfoResponseDTO.getStatus())) {
+            throw new ApprovalNotFoundException();
+        }
+    }
+
+    private void validateCurrentApproverSequence(final ApprovalLineInfoResponseDTO approvalLineInfoResponseDTO) {
         if ((APPROVAL_TYPE_APPROVAL_CODE.equals(approvalLineInfoResponseDTO.getLineType())
                 || APPROVAL_TYPE_REVIEWER_CODE.equals(approvalLineInfoResponseDTO.getLineType()))
                 && "ALS_PEND".equals(approvalLineInfoResponseDTO.getStatus())) {
             throw new ApprovalNotCurrentSequenceException();
         }
-
-        if (APPROVAL_TYPE_RECIPIENT_CODE.equals(approvalLineInfoResponseDTO.getLineType()) &&
-                !"AS_APPR".equals(approvalLineInfoResponseDTO.getStatus())) {
-            throw new ApprovalNotFoundException();
-        }
-
-        return approvalLineInfoResponseDTO;
     }
 
     private void validateRefDocType(final String refDocType) {
