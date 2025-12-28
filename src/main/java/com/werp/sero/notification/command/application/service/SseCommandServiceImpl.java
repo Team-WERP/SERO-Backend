@@ -8,7 +8,6 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.werp.sero.notification.command.domain.repository.SseEmitterRepository;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,7 +21,6 @@ public class SseCommandServiceImpl implements SseCommandService{
     
 
     @Override
-    @Transactional
     public SseEmitter createEmitter(int employeeId) {
         
         String emitterId = employeeId + ":" + System.currentTimeMillis();
@@ -52,7 +50,6 @@ public class SseCommandServiceImpl implements SseCommandService{
     }
 
     @Override
-    @Transactional
     public void sendToUser(int employeeId, Object data) {
         String employeeIdStr = String.valueOf(employeeId);
         Map<String, SseEmitter> emitters =emitterRepository.findAllByEmployeeId(employeeIdStr);
