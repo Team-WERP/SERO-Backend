@@ -107,4 +107,8 @@ public class ProductionRequest {
     public void assignManager(Employee manager) {
         this.manager = manager;
     }
+
+    public void changeStatus(String status) {
+        this.status = status;
+    }
 }

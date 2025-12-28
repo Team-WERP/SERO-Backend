@@ -23,6 +23,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class PRCommandServiceImpl implements PRCommandService {
@@ -153,4 +155,40 @@ public class PRCommandServiceImpl implements PRCommandService {
 
         pr.assignManager(manager);
     }
+
+    @Transactional
+    @Override
+    public void updatePRStatusIfNeeded(int prId) {
+        List<ProductionRequestItem> items =
+                prtItemRepository.findAllByProductionRequest_Id(prId);
+
+        boolean hasTarget = false;
+        boolean hasPlanned = false;
+        boolean hasProducing = false;
+        boolean allDone = true;
+
+        for (var item : items) {
+            switch (item.getStatus()) {
+                case "PIS_TARGET" -> hasTarget = true;
+                case "PIS_PLANNED" -> hasPlanned = true;
+                case "PIS_PRODUCING" -> hasProducing = true;
+            }
+            if (!"PIS_DONE".equals(item.getStatus())) {
+                allDone = false;
+            }
+        }
+
+        ProductionRequest pr = prRepository.findById(prId).orElseThrow();
+
+        if (hasProducing) {
+            pr.changeStatus("PR_PRODUCING");
+        } else if (allDone) {
+            pr.changeStatus("PR_COMPLETED");
+        } else if (hasTarget) {
+            pr.changeStatus("PR_PLANNING");
+        } else if (hasPlanned) {
+            pr.changeStatus("PR_PLANNED");
+        }
+    }
+
 }

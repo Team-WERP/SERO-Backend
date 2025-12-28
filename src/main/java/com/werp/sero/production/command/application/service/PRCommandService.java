@@ -12,4 +12,6 @@ public interface PRCommandService {
     void request(int prId, Employee employee);
 
     void assignManager(int prId, int managerId);
+
+    void updatePRStatusIfNeeded(int prId);
 }

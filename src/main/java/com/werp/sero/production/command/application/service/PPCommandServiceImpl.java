@@ -30,6 +30,7 @@ public class PPCommandServiceImpl implements PPCommandService{
     private final PPRepository ppRepository;
     private final PRItemRepository prItemRepository;
     private final ProductionLineRepository productionLineRepository;
+    private final PRCommandService prCommandService;
 
     /**
      * 생산계획 검증
@@ -175,6 +176,7 @@ public class PPCommandServiceImpl implements PPCommandService{
                 ppCode
         );
         prItem.changeStatus("PIS_PLANNED");
+        prCommandService.updatePRStatusIfNeeded(prItem.getProductionRequest().getId());
 
         return new PPCreateResponseDTO(
                 plan.getId(),
