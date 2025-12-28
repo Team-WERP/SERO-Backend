@@ -24,7 +24,30 @@ public class ApprovalTemplateQueryServiceImpl implements ApprovalTemplateQuerySe
 
     @Override
     public List<ApprovalTemplateInfoResponseDTO> getApprovalTemplates(final Employee employee) {
-        return approvalTemplateMapper.findApprovalTemplatesByEmployee(employee.getId());
+        final List<ApprovalTemplateInfoResponseDTO> responseDTO =
+                approvalTemplateMapper.findApprovalTemplatesByEmployee(employee.getId());
+
+        responseDTO.forEach(response -> {
+            final List<ApprovalTemplateLineInfoResponseDTO> approvalLines = response.getTotalApprovalLines().stream()
+                    .filter(dto -> APPROVAL_TYPE_APPROVAL.equals(dto.getLineType()) ||
+                            APPROVAL_TYPE_REVIEWER.equals(dto.getLineType()))
+                    .sorted(Comparator.comparingInt(ApprovalTemplateLineInfoResponseDTO::getSequence))
+                    .collect(Collectors.toList());
+
+            final List<ApprovalTemplateLineInfoResponseDTO> referenceLines = response.getTotalApprovalLines().stream()
+                    .filter(dto -> APPROVAL_TYPE_REFERENCE.equals(dto.getLineType()))
+                    .collect(Collectors.toList());
+
+            final List<ApprovalTemplateLineInfoResponseDTO> recipientLines = response.getTotalApprovalLines().stream()
+                    .filter(dto -> APPROVAL_TYPE_RECIPIENT.equals(dto.getLineType()))
+                    .collect(Collectors.toList());
+
+            response.setApprovalLines(approvalLines);
+            response.setReferenceLines(referenceLines);
+            response.setRecipientLines(recipientLines);
+        });
+
+        return responseDTO;
     }
 
     @Override

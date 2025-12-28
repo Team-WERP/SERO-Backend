@@ -21,13 +21,29 @@
         </collection>
     </resultMap>
 
-    <select id="findApprovalTemplatesByEmployee" resultType="com.werp.sero.approval.query.dto.ApprovalTemplateInfoResponseDTO">
+    <select id="findApprovalTemplatesByEmployee" resultMap="ApprovalTemplateInfoResponseResultMap">
         SELECT
                A.id AS id
              , A.name AS name
              , A.description AS description
-          FROM approval_template A
-         WHERE A.creator_id = #{employeeId}
+             , B.id AS approval_template_line_id
+             , C.id AS approver_id
+             , C.name AS approver_name
+             , D.dept_code AS approver_department_code
+             , D.dept_name AS approver_department_name
+             , C.position_code AS approver_position_code
+             , C.rank_code AS approver_rank_code
+             , B.sequence AS sequence
+             , B.line_type AS line_type
+             , B.note AS note
+        FROM approval_template A
+                 JOIN approval_template_line B
+                      ON A.id = B.template_id
+                 JOIN employee C
+                      ON B.approver_id = C.id
+                 JOIN department D
+                      ON C.dept_id = D.id
+        WHERE A.creator_id = #{employeeId}
     </select>
 
     <select id="findApprovalTemplateById" resultMap="ApprovalTemplateInfoResponseResultMap">
