@@ -117,4 +117,9 @@ public class PPQueryServiceImpl implements PPQueryService{
 
         return result;
     }
+
+    @Override
+    public PPDetailResponseDTO getProductionPlanDetail(int ppId) {
+        return ppQueryMapper.selectProductionPlanDetail(ppId);
+    }
 }

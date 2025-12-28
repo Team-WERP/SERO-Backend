@@ -30,4 +30,6 @@ public interface PPQueryMapper {
     );
 
     List<PPDailyPreviewResponseDTO> selectDailyPreview(String date);
+
+    PPDetailResponseDTO selectProductionPlanDetail(int ppId);
 }

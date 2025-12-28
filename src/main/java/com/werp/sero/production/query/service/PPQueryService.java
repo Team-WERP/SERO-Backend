@@ -17,4 +17,6 @@ public interface PPQueryService {
     List<PPDailyPreviewResponseDTO> getDailyPreview(String date);
 
     List<DailyLineSummaryResponseDTO> getDailyLineSummary(String month, Integer factoryId);
+
+    PPDetailResponseDTO getProductionPlanDetail(int ppId);
 }

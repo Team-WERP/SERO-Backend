@@ -154,7 +154,7 @@
 
             D.material_code        AS materialCode,
             D.name        AS materialName,
-            D.base_unit                 AS unit,
+            D.base_unit AS unit,
 
             A.start_date          AS startDate,
             A.end_date            AS endDate,
@@ -276,6 +276,45 @@
                 ELSE 1
                 END ASC,
             A.pp_code ASC
+    </select>
+
+    <!-- ===================================================== -->
+    <!-- 생산계획 상세 조회 (PP 단건)                          -->
+    <!-- ===================================================== -->
+    <select id="selectProductionPlanDetail"
+            parameterType="int"
+            resultType="com.werp.sero.production.query.dto.PPDetailResponseDTO">
+
+        SELECT
+            A.id                  AS ppId,
+            A.pp_code             AS ppCode,
+            A.status              AS status,
+            A.start_date          AS startDate,
+            A.end_date            AS endDate,
+            A.production_quantity AS productionQuantity,
+
+            C.id                  AS prId,
+            C.pr_code             AS prCode,
+            B.quantity   AS requestedQuantity,
+            C.due_at               AS dueAt,
+
+            B.id                  AS prItemId,
+            D.item_code           AS itemCode,
+            D.item_name           AS itemName,
+            D.spec                AS spec,
+            D.unit           AS unit,
+
+            E.id                  AS productionLineId,
+            E.line_name           AS productionLineName,
+            E.daily_capacity      AS dailyCapacity
+
+        FROM production_plan A
+                 JOIN production_request_item B ON A.pr_item_id = B.id
+                 JOIN production_request C ON B.pr_id = C.id
+                 JOIN sales_order_item D ON B.so_item_id = D.id
+                 JOIN production_line E ON A.production_line_id = E.id
+
+        WHERE A.id = #{ppId}
     </select>
 
 

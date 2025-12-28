@@ -109,4 +109,10 @@ public class PPQueryController {
                 ppQueryService.getDailyLineSummary(month, factoryId)
         );
     }
+
+    @GetMapping("/{ppId}")
+    public PPDetailResponseDTO getDetail(@PathVariable int ppId) {
+        return ppQueryService.getProductionPlanDetail(ppId);
+    }
+
 }
