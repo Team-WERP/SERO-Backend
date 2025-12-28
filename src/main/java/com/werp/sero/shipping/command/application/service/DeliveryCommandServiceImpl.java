@@ -49,7 +49,6 @@ public class DeliveryCommandServiceImpl implements DeliveryCommandService {
                 "배송 출발",
                 "출고지시 " + giCode + "의 배송이 출발했습니다. (기사: " + driver.getName() + ")",
                 delivery.getGoodsIssue().getManager().getId(),
-                delivery.getGoodsIssue().getId(),
                 "/goods-issues/" + giCode
             ));
         }
@@ -82,7 +81,6 @@ public class DeliveryCommandServiceImpl implements DeliveryCommandService {
                 "배송 도착",
                 "출고지시 " + giCode + "의 배송이 완료되었습니다. (기사: " + driver.getName() + ")",
                 delivery.getGoodsIssue().getManager().getId(),
-                delivery.getGoodsIssue().getId(),
                 "/goods-issues/" + giCode
             ));
         }

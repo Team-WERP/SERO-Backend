@@ -34,7 +34,6 @@ public class NotificationEventListener {
                 .title(event.getTitle())
                 .content(event.getContent())
                 .receiverId(event.getReceiverId())
-                .referenceId(event.getReferenceId())
                 .redirectUrl(event.getRedirectUrl())
                 .isRead(false)
                 .createdAt(now)
@@ -49,7 +48,6 @@ public class NotificationEventListener {
             data.put("type", notification.getType());
             data.put("title", notification.getTitle());
             data.put("content", notification.getContent());
-            data.put("referenceId", notification.getReferenceId());
             data.put("redirectUrl", notification.getRedirectUrl());
             data.put("createdAt", notification.getCreatedAt());
 

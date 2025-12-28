@@ -44,9 +44,6 @@ public class Notification {
     @Column(name = "receiver_id", nullable = false)
     private int receiverId; // 알림을 받는 직원 ID (수신자)
 
-    @Column(name = "reference_id")
-    private int referenceId; // targetId (주문 PK, 결재 PK 등)
-
     @Column(name = "redirect_url")
     private String redirectUrl; // 이동할 URL
 

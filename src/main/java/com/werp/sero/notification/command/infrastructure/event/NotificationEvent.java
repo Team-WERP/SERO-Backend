@@ -15,6 +15,5 @@ public class NotificationEvent {
     private final String title;               // 제목
     private final String content;             // 내용
     private final int receiverId;             // 수신자
-    private final Integer referenceId;        // targetId
     private final String redirectUrl;         // 이동할 URL
 }
