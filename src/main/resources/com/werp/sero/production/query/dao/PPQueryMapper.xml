@@ -219,10 +219,10 @@
             END AS recommendedQuantity,
 
             /* 오늘 해당 라인에 작업지시 존재 여부 */
-            CASE
-            WHEN COUNT(DISTINCT G.id) > 0 THEN TRUE
-            ELSE FALSE
-            END AS hasWorkOrder
+            (SELECT COUNT(*)
+            FROM work_order WO
+            WHERE WO.line_id = F.id
+            AND WO.work_date = #{date}) > 0 AS hasWorkOrder
 
             FROM production_plan A
             JOIN production_request_item B
