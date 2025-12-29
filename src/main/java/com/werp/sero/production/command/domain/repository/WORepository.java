@@ -11,9 +11,13 @@ import java.util.Optional;
 
 public interface WORepository extends JpaRepository<WorkOrder, Integer> {
 
-    boolean existsByProductionPlan_IdAndWorkDate(int ppId, String workDate);
-
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select A from WorkOrder A where A.id = :id")
     Optional<WorkOrder> findByIdForUpdate(@Param("id") int id);
+
+    Optional<WorkOrder> findByProductionLineIdAndWorkDate(
+            int lineId,
+            String workDate
+    );
+
 }
