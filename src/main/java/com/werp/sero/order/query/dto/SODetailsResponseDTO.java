@@ -32,6 +32,9 @@ public class SODetailsResponseDTO {
     @Schema(description = "주문 url")
     private String orderUrl;
 
+    @Schema(description = "담당자 id")
+    private Integer managerId;
+
     @Schema(description = "담당자 이름")
     private String managerName;
 
