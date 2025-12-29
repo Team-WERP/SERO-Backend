@@ -162,11 +162,17 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
         List<SalesOrderItemHistory> histories = new ArrayList<>();
 
         for (DeliveryOrderItem doItem : deliveryOrderItems) {
+            // 이전 이력 조회
+            SalesOrderItemHistory previousHistory = salesOrderItemHistoryRepository
+                    .findLatestBySoItemId(doItem.getSalesOrderItem().getId())
+                    .orElse(null);
+
             SalesOrderItemHistory history = SalesOrderItemHistory.createForGoodsIssue(
                     doItem.getSalesOrderItem().getId(),
                     doItem.getDoQuantity(),
                     drafter.getId(),
-                    createdAt
+                    createdAt,
+                    previousHistory
             );
             histories.add(history);
         }
@@ -230,11 +236,17 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
             historiesToSave.add(history);
 
             // 주문 품목별 이력 기록 (출고 완료 수량)
+            // 이전 이력 조회
+            SalesOrderItemHistory previousHistory = salesOrderItemHistoryRepository
+                    .findLatestBySoItemId(giItem.getSalesOrderItem().getId())
+                    .orElse(null);
+
             SalesOrderItemHistory salesHistory = SalesOrderItemHistory.createForShipped(
                     giItem.getSalesOrderItem().getId(),
                     quantity,
                     goodsIssue.getManager().getId(),
-                    createdAt
+                    createdAt,
+                    previousHistory
             );
             salesHistoriesToSave.add(salesHistory);
 

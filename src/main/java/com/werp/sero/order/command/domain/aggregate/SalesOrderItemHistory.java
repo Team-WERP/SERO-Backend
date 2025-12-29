@@ -46,7 +46,7 @@ public class SalesOrderItemHistory {
     private int creatorId;
 
     /**
-     * 납품서 생성 시 기납품 수량 이력 생성
+     * 납품서 생성 시 기납품 수량 이력 생성 (최초 이력)
      */
     public static SalesOrderItemHistory createForDeliveryOrder(
             int soItemId,
@@ -68,66 +68,69 @@ public class SalesOrderItemHistory {
     }
 
     /**
-     * 출고지시 작성 시 출고지시 수량 이력 생성
+     * 출고지시 작성 시 출고지시 수량 이력 생성 (이전 이력 기반)
      */
     public static SalesOrderItemHistory createForGoodsIssue(
             int soItemId,
             int giQuantity,
             int creatorId,
-            String createdAt
+            String createdAt,
+            SalesOrderItemHistory previousHistory
     ) {
         return SalesOrderItemHistory.builder()
                 .soItemId(soItemId)
                 .giQuantity(giQuantity)
-                .prQuantity(0)
-                .piQuantity(0)
-                .doQuantity(0)
-                .shippedQuantity(0)
-                .completedQuantity(0)
+                .prQuantity(previousHistory != null ? previousHistory.getPrQuantity() : 0)
+                .piQuantity(previousHistory != null ? previousHistory.getPiQuantity() : 0)
+                .doQuantity(previousHistory != null ? previousHistory.getDoQuantity() : 0)
+                .shippedQuantity(previousHistory != null ? previousHistory.getShippedQuantity() : 0)
+                .completedQuantity(previousHistory != null ? previousHistory.getCompletedQuantity() : 0)
                 .createdAt(createdAt)
                 .creatorId(creatorId)
                 .build();
     }
 
     /**
-     * 출고 완료 처리 시 출고 완료 수량 이력 생성
+     * 출고 완료 처리 시 출고 완료 수량 이력 생성 (이전 이력 기반)
      */
     public static SalesOrderItemHistory createForShipped(
             int soItemId,
             int shippedQuantity,
             int creatorId,
-            String createdAt
+            String createdAt,
+            SalesOrderItemHistory previousHistory
     ) {
         return SalesOrderItemHistory.builder()
                 .soItemId(soItemId)
                 .shippedQuantity(shippedQuantity)
-                .prQuantity(0)
-                .piQuantity(0)
-                .giQuantity(0)
-                .doQuantity(0)
-                .completedQuantity(0)
+                .prQuantity(previousHistory != null ? previousHistory.getPrQuantity() : 0)
+                .piQuantity(previousHistory != null ? previousHistory.getPiQuantity() : 0)
+                .giQuantity(previousHistory != null ? previousHistory.getGiQuantity() : 0)
+                .doQuantity(previousHistory != null ? previousHistory.getDoQuantity() : 0)
+                .completedQuantity(previousHistory != null ? previousHistory.getCompletedQuantity() : 0)
                 .createdAt(createdAt)
                 .creatorId(creatorId)
                 .build();
     }
 
     /**
-     * 배송 완료 처리 시 배송 완료 수량 이력 생성
+     * 배송 완료 처리 시 배송 완료 수량 이력 생성 (이전 이력 기반)
      */
     public static SalesOrderItemHistory createForCompleted(
             int soItemId,
             int completedQuantity,
             int creatorId,
-            String createdAt
+            String createdAt,
+            SalesOrderItemHistory previousHistory
     ) {
         return SalesOrderItemHistory.builder()
                 .soItemId(soItemId)
                 .completedQuantity(completedQuantity)
-                .prQuantity(0)
-                .piQuantity(0)
-                .giQuantity(0)
-                .doQuantity(0)
-                .shippedQuantity(0)
+                .prQuantity(previousHistory != null ? previousHistory.getPrQuantity() : 0)
+                .piQuantity(previousHistory != null ? previousHistory.getPiQuantity() : 0)
+                .giQuantity(previousHistory != null ? previousHistory.getGiQuantity() : 0)
+                .doQuantity(previousHistory != null ? previousHistory.getDoQuantity() : 0)
+                .shippedQuantity(previousHistory != null ? previousHistory.getShippedQuantity() : 0)
                 .createdAt(createdAt)
                 .creatorId(creatorId)
                 .build();
