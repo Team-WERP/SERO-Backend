@@ -53,4 +53,11 @@ public class ProductionRequestItem {
     public void changeStatus(String newStatus) {
         this.status = newStatus;
     }
+
+    public void startProducing() {
+        if (!"PIS_PRODUCING".equals(this.status)) {
+            this.status = "PIS_PRODUCING";
+        }
+    }
+
 }

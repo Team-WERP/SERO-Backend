@@ -39,10 +39,6 @@ public class WorkOrder {
     private String status;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "pr_id", nullable = false)
-    private ProductionRequest productionRequest;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manager_id", nullable = false)
     private Employee manager;
 
@@ -53,14 +49,12 @@ public class WorkOrder {
     public WorkOrder(
             String woCode,
             String workDate,
-            ProductionRequest productionRequest,
             ProductionLine productionLine,
             Employee manager,
             Employee creator
     ) {
         this.woCode = woCode;
         this.workDate = workDate;
-        this.productionRequest = productionRequest;
         this.productionLine = productionLine;
         this.manager = manager;
         this.creator = creator;
