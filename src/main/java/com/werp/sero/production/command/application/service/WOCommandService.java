@@ -16,7 +16,7 @@ public interface WOCommandService {
 
     void resume(int woId, String note);
 
-    void end(int woId, WorkOrderEndRequest request);
+    void end(int woId, WorkOrderEndRequest request, Employee currentEmployee);
 
     WorkOrderResultPreviewResponseDTO previewResult(int woId, WorkOrderResultPreviewRequestDTO request);
 }

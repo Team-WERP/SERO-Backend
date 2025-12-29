@@ -1,6 +1,8 @@
 package com.werp.sero.production.command.application.service;
 
 import com.werp.sero.employee.command.domain.aggregate.Employee;
+import com.werp.sero.material.command.domain.aggregate.Material;
+import com.werp.sero.material.command.domain.repository.MaterialRepository;
 import com.werp.sero.material.exception.MaterialNotFoundException;
 import com.werp.sero.production.command.application.dto.*;
 import com.werp.sero.production.command.domain.aggregate.ProductionLine;
@@ -31,6 +33,7 @@ public class PPCommandServiceImpl implements PPCommandService{
     private final PRItemRepository prItemRepository;
     private final ProductionLineRepository productionLineRepository;
     private final PRCommandService prCommandService;
+    private final MaterialRepository materialRepository;
 
     /**
      * 생산계획 검증
@@ -130,7 +133,17 @@ public class PPCommandServiceImpl implements PPCommandService{
 
         prItem.changeStatus("PIS_TARGET");
 
-        ProductionPlan draft = ProductionPlan.createDraft(prItem, employee);
+        String materialCode =
+                ppValidateMapper.selectMaterialCodeByPRItem(request.getPrItemId());
+        if (materialCode == null) {
+            throw new MaterialNotFoundException();
+        }
+
+        Material material = materialRepository
+                .findByMaterialCode(materialCode)
+                .orElseThrow(MaterialNotFoundException::new);
+
+        ProductionPlan draft = ProductionPlan.createDraft(prItem, material, employee);
         ppRepository.save(draft);
     }
 

@@ -73,9 +73,10 @@ public class WOCommandController {
     @PostMapping("/{woId}/end")
     public ResponseEntity<Void> end(
             @PathVariable int woId,
-            @RequestBody WorkOrderEndRequest request
+            @RequestBody WorkOrderEndRequest request,
+            @CurrentUser Employee currentEmployee
     ) {
-        woCommandService.end(woId, request);
+        woCommandService.end(woId, request, currentEmployee);
         return ResponseEntity.ok().build();
     }
 

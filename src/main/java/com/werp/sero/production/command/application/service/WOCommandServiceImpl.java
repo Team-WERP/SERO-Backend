@@ -2,12 +2,21 @@ package com.werp.sero.production.command.application.service;
 
 import com.werp.sero.common.util.DateTimeUtils;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
+import com.werp.sero.material.command.domain.aggregate.Material;
+import com.werp.sero.order.command.domain.aggregate.SalesOrderItemHistory;
+import com.werp.sero.order.command.domain.repository.SOItemRepository;
+import com.werp.sero.order.command.domain.repository.SalesOrderItemHistoryRepository;
 import com.werp.sero.production.command.application.dto.*;
 import com.werp.sero.production.command.domain.aggregate.*;
 import com.werp.sero.production.command.domain.aggregate.enums.Action;
 import com.werp.sero.production.command.domain.repository.*;
 import com.werp.sero.production.exception.*;
 import com.werp.sero.system.command.application.service.DocumentSequenceCommandService;
+import com.werp.sero.warehouse.command.domain.aggregate.Warehouse;
+import com.werp.sero.warehouse.command.domain.aggregate.WarehouseStock;
+import com.werp.sero.warehouse.command.domain.repository.WarehouseRepository;
+import com.werp.sero.warehouse.command.domain.repository.WarehouseStockRepository;
+import com.werp.sero.warehouse.exception.WarehouseStockNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -28,6 +37,8 @@ public class WOCommandServiceImpl implements WOCommandService {
     private final WorkOrderHistoryRepository workOrderHistoryRepository;
     private final WOItemRepository woItemRepository;
     private final WorkOrderItemDistributor distributor;
+    private final WarehouseStockRepository warehouseStockRepository;
+    private final SalesOrderItemHistoryRepository soItemHistoryRepository;
 
     @Override
     @Transactional
@@ -173,7 +184,11 @@ public class WOCommandServiceImpl implements WOCommandService {
 
     @Override
     @Transactional
-    public void end(int woId, WorkOrderEndRequest request) {
+    public void end(
+            int woId,
+            WorkOrderEndRequest request,
+            Employee currentEmployee
+    ) {
 
         WorkOrder wo = woRepository.findByIdForUpdate(woId)
                 .orElseThrow(WorkOrderNotFoundException::new);
@@ -182,9 +197,6 @@ public class WOCommandServiceImpl implements WOCommandService {
         if (workOrderResultRepository.existsByWorkOrderId(woId)) {
             throw new WorkOrderResultAlreadyExistsException();
         }
-
-        // WO 종료
-        wo.end(); // WO_RUN → WO_DONE
 
         // 작업 시간 검증
         int workMinutes = DateTimeUtils.minutesBetween(
@@ -204,23 +216,64 @@ public class WOCommandServiceImpl implements WOCommandService {
             throw new InvalidDistributedQuantityException();
         }
 
-        // 아이템별 실적 반영
+        // WO 종료
+        wo.end(); // WO_RUN → WO_DONE
+
+        // 아이템별 실적 반영 (PR_ITEM 누적 + 창고 재고 증가 + SO 이력 추가)
         for (WorkOrderEndRequest.ItemResult r : request.getItems()) {
 
-            WorkOrderItem item = woItemRepository
+            WorkOrderItem woi = woItemRepository
                     .findById(r.getWorkOrderItemId())
                     .orElseThrow(WorkOrderItemNotFoundException::new);
 
-            if (r.getProducedQuantity() < 0) {
+            int qty = r.getProducedQuantity();
+            if (qty < 0) {
                 throw new InvalidProducedQuantityException();
             }
 
-            if (r.getProducedQuantity() > item.getPlannedQuantity()) {
+            int remain = woi.getPlannedQuantity() - woi.getProducedQuantity();
+            if (qty > remain) {
                 throw new ExceedPlannedQuantityException();
             }
 
-            item.addProducedQuantity(r.getProducedQuantity());
-            item.complete(); // WOI_READY → WOI_DONE
+            // 1) WorkOrderItem 누적 반영
+            woi.addProducedQuantity(qty);
+            woi.complete(); // WOI_READY → WOI_DONE
+
+            // 2) ProductionRequestItem 누적 반영
+            ProductionRequestItem prItem = woi.getProductionRequestItem();
+            prItem.addProducedQuantity(qty);
+
+            // 3) WarehouseStock 증가 (material 기준)
+            Material material = woi.getProductionPlan().getMaterial();
+            Warehouse factory = woi.getWorkOrder()
+                    .getProductionLine()
+                    .getFactory();
+
+            WarehouseStock stock =
+                    warehouseStockRepository.findByWarehouseIdAndMaterialId(factory.getId(), material.getId())
+                            .orElseThrow(WarehouseStockNotFoundException::new);
+            stock.increaseStock(qty);
+
+            // 4) SalesOrderItemHistory 추가
+            int soItemId = prItem.getSalesOrderItem().getId();
+
+            SalesOrderItemHistory prev =
+                    soItemHistoryRepository
+                            .findTopBySoItemIdOrderByIdDesc(soItemId)
+                            .orElse(null);
+            int newPiQty =
+                    (prev != null ? prev.getPiQuantity() : 0) + qty;
+
+            SalesOrderItemHistory history =
+                    SalesOrderItemHistory.createForProductionIn(
+                            soItemId,
+                            newPiQty,
+                            currentEmployee.getId(),
+                            prev
+                    );
+
+            soItemHistoryRepository.save(history);
         }
 
         // WorkOrderResult 저장
