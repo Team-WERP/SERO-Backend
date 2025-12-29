@@ -6,6 +6,7 @@ import com.werp.sero.auth.exception.LoginFailedException;
 import com.werp.sero.security.dto.JwtToken;
 import com.werp.sero.security.enums.Type;
 import com.werp.sero.security.jwt.JwtTokenProvider;
+import com.werp.sero.security.principal.CustomUserDetails;
 import com.werp.sero.util.CookieUtil;
 import com.werp.sero.util.HeaderUtil;
 import com.werp.sero.util.RedisUtil;
@@ -19,6 +20,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -65,8 +67,10 @@ public class AuthServiceImpl implements AuthService {
 
             cookieUtil.generateRefreshTokenCookie(response, refreshToken);
 
+            final String employeeName = ((CustomUserDetails) authentication.getPrincipal()).getName();
+
             return new LoginResponseDTO(accessToken.getToken(), GRANT_TYPE,
-                    accessToken.getAuthorities());
+                    accessToken.getAuthorities(), employeeName);
         } catch (InternalAuthenticationServiceException | BadCredentialsException e) {
             throw new LoginFailedException();
         }

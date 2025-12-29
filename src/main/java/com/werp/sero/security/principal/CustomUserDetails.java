@@ -65,4 +65,16 @@ public class CustomUserDetails implements UserDetails {
     public boolean isEmployee() {
         return (this.type == Type.EMPLOYEE) ? true : false;
     }
+
+    public String getPosition() {
+        return (this.type == Type.EMPLOYEE) ? this.employee.getPositionCode() : this.clientEmployee.getPosition();
+    }
+
+    public String getName() {
+        return (this.type == Type.EMPLOYEE) ? this.employee.getName() : this.clientEmployee.getName();
+    }
+
+    public int getId() {
+        return (this.type == Type.EMPLOYEE) ? this.employee.getId() : this.clientEmployee.getId();
+    }
 }
