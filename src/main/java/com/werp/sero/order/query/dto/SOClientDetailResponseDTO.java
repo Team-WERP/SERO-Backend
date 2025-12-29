@@ -58,6 +58,9 @@ public class SOClientDetailResponseDTO {
     @Schema(description = "배송지 이름")
     private String shippingName;
 
+    @Schema(description = "고객사 담당자 이름")
+    private String clientManagerName;
+
     @Schema(description = "배송지 주소")
     private String address;
 
