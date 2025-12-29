@@ -69,7 +69,7 @@ public class ApprovalQueryController {
     }
 
     @Operation(summary = "결재에 대한 결재선 요약 조회")
-    @GetMapping("/{approvalCode}/summary")
+    @GetMapping("/summary/{approvalCode}")
     public ResponseEntity<ApprovalLineSummaryInfoResponseDTO> getApprovalSummaryInfo(@PathVariable("approvalCode") final String approvalCode) {
         return ResponseEntity.ok(approvalQueryService.getApprovalSummaryInfo(approvalCode));
     }
