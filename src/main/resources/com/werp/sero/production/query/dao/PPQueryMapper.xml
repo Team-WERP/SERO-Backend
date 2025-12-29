@@ -194,76 +194,59 @@
             resultType="com.werp.sero.production.query.dto.PPDailyPreviewResponseDTO">
 
         SELECT
-            A.id                  AS ppId,
-            A.pp_code             AS ppCode,
+            A.id            AS ppId,
+            A.pp_code       AS ppCode,
 
-            F.id                  AS lineId,
-            F.line_name           AS lineName,
-            F.daily_capacity      AS dailyCapacity,
+            F.id            AS lineId,
+            F.line_name     AS lineName,
+            F.daily_capacity AS dailyCapacity,
 
-            E.id                  AS materialId,
-            E.material_code       AS materialCode,
-            E.name                AS materialName,
-            E.base_unit           AS baseUnit,
+            E.id            AS materialId,
+            E.material_code AS materialCode,
+            E.name          AS materialName,
+            E.base_unit     AS baseUnit,
 
-            A.production_quantity AS plannedQuantity,
+            /* 오늘 기준 계획 수량 (고정) */
+            CEILING(
+                        A.production_quantity
+                        / (DATEDIFF(A.end_date, A.start_date) + 1)
+                ) AS dailyPlannedQuantity,
 
-            /* 잔여 수량 (PP 기준) */
-            (A.production_quantity - IFNULL(SUM(I.planned_quantity), 0)) AS remainingQuantity,
-
-            /* 권장 수량 (오늘 기준) */
-            CASE
-            WHEN EXISTS (
-            SELECT 1
-            FROM work_order WO2
-            WHERE WO2.line_id = F.id
-            AND WO2.work_date = #{date}
-            )
-            THEN 0
-            WHEN DATEDIFF(A.end_date, #{date}) + 1 &lt;= 0
-            THEN 0
-            ELSE CEILING(
-            (A.production_quantity - IFNULL(SUM(I.planned_quantity), 0))
-            / (DATEDIFF(A.end_date, #{date}) + 1)
-            )
-            END AS recommendedQuantity,
+            /* 오늘 작업지시로 확정된 수량 */
+            IFNULL(SUM(I.planned_quantity), 0) AS woPlannedQuantity,
 
             /* 오늘 해당 라인에 작업지시 존재 여부 */
-            (SELECT COUNT(*)
-            FROM work_order WO
-            WHERE WO.line_id = F.id
-            AND WO.work_date = #{date}) > 0 AS hasWorkOrder
+            COUNT(DISTINCT G.id) > 0 AS hasWorkOrder
 
-            FROM production_plan A
-            JOIN production_request_item B
-            ON A.pr_item_id = B.id
-            JOIN sales_order_item D
-            ON B.so_item_id = D.id
-            JOIN material E
-            ON E.material_code = D.item_code
-            AND E.type = 'MAT_FG'
-            JOIN production_line F
-            ON A.production_line_id = F.id
+        FROM production_plan A
+                 JOIN production_request_item B
+                      ON A.pr_item_id = B.id
+                 JOIN sales_order_item D
+                      ON B.so_item_id = D.id
+                 JOIN material E
+                      ON E.material_code = D.item_code
+                          AND E.type = 'MAT_FG'
+                 JOIN production_line F
+                      ON A.production_line_id = F.id
 
-            /* 이미 생성된 작업지시 */
-            LEFT JOIN work_order G
-            ON G.line_id = F.id
-            AND G.work_date = #{date}
+                 LEFT JOIN work_order G
+                           ON G.line_id = F.id
+                               AND G.work_date = #{date}
 
-            /* 해당 작업지시에 포함된 PP 아이템 */
-            LEFT JOIN work_order_item I
-            ON I.work_order_id = G.id
-            AND I.pp_id = A.id
+                 LEFT JOIN work_order_item I
+                           ON I.work_order_id = G.id
+                               AND I.pp_id = A.id
 
-            WHERE A.status = 'PP_CONFIRMED'
-            AND A.start_date &lt;= #{date}
-            AND A.end_date   &gt;= #{date}
+        WHERE A.status = 'PP_CONFIRMED'
+          AND A.start_date &lt;= #{date}
+          AND A.end_date   &gt;= #{date}
 
-            GROUP BY
+        GROUP BY
             A.id, A.pp_code,
             F.id, F.line_name, F.daily_capacity,
-            E.material_code, E.name, E.base_unit,
-            A.production_quantity
+            E.id, E.material_code, E.name, E.base_unit,
+            A.production_quantity,
+            A.start_date, A.end_date
 
         ORDER BY
             F.line_name ASC,

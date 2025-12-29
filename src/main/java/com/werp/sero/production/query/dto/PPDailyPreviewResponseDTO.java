@@ -23,10 +23,9 @@ public class PPDailyPreviewResponseDTO {
     private String baseUnit;
 
     // Quantity
-    private int plannedQuantity;      // PP 총 수량
-    private int remainingQuantity;    // 잔여 수량
-    private int recommendedQuantity;  // 오늘 권장 수량
+    private int dailyPlannedQuantity; // 오늘 계획 수량
+    private int woPlannedQuantity;    // 작업지시 확정 수량
 
     // Flag
-    private boolean hasWorkOrder;     // 오늘 해당 라인에 WO 존재 여부
+    private boolean hasWorkOrder;
 }
