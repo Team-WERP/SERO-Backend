@@ -19,26 +19,6 @@ public class WOQueryController {
     private final WOQueryService woQueryService;
     private final WorkOrderResultRepository workOrderResultRepository;
 
-    @Operation(summary = "생산계획(PP) 기준 작업지시 목록 조회")
-    @GetMapping("/by-pp")
-    public ResponseEntity<List<WOByPPResponseDTO>> getByProductionPlan(
-            @RequestParam int ppId
-    ) {
-        return ResponseEntity.ok(
-                woQueryService.getByProductionPlan(ppId)
-        );
-    }
-
-    @Operation(summary = "생산요청(PR) 기준 작업지시 목록 조회")
-    @GetMapping("/by-pr")
-    public ResponseEntity<List<WOByPRResponseDTO>> getByProductionRequest(
-            @RequestParam int prId
-    ) {
-        return ResponseEntity.ok(
-                woQueryService.getByProductionRequest(prId)
-        );
-    }
-
     @Operation(summary = "작업일자 기준 작업지시 조회 (1일)")
     @GetMapping("/by-date")
     public ResponseEntity<List<WOByDateResponseDTO>> getByDate(
