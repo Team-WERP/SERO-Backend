@@ -16,6 +16,9 @@ import java.util.List;
 public class GIDetailResponseDTO {
 
     // 1. 기본 출고 지시 정보
+    @Schema(description = "출고지시 ID (PK)", example = "1")
+    private int id;
+
     @Schema(description = "출고지시 번호", example = "GI-20251207-001")
     private String giCode;
 

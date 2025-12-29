@@ -11,6 +11,7 @@
         <id property="giCode" column="gi_code"/>
 
         <!-- 기본 출고 지시 정보 -->
+        <result property="id" column="gi_id"/>
         <result property="createdAt" column="created_at"/>
         <result property="scheduledAt" column="scheduled_at"/>
         <result property="status" column="status"/>
@@ -72,6 +73,7 @@
     <select id="findByGiCode" resultMap="GIDetailResultMap">
         SELECT
             /* 기본 출고 지시 정보 */
+            A.id AS gi_id,
             A.gi_code,
             A.created_at,
             K.shipped_at AS scheduled_at,
