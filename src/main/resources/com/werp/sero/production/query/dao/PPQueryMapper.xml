@@ -199,10 +199,12 @@
 
             F.id                  AS lineId,
             F.line_name           AS lineName,
+            F.daily_capacity      AS dailyCapacity,
 
             E.id                  AS materialId,
             E.material_code       AS materialCode,
             E.name                AS materialName,
+            E.base_unit           AS baseUnit,
 
             A.production_quantity AS plannedQuantity,
 
@@ -211,7 +213,15 @@
 
             /* 권장 수량 (오늘 기준) */
             CASE
-            WHEN DATEDIFF(A.end_date, #{date}) + 1 &lt;= 0 THEN 0
+            WHEN EXISTS (
+            SELECT 1
+            FROM work_order WO2
+            WHERE WO2.line_id = F.id
+            AND WO2.work_date = #{date}
+            )
+            THEN 0
+            WHEN DATEDIFF(A.end_date, #{date}) + 1 &lt;= 0
+            THEN 0
             ELSE CEILING(
             (A.production_quantity - IFNULL(SUM(I.planned_quantity), 0))
             / (DATEDIFF(A.end_date, #{date}) + 1)
@@ -251,8 +261,8 @@
 
             GROUP BY
             A.id, A.pp_code,
-            F.id, F.line_name,
-            E.material_code, E.name,
+            F.id, F.line_name, F.daily_capacity,
+            E.material_code, E.name, E.base_unit,
             A.production_quantity
 
         ORDER BY

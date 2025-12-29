@@ -14,11 +14,13 @@ public class PPDailyPreviewResponseDTO {
     // Line
     private int lineId;
     private String lineName;
+    private int dailyCapacity;
 
     // Material
     private int materialId;
     private String materialCode;
     private String materialName;
+    private String baseUnit;
 
     // Quantity
     private int plannedQuantity;      // PP 총 수량
