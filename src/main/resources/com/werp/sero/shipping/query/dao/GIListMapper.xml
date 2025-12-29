@@ -18,6 +18,7 @@
         <result property="shippedAt" column="shipped_at"/>
         <result property="requesterName" column="requester_name"/>
         <result property="managerName" column="manager_name"/>
+        <result property="clientManagerName" column="client_manager_name"/>
         <result property="status" column="status"/>
     </resultMap>
 
@@ -43,12 +44,14 @@
             B.shipped_at,
             D.name AS requester_name,
             E.name AS manager_name,
+            F.name AS client_manager_name,
             A.status
         FROM goods_issue A
         INNER JOIN sales_order B ON A.so_id = B.id
         INNER JOIN warehouse C ON A.warehouse_id = C.id
         LEFT JOIN employee D ON A.drafter_id = D.id
         LEFT JOIN employee E ON A.gi_manager_id = E.id
+        LEFT JOIN employee F ON B.client_manager_id = F.id
         <where>
             <if test="warehouseId != null and warehouseId > 0">
                 AND A.warehouse_id = #{warehouseId}
@@ -92,12 +95,14 @@
         B.shipped_at,
         D.name AS requester_name,
         E.name AS manager_name,
+        F.name AS client_manager_name,
         A.status
         FROM goods_issue A
             INNER JOIN sales_order B ON A.so_id = B.id
             INNER JOIN warehouse C ON A.warehouse_id = C.id
             LEFT JOIN employee D ON A.drafter_id = D.id
             LEFT JOIN employee E ON A.gi_manager_id = E.id
+            LEFT JOIN employee F ON B.client_manager_id = F.id
         WHERE A.so_id = #{orderId}
         ORDER BY A.created_at DESC
     </select>

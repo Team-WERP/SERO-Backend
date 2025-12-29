@@ -46,6 +46,10 @@ public class GIListResponseDTO {
     @Schema(description = "담당자 (물류팀)")
     private String managerName;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Schema(description = "고객사 담당자")
+    private String clientManagerName;
+
     @Schema(description = "상태")
     private String status;
 }
