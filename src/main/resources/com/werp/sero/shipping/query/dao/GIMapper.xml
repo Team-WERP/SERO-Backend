@@ -11,7 +11,7 @@
         <id property="giCode" column="gi_code"/>
 
         <!-- 기본 출고 지시 정보 -->
-        <result property="id" column="gi_id"/>
+        <result property="giId" column="gi_id"/>
         <result property="createdAt" column="created_at"/>
         <result property="scheduledAt" column="scheduled_at"/>
         <result property="status" column="status"/>
@@ -23,23 +23,30 @@
         <result property="recipientContact" column="recipient_contact"/>
 
         <!-- 관련 주문 정보 -->
+        <result property="soId" column="so_id"/>
         <result property="soCode" column="so_code"/>
+        <result property="doId" column="do_id"/>
         <result property="doCode" column="do_code"/>
+        <result property="clientId" column="client_id"/>
         <result property="clientName" column="client_name"/>
         <result property="shippedAt" column="shipped_at"/>
 
         <!-- 출고 창고 정보 -->
+        <result property="warehouseId" column="warehouse_id"/>
         <result property="warehouseName" column="warehouse_name"/>
 
         <!-- 특이사항 -->
         <result property="note" column="note"/>
 
         <!-- 결재 정보 -->
+        <result property="approvalId" column="approval_id"/>
         <result property="approvalCode" column="approval_code"/>
+        <result property="drafterId" column="drafter_id"/>
         <result property="drafterName" column="drafter_name"/>
         <result property="drafterDepartment" column="drafter_department"/>
         <result property="drafterPosition" column="drafter_position"/>
         <result property="drafterRank" column="drafter_rank"/>
+        <result property="managerId" column="manager_id"/>
         <result property="managerName" column="manager_name"/>
 
         <!-- 출고지시 품목 목록 (Collection) -->
@@ -86,23 +93,30 @@
             D.contact AS recipient_contact,
 
             /* 관련 주문 정보 */
+            B.id AS so_id,
             B.so_code,
+            K.id AS do_id,
             A.do_code,
+            C.id AS client_id,
             C.company_name AS client_name,
             B.shipped_at,
 
             /* 출고 창고 정보 */
+            E.id AS warehouse_id,
             E.name AS warehouse_name,
 
             /* 특이사항 */
             A.note,
 
             /* 결재 정보 */
+            L.id AS approval_id,
             A.approval_code,
+            F.id AS drafter_id,
             F.name AS drafter_name,
             P.dept_name AS drafter_department,
             Q.name AS drafter_position,
             R.name AS drafter_rank,
+            G.id AS manager_id,
             G.name AS manager_name,
 
             /* 품목 정보 */
