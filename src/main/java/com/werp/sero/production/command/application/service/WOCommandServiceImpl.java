@@ -4,15 +4,9 @@ import com.werp.sero.common.util.DateTimeUtils;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.production.command.application.dto.WorkOrderCreateRequestDTO;
 import com.werp.sero.production.command.application.dto.WorkOrderEndRequest;
-import com.werp.sero.production.command.domain.aggregate.ProductionPlan;
-import com.werp.sero.production.command.domain.aggregate.WorkOrder;
-import com.werp.sero.production.command.domain.aggregate.WorkOrderHistory;
-import com.werp.sero.production.command.domain.aggregate.WorkOrderResult;
+import com.werp.sero.production.command.domain.aggregate.*;
 import com.werp.sero.production.command.domain.aggregate.enums.Action;
-import com.werp.sero.production.command.domain.repository.PPRepository;
-import com.werp.sero.production.command.domain.repository.WORepository;
-import com.werp.sero.production.command.domain.repository.WorkOrderHistoryRepository;
-import com.werp.sero.production.command.domain.repository.WorkOrderResultRepository;
+import com.werp.sero.production.command.domain.repository.*;
 import com.werp.sero.production.exception.*;
 import com.werp.sero.system.command.application.service.DocumentSequenceCommandService;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +23,7 @@ public class WOCommandServiceImpl implements WOCommandService {
     private final DocumentSequenceCommandService documentSequenceCommandService;
     private final WorkOrderResultRepository workOrderResultRepository;
     private final WorkOrderHistoryRepository workOrderHistoryRepository;
+    private final WOItemRepository woItemRepository;
 
     @Override
     @Transactional
@@ -36,63 +31,85 @@ public class WOCommandServiceImpl implements WOCommandService {
             WorkOrderCreateRequestDTO request,
             Employee currentEmployee
     ) {
-        // 1. 생산계획 조회
-        ProductionPlan pp = ppRepository.findById(request.getPpId())
+        if (request.getItems() == null || request.getItems().isEmpty()) {
+            throw new InvalidWorkOrderRequestException();
+        }
+
+        // 1. 첫 PP 기준으로 기준 정보 확보
+        ProductionPlan firstPP = ppRepository.findById(request.getItems().get(0).getPpId())
                 .orElseThrow(ProductionPlanNotFoundException::new);
 
-        if (!"PP_CONFIRMED".equals(pp.getStatus())) {
+        if (!"PP_CONFIRMED".equals(firstPP.getStatus())) {
             throw new InvalidProductionPlanStatusException();
         }
 
-        // 2. 동일 날짜 작업지시 중복 방지
-        boolean exists =
-                woRepository.existsByProductionPlan_IdAndWorkDate(
-                        pp.getId(),
-                        request.getWorkDate()
-                );
-
-        if (exists) {
-            throw new WorkOrderAlreadyExistsException();
+        // 2. 라인 검증
+        if (firstPP.getProductionLine() == null ||
+                firstPP.getProductionLine().getId() != request.getLineId()) {
+            throw new ProductionLineMismatchException();
         }
 
-        // 3. 작업일자 검증 (PP 기간 내)
-        LocalDate start = DateTimeUtils.parse(pp.getStartDate());
-        LocalDate end   = DateTimeUtils.parse(pp.getEndDate());
-        LocalDate work  = DateTimeUtils.parse(request.getWorkDate());
+        ProductionLine line = firstPP.getProductionLine();
 
-        if (work.isBefore(start) || work.isAfter(end)) {
-            throw new WorkOrderInvalidPeriodException();
+        // 3. 작업일자 검증
+        LocalDate workDate = DateTimeUtils.parse(request.getWorkDate());
+
+        // 4. WorkOrder 조회 or 생성
+        WorkOrder wo = woRepository
+                .findByProductionLine_IdAndWorkDate(line.getId(), request.getWorkDate())
+                .orElseGet(() -> woRepository.save(
+                        new WorkOrder(
+                                documentSequenceCommandService.generateDocumentCode("DOC_WO"),
+                                request.getWorkDate(),
+                                firstPP.getProductionRequestItem().getProductionRequest(),
+                                line,
+                                currentEmployee,
+                                currentEmployee
+                        )
+                ));
+
+        // 5. PP별 WorkOrderItem 생성
+        for (WorkOrderCreateRequestDTO.Item itemReq : request.getItems()) {
+
+            ProductionPlan pp = ppRepository.findById(itemReq.getPpId())
+                    .orElseThrow(ProductionPlanNotFoundException::new);
+
+            // PP 상태 검증
+            if (!"PP_CONFIRMED".equals(pp.getStatus())) {
+                throw new InvalidProductionPlanStatusException();
+            }
+
+            // 라인 일치 검증
+            if (pp.getProductionLine().getId() != line.getId()) {
+                throw new ProductionLineMismatchException();
+            }
+
+            // 기간 검증
+            LocalDate start = DateTimeUtils.parse(pp.getStartDate());
+            LocalDate end = DateTimeUtils.parse(pp.getEndDate());
+            if (workDate.isBefore(start) || workDate.isAfter(end)) {
+                throw new WorkOrderInvalidPeriodException();
+            }
+
+            // 중복 PP 방지
+            if (woItemRepository.existsByWorkOrder_IdAndProductionPlan_Id(wo.getId(), pp.getId())) {
+                throw new WorkOrderItemAlreadyExistsException();
+            }
+
+            // 수량 검증
+            if (itemReq.getQuantity() <= 0) {
+                throw new WorkOrderInvalidQuantityException();
+            }
+
+            WorkOrderItem woItem = new WorkOrderItem(
+                    wo,
+                    pp,
+                    pp.getProductionRequestItem(),
+                    itemReq.getQuantity()
+            );
+
+            woItemRepository.save(woItem);
         }
-
-        // 4. 수량 검증
-        int requestQty = request.getQuantity();
-        if (requestQty <= 0) {
-            throw new WorkOrderInvalidQuantityException();
-        }
-
-        // 5. 잔여 수량 계산
-        int producedQty =
-                workOrderResultRepository.sumGoodQuantityByPpId(pp.getId());
-
-        int remainingQty =
-                pp.getProductionQuantity() - producedQty;
-
-        if (requestQty > remainingQty) {
-            throw new WorkOrderInvalidQuantityException();
-        }
-
-        // 6. 작업지시 생성
-        WorkOrder wo = new WorkOrder(
-                documentSequenceCommandService.generateDocumentCode("DOC_WO"),
-                request.getWorkDate(),
-                requestQty,
-                pp.getProductionRequestItem().getProductionRequest(),
-                pp,
-                currentEmployee,
-                currentEmployee
-        );
-
-        woRepository.save(wo);
     }
 
     @Override
