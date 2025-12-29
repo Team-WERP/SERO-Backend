@@ -19,6 +19,9 @@ public class SOResponseDTO {
     @Schema(description = "주문 ID")
     private int id;
 
+    @Schema(description = "주문 건수")
+    private Integer orderCount;
+
     @Schema(description = "주문 코드")
     private String soCode;
 
@@ -96,6 +99,7 @@ public class SOResponseDTO {
 
         return new SOResponseDTO(
                 salesOrder.getId(),
+                null,
                 salesOrder.getSoCode(),
                 salesOrder.getClientName(),
                 salesOrder.getOrderedAt(),

@@ -1,5 +1,7 @@
 package com.werp.sero.shipping.query.service;
 
+import com.werp.sero.order.command.domain.repository.SORepository;
+import com.werp.sero.order.exception.SalesOrderNotFoundException;
 import com.werp.sero.shipping.exception.DeliveryOrderNotFoundException;
 import com.werp.sero.shipping.query.dao.DOMapper;
 import com.werp.sero.shipping.query.dto.DODetailResponseDTO;
@@ -16,6 +18,7 @@ import java.util.List;
 public class DODetailQueryServiceImpl implements DODetailQueryService {
 
     private final DOMapper doMapper;
+    private final SORepository  soRepository;
 
     @Override
     public DODetailResponseDTO getDeliveryOrderDetail(String doCode) {
@@ -31,5 +34,14 @@ public class DODetailQueryServiceImpl implements DODetailQueryService {
     @Override
     public List<DOListResponseDTO> getDeliveryOrdersByStatusAndManager(String status, int managerId) {
         return doMapper.findByStatusAndManager(status, managerId);
+    }
+
+    @Override
+    public List<DOListResponseDTO> getDeliveryOrderListByOrderId(final int orderId) {
+        soRepository.findById(orderId).orElseThrow(SalesOrderNotFoundException::new);
+
+        List<DOListResponseDTO> list = doMapper.selectDOListByOrderId(orderId);
+
+        return list;
     }
 }

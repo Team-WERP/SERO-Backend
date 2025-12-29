@@ -14,4 +14,5 @@ public interface GIListQueryService {
     List<GIListResponseDTO> findGoodsIssueList(GIFilterDTO filter, Integer page);
 
 
+    List<GIListResponseDTO> findGIListByOrderId(final int orderId);
 }

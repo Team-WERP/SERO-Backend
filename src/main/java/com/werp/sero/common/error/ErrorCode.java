@@ -58,6 +58,7 @@ public enum ErrorCode {
 
     /* SALES ORDER ITEM */
     SALES_ORDER_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER004", "주문 품목 정보를 찾을 수 없습니다."),
+    SALES_ORDER_ITEM_HISTORY_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER005", "주문 품목 수량 변동 이력 정보를 찾을 수 없습니다."),
 
     /* PRODUCTION */
     PR_DRAFT_NOT_FOUND(HttpStatus.NOT_FOUND, "PRODUCTION001", "임시 저장된 생산요청을 찾을 수 없습니다."),
@@ -88,11 +89,11 @@ public enum ErrorCode {
     APPROVAL_NOT_CURRENT_SEQUENCE(HttpStatus.BAD_REQUEST, "APPROVAL011", "본인의 결재 순서가 아닙니다."),
     APPROVAL_LINE_NOT_FOUND(HttpStatus.NOT_FOUND, "APPROVAL012", "결재자 정보를 찾을 수 없습니다."),
     APPROVAL_NOT_SUBMITTED(HttpStatus.BAD_REQUEST, "APPROVAL013", "결재가 상신되지 않은 문서입니다."),
+    APPROVAL_TEMPLATE_NAME_DUPLICATED(HttpStatus.CONFLICT, "APPROVAL014", "이미 존재하는 결재선 템플릿 이름입니다."),
+    APPROVAL_TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND, "APPROVAL015", "결재선 템플릿 정보를 찾을 수 없습니다."),
 
     /* DELIVERY ORDER */
     DELIVERY_ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "SHIPPING002", "납품서 정보를 찾을 수 없습니다."),
-
-
 
     /* DELIVERY */
     DELIVERY_NOT_FOUND(HttpStatus.NOT_FOUND, "DELIVERY001", "배송 정보를 찾을 수 없습니다."),

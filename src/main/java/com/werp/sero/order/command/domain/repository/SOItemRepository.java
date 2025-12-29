@@ -7,5 +7,7 @@ import java.util.List;
 
 public interface SOItemRepository extends JpaRepository<SalesOrderItem, Integer> {
 
-    List<SalesOrderItem> findBySalesOrderId(int salesOrderId);
+    List<SalesOrderItem> findBySalesOrderId(final int salesOrderId);
+
+    boolean existsByIdAndSalesOrderId(final Integer itemId, final int orderId);
 }
