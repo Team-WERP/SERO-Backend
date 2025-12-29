@@ -132,7 +132,15 @@ public enum ErrorCode {
     WO_WORK_TIME_REQUIRED(HttpStatus.BAD_REQUEST, "PRODUCTION208", "작업 시작/종료 시간이 필요합니다."),
     WO_INVALID_STATUS(HttpStatus.BAD_REQUEST, "PRODUCTION209", "작업지시 상태가 올바르지 않습니다."),
 
-    PR_INVALID_MONTH(HttpStatus.BAD_REQUEST, "PRODUCTION010", "월(month) 형식이 올바르지 않습니다. (yyyy-MM)");
+    PR_INVALID_MONTH(HttpStatus.BAD_REQUEST, "PRODUCTION010", "월(month) 형식이 올바르지 않습니다. (yyyy-MM)"),
+    WO_ITEM_ALREADY_EXISTS(HttpStatus.CONFLICT, "PRODUCTION210", "이미 등록된 작업지시 아이템입니다."),
+    WO_INVALID_REQUEST(HttpStatus.BAD_REQUEST, "PRODUCTION211", "작업지시 요청 형식이 올바르지 않습니다."),
+    PRODUCTION_LINE_MISMATCH(HttpStatus.BAD_REQUEST, "PRODUCTION212", "잘못된 생산 라인입니다."),
+    WO_INVALID_DISTRIBUTED_QUANTITY(HttpStatus.BAD_REQUEST,"PRODUCTION213", "아이템별 생산 수량 합계가 양품 수량과 일치하지 않습니다."),
+    WO_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "PRODUCTION214", "작업지시 아이템을 찾을 수 없습니다."),
+    WO_INVALID_PRODUCED_QUANTITY(HttpStatus.BAD_REQUEST,"PRODUCTION215", "생산 수량은 0 이상이어야 합니다."),
+    WO_EXCEED_PLANNED_QUANTITY(HttpStatus.BAD_REQUEST,"PRODUCTION216", "아이템 생산 수량이 계획 수량을 초과할 수 없습니다.");
+
 
     private final HttpStatus status;
     private final String code;

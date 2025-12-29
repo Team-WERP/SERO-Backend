@@ -64,4 +64,10 @@ public class WarehouseStock {
         this.currentStock -= quantity;
     }
 
+    public void increaseStock(int quantity) {
+        this.currentStock += quantity;
+        this.availableStock += quantity; // 가용도 증가
+    }
+
+
 }

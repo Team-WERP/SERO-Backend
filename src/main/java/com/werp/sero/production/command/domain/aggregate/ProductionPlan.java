@@ -2,6 +2,7 @@ package com.werp.sero.production.command.domain.aggregate;
 
 import com.werp.sero.common.util.DateTimeUtils;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
+import com.werp.sero.material.command.domain.aggregate.Material;
 import com.werp.sero.production.exception.InvalidProductionPlanStatusException;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -50,13 +51,19 @@ public class ProductionPlan {
     @JoinColumn(name = "production_line_id")
     private ProductionLine productionLine;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "material_id", nullable = false)
+    private Material material;
+
     // 생산계획 수립 대상 추가 (DRAFT)
     public static ProductionPlan createDraft(
             ProductionRequestItem prItem,
+            Material material,
             Employee employee
     ) {
         ProductionPlan plan = new ProductionPlan();
         plan.productionRequestItem = prItem;
+        plan.material = material;
         plan.employee = employee;
         plan.status = "PP_DRAFT";
         plan.productionQuantity = 0;

@@ -9,9 +9,6 @@ import java.util.List;
 
 @Mapper
 public interface WOQueryMapper {
-    List<WOByPPResponseDTO> selectByProductionPlan(int ppId);
-
-    List<WOByPRResponseDTO> selectByProductionRequest(int prId);
 
     List<WOByDateResponseDTO> selectByDate(String date);
 }

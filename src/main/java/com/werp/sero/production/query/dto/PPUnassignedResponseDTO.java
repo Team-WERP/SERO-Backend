@@ -12,10 +12,14 @@ public class PPUnassignedResponseDTO {
     private String itemName;
     private String spec;
     private int requestedQuantity;
+    private String prCode;
+    private String requestedAt;
     private String dueAt;
 
     private int lineMaterialId;
     private int productionLineId;
     private String productionLineName;
+    private Integer dailyCapacity;
+    private String unit;
 
 }

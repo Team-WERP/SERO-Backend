@@ -55,10 +55,23 @@
             resultType="com.werp.sero.production.query.dto.ProductionLineResponseDTO">
 
         SELECT
-        A.id        AS lineId,
-        A.line_name AS lineName,
-        A.status    AS status
+        A.id            AS lineId,
+        A.line_name     AS lineName,
+        A.status        AS status,
+        A.daily_capacity AS dailyCapacity,
+
+        C.id             AS materialId,
+        C.material_code  AS materialCode,
+        C.name           AS materialName,
+        C.base_unit      AS unit
+
         FROM production_line A
+        JOIN line_material B
+          ON B.line_id = A.id
+        JOIN material C
+          ON C.id = B.material_id
+        AND C.type = 'MAT_FG'
+
         WHERE A.status = 'PL_ACTIVE'
         <if test="factoryId != null">
             AND A.factory_id = #{factoryId}
@@ -79,6 +92,8 @@
             A.quantity          AS requestedQuantity,
             A.status            AS prItemStatus,
 
+            B.pr_code           AS prCode,
+            B.requested_at      AS requestedAt,
             B.due_at            AS dueAt,
 
             C.item_code         AS itemCode,
@@ -91,7 +106,9 @@
             E.id                AS lineMaterialId,
 
             F.id                AS productionLineId,
-            F.line_name         AS productionLineName
+            F.line_name         AS productionLineName,
+            F.daily_capacity    AS dailyCapacity,
+            D.base_unit              AS unit
 
         FROM production_request_item A
                  JOIN production_request B
@@ -130,17 +147,35 @@
 
         SELECT
             A.id                  AS ppId,
+            A.pp_code             AS ppCode,
             A.production_line_id  AS productionLineId,
-            C.item_name           AS itemName,
+
+            C.id                  AS prId,
+            C.pr_code             AS prCode,
+
+            B.id                 AS prItemId,
+            B.quantity           AS plannedQuantity,
+
+            D.material_code        AS materialCode,
+            D.name        AS materialName,
+            D.base_unit AS unit,
+
             A.start_date          AS startDate,
             A.end_date            AS endDate,
             A.production_quantity AS productionQuantity,
             A.status              AS status
+
         FROM production_plan A
                  JOIN production_request_item B
                       ON A.pr_item_id = B.id
-                 JOIN sales_order_item C
-                      ON B.so_item_id = C.id
+                 JOIN production_request C
+                      ON B.pr_id = C.id
+                 JOIN material D
+                      ON D.material_code = (
+                          SELECT E.item_code
+                          FROM sales_order_item E
+                          WHERE E.id = B.so_item_id
+                      )
         WHERE
             A.start_date &lt;= #{monthEnd}
           AND A.end_date   &gt;= #{monthStart}
@@ -153,76 +188,54 @@
     <!-- ===================================================== -->
     <!-- 일자 기준 생산계획 + 작업지시 + 실적 미리보기                   -->
     <!-- ===================================================== -->
+
     <select id="selectDailyPreview"
             parameterType="string"
             resultType="com.werp.sero.production.query.dto.PPDailyPreviewResponseDTO">
 
         SELECT
-            A.id                  AS ppId,
-            A.pp_code             AS ppCode,
+            A.id            AS ppId,
+            A.pp_code       AS ppCode,
 
-            C.id                  AS prId,
-            C.pr_code             AS prCode,
+            F.id            AS lineId,
+            F.line_name     AS lineName,
+            F.daily_capacity AS dailyCapacity,
 
-            F.id                  AS lineId,
-            F.line_name           AS lineName,
+            E.id            AS materialId,
+            E.material_code AS materialCode,
+            E.name          AS materialName,
+            E.base_unit     AS baseUnit,
 
-            E.id                  AS materialId,
-            E.material_code       AS materialCode,
-            E.name                AS materialName,
+            /* 오늘 기준 계획 수량 (고정) */
+            CEILING(
+                        A.production_quantity
+                        / (DATEDIFF(A.end_date, A.start_date) + 1)
+                ) AS dailyPlannedQuantity,
 
-            A.start_date          AS startDate,
-            A.end_date            AS endDate,
-            A.production_quantity AS plannedQuantity,
+            /* 오늘 작업지시로 확정된 수량 */
+            IFNULL(SUM(I.planned_quantity), 0) AS woPlannedQuantity,
 
-            /* 오늘 작업지시 수량 */
-            IFNULL(SUM(
-                           CASE WHEN G.work_date = #{date} THEN G.quantity ELSE 0 END
-                       ), 0) AS todayWorkQuantity,
-
-            /* 누적 양품 실적 */
-            IFNULL(SUM(H.good_quantity), 0) AS totalProducedQty,
-
-            /* 오늘 양품 실적 */
-            IFNULL(SUM(
-                           CASE WHEN G.work_date = #{date} THEN H.good_quantity ELSE 0 END
-                       ), 0) AS todayProducedQty,
-
-            /* 잔여 수량 */
-            (A.production_quantity - IFNULL(SUM(H.good_quantity), 0)) AS remainingQuantity,
-
-            /* 권장 수량 (오늘 기준) */
-            CASE
-            WHEN DATEDIFF(A.end_date, #{date}) + 1 &lt;= 0 THEN 0
-            ELSE CEILING(
-            (A.production_quantity - IFNULL(SUM(H.good_quantity), 0))
-            / (DATEDIFF(A.end_date, #{date}) + 1)
-            )
-            END AS recommendedQuantity,
-
-
-        /* 진행률 */
-            CASE
-                WHEN A.production_quantity = 0 THEN 0
-                ELSE FLOOR((IFNULL(SUM(H.good_quantity), 0) * 100) / A.production_quantity)
-                END AS progressRate
+            /* 오늘 해당 라인에 작업지시 존재 여부 */
+            COUNT(DISTINCT G.id) > 0 AS hasWorkOrder
 
         FROM production_plan A
                  JOIN production_request_item B
                       ON A.pr_item_id = B.id
-                 JOIN production_request C
-                      ON B.pr_id = C.id
                  JOIN sales_order_item D
                       ON B.so_item_id = D.id
                  JOIN material E
                       ON E.material_code = D.item_code
                           AND E.type = 'MAT_FG'
-                 LEFT JOIN production_line F
-                           ON A.production_line_id = F.id
+                 JOIN production_line F
+                      ON A.production_line_id = F.id
+
                  LEFT JOIN work_order G
-                           ON G.pp_id = A.id
-                 LEFT JOIN work_order_result H
-                           ON H.wo_id = G.id
+                           ON G.line_id = F.id
+                               AND G.work_date = #{date}
+
+                 LEFT JOIN work_order_item I
+                           ON I.work_order_id = G.id
+                               AND I.pp_id = A.id
 
         WHERE A.status = 'PP_CONFIRMED'
           AND A.start_date &lt;= #{date}
@@ -230,21 +243,53 @@
 
         GROUP BY
             A.id, A.pp_code,
-            C.id, C.pr_code,
-            F.id, F.line_name,
-            E.id, E.material_code, E.name,
-            A.start_date, A.end_date,
-            A.production_quantity
+            F.id, F.line_name, F.daily_capacity,
+            E.id, E.material_code, E.name, E.base_unit,
+            A.production_quantity,
+            A.start_date, A.end_date
 
         ORDER BY
             F.line_name ASC,
-            CASE
-                WHEN IFNULL(SUM(
-                                    CASE WHEN G.work_date = #{date} THEN 1 ELSE 0 END
-                                ), 0) &gt; 0 THEN 0
-                ELSE 1
-                END ASC,
             A.pp_code ASC
+    </select>
+
+    <!-- ===================================================== -->
+    <!-- 생산계획 상세 조회 (PP 단건)                          -->
+    <!-- ===================================================== -->
+    <select id="selectProductionPlanDetail"
+            parameterType="int"
+            resultType="com.werp.sero.production.query.dto.PPDetailResponseDTO">
+
+        SELECT
+            A.id                  AS ppId,
+            A.pp_code             AS ppCode,
+            A.status              AS status,
+            A.start_date          AS startDate,
+            A.end_date            AS endDate,
+            A.production_quantity AS productionQuantity,
+
+            C.id                  AS prId,
+            C.pr_code             AS prCode,
+            B.quantity   AS requestedQuantity,
+            C.due_at               AS dueAt,
+
+            B.id                  AS prItemId,
+            D.item_code           AS itemCode,
+            D.item_name           AS itemName,
+            D.spec                AS spec,
+            D.unit           AS unit,
+
+            E.id                  AS productionLineId,
+            E.line_name           AS productionLineName,
+            E.daily_capacity      AS dailyCapacity
+
+        FROM production_plan A
+                 JOIN production_request_item B ON A.pr_item_id = B.id
+                 JOIN production_request C ON B.pr_id = C.id
+                 JOIN sales_order_item D ON B.so_item_id = D.id
+                 JOIN production_line E ON A.production_line_id = E.id
+
+        WHERE A.id = #{ppId}
     </select>
 
 

@@ -59,5 +59,25 @@
 
     </select>
 
+    <!-- ===================================================== -->
+    <!-- 라인 + 날짜 기준 기존 생산계획 일별 수량 합계 -->
+    <!-- ===================================================== -->
+    <select id="sumDailyPlannedQty"
+            resultType="int">
+
+        SELECT
+            IFNULL(SUM(
+                           CEILING(
+                                       A.production_quantity /
+                                       (DATEDIFF(A.end_date, A.start_date) + 1)
+                               )
+                       ), 0)
+        FROM production_plan A
+        WHERE A.production_line_id = #{lineId}
+          AND A.status = 'PP_CONFIRMED'
+          AND #{date} BETWEEN A.start_date AND A.end_date
+
+    </select>
+
 
 </mapper>

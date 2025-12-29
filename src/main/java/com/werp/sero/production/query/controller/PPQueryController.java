@@ -1,10 +1,7 @@
 package com.werp.sero.production.query.controller;
 
 import com.werp.sero.production.command.application.dto.PPMonthlyPlanResponseDTO;
-import com.werp.sero.production.query.dto.PPDailyPreviewResponseDTO;
-import com.werp.sero.production.query.dto.PPUnassignedResponseDTO;
-import com.werp.sero.production.query.dto.PRItemPlanningResponseDTO;
-import com.werp.sero.production.query.dto.ProductionLineResponseDTO;
+import com.werp.sero.production.query.dto.*;
 import com.werp.sero.production.query.service.PPQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -92,4 +89,30 @@ public class PPQueryController {
                 ppQueryService.getDailyPreview(date)
         );
     }
+
+    @Operation(
+            summary = "라인별 일자 생산 부하 요약 조회",
+            description = """
+        선택한 월 기준으로 생산라인별 일자 생산계획 부하를 조회한다.
+        
+        - 확정된 생산계획(PP_CONFIRMED) 기준
+        - 라인별 daily_capacity 대비 계획 수량 집계
+        - 생산계획 수립 판단용 조회 API
+        """
+    )
+    @GetMapping("/daily-line-summary")
+    public ResponseEntity<List<DailyLineSummaryResponseDTO>> getDailyLineSummary(
+            @RequestParam String month,  // yyyy-MM
+            @RequestParam(required = false) Integer factoryId
+    ) {
+        return ResponseEntity.ok(
+                ppQueryService.getDailyLineSummary(month, factoryId)
+        );
+    }
+
+    @GetMapping("/{ppId}")
+    public PPDetailResponseDTO getDetail(@PathVariable int ppId) {
+        return ppQueryService.getProductionPlanDetail(ppId);
+    }
+
 }
