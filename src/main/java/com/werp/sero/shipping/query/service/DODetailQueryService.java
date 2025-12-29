@@ -10,4 +10,6 @@ public interface DODetailQueryService {
     DODetailResponseDTO getDeliveryOrderDetail(String doCode);
 
     List<DOListResponseDTO> getDeliveryOrdersByStatusAndManager(String status, int managerId);
+
+    List<DOListResponseDTO> getDeliveryOrderListByOrderId(final int orderId);
 }

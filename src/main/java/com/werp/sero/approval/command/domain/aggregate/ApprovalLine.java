@@ -17,8 +17,6 @@ public class ApprovalLine {
     @Column(name = "line_type", nullable = false)
     private String lineType;
 
-    //    @Column(nullable = false)
-//    수신 또는 참조인 경우 순서가 필요 없으므로 null 허용
     private Integer sequence;
 
     private String status;

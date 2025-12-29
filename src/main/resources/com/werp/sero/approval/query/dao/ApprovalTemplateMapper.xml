@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.werp.sero.approval.query.dao.ApprovalTemplateMapper">
+    <resultMap id="ApprovalTemplateInfoResponseResultMap" type="com.werp.sero.approval.query.dto.ApprovalTemplateInfoResponseDTO">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="description" property="description"/>
+
+        <collection property="totalApprovalLines" ofType="com.werp.sero.approval.query.dto.ApprovalTemplateLineInfoResponseDTO">
+            <id column="approval_template_line_id" property="approvalTemplateLineId"/>
+            <result column="approver_id" property="approverId"/>
+            <result column="approver_name" property="approverName"/>
+            <result column="approver_department_code" property="approverDepartmentCode"/>
+            <result column="approver_department_name" property="approverDepartmentName"/>
+            <result column="approver_position_code" property="approverPositionCode"/>
+            <result column="approver_rank_code" property="approverRankCode"/>
+            <result column="sequence" property="sequence"/>
+            <result column="line_type" property="lineType"/>
+            <result column="note" property="note"/>
+        </collection>
+    </resultMap>
+
+    <select id="findApprovalTemplatesByEmployee" resultMap="ApprovalTemplateInfoResponseResultMap">
+        SELECT
+               A.id AS id
+             , A.name AS name
+             , A.description AS description
+             , B.id AS approval_template_line_id
+             , C.id AS approver_id
+             , C.name AS approver_name
+             , D.dept_code AS approver_department_code
+             , D.dept_name AS approver_department_name
+             , C.position_code AS approver_position_code
+             , C.rank_code AS approver_rank_code
+             , B.sequence AS sequence
+             , B.line_type AS line_type
+             , B.note AS note
+        FROM approval_template A
+                 JOIN approval_template_line B
+                      ON A.id = B.template_id
+                 JOIN employee C
+                      ON B.approver_id = C.id
+                 JOIN department D
+                      ON C.dept_id = D.id
+        WHERE A.creator_id = #{employeeId}
+    </select>
+
+    <select id="findApprovalTemplateById" resultMap="ApprovalTemplateInfoResponseResultMap">
+        SELECT
+               A.id AS id
+             , A.name AS name
+             , A.description AS description
+             , B.id AS approval_template_line_id
+             , C.id AS approver_id
+             , C.name AS approver_name
+             , D.dept_code AS approver_department_code
+             , D.dept_name AS approver_department_name
+             , C.position_code AS approver_position_code
+             , C.rank_code AS approver_rank_code
+             , B.sequence AS sequence
+             , B.line_type AS line_type
+             , B.note AS note
+          FROM approval_template A
+          JOIN approval_template_line B
+            ON A.id = B.template_id
+          JOIN employee C
+            ON B.approver_id = C.id
+          JOIN department D
+            ON C.dept_id = D.id
+         WHERE A.creator_id = #{employeeId} AND A.id = #{approvalTemplateId}
+    </select>
+</mapper>

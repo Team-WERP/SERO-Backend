@@ -1,5 +1,7 @@
 package com.werp.sero.shipping.query.service;
 
+import com.werp.sero.order.command.domain.repository.SORepository;
+import com.werp.sero.order.exception.SalesOrderNotFoundException;
 import com.werp.sero.shipping.exception.GoodsIssueNotFoundException;
 import com.werp.sero.shipping.query.dao.GIListMapper;
 import com.werp.sero.shipping.query.dto.GIFilterDTO;
@@ -20,6 +22,7 @@ import java.util.Map;
 public class GIListQueryServiceImpl implements GIListQueryService {
 
     private final GIListMapper giListMapper;
+    private final SORepository soRepository;
     private static final int DEFAULT_PAGE_SIZE = 20;
 
     @Override
@@ -42,6 +45,14 @@ public class GIListQueryServiceImpl implements GIListQueryService {
         params.put("offset", offset);
 
         return giListMapper.selectAllGoodsIssues(params);
+    }
+
+    @Override
+    public List<GIListResponseDTO> findGIListByOrderId(final int orderId) {
+        soRepository.findById(orderId).orElseThrow(SalesOrderNotFoundException::new);
+
+        List<GIListResponseDTO> list = giListMapper.selectGIListByOrderId(orderId);
+        return list;
     }
 
 }

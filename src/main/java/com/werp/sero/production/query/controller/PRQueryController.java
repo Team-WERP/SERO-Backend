@@ -131,4 +131,21 @@ public class PRQueryController {
                 prQueryService.getPlanItems(prId)
         );
     }
+
+    @Operation(
+            summary = "주문 id를 통한 생산 요청 조회",
+            description = """
+               주문 상세조회에서 해당 주문에 해당하는 생산 요청 목록을 조회합니다.
+               상태가 임시저장인 것과 확정된 생산요청 모두 조회할 수 있습니다.
+                """
+    )
+    @GetMapping("/search/{orderId}")
+    public ResponseEntity<List<PRListResponseDTO>> getListByOrderId(
+            @PathVariable int orderId
+    ) {
+        return ResponseEntity.ok(
+                prQueryService.getListByOrderId(orderId)
+        );
+    }
+
 }

@@ -32,6 +32,10 @@ import java.util.stream.Collectors;
 @Component
 public class JwtTokenProvider {
     private static final String AUTHORITIES_KEY = "auth";
+    public static final String POSITION_KEY = "pos";
+    public static final String ID_KEY = "id";
+    public static final String DEPARTMENT_KEY = "dept";
+    public static final String RANK_KEY = "rank";
     private static final String CLIENT_PERMISSION = "AC_CLI";
 
     @Value("${jwt.secret-key}")
@@ -65,6 +69,10 @@ public class JwtTokenProvider {
                 .subject(customUserDetails.getUsername())
                 .claim(AUTHORITIES_KEY, authorities)
                 .expiration(new Date(System.currentTimeMillis() + accessTokenExpirationTime))
+                .claim(POSITION_KEY, customUserDetails.getPosition())
+                .claim(RANK_KEY, customUserDetails.getRank())
+                .claim(DEPARTMENT_KEY, customUserDetails.getDepartment())
+                .claim(ID_KEY, customUserDetails.getId())
                 .signWith(secretKey)
                 .compact();
 

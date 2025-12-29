@@ -20,6 +20,9 @@ public class SODetailsResponseDTO {
     @Schema(description = "주문일시")
     private String orderedAt;
 
+    @Schema(description = "상태")
+    private String status;
+
     @Schema(description = "납기일시")
     private String shippedAt;
 

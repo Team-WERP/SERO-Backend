@@ -1,12 +1,15 @@
 package com.werp.sero.shipping.command.application.service;
 
 import com.werp.sero.employee.command.domain.aggregate.Employee;
+import com.werp.sero.notification.command.domain.aggregate.enums.NotificationType;
+import com.werp.sero.notification.command.infrastructure.event.NotificationEvent;
 import com.werp.sero.shipping.command.domain.aggregate.Delivery;
 import com.werp.sero.shipping.command.domain.repository.DeliveryRepository;
 import com.werp.sero.shipping.exception.DeliveryNotFoundException;
 import com.werp.sero.shipping.exception.InvalidDeliveryStatusTransitionException;
 import com.werp.sero.shipping.exception.UnauthorizedDeliveryUpdateException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class DeliveryCommandServiceImpl implements DeliveryCommandService {
 
     private final DeliveryRepository deliveryRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public void startDelivery(String giCode, Employee driver) {
@@ -37,6 +41,17 @@ public class DeliveryCommandServiceImpl implements DeliveryCommandService {
         // 4. 배송 시작
         delivery.startDelivery();
         // @Transactional이 자동으로 변경사항 저장 (dirty checking)
+
+        // 5. 출고지시 담당자에게 알림 발송
+        if (delivery.getGoodsIssue().getManager() != null) {
+            eventPublisher.publishEvent(new NotificationEvent(
+                NotificationType.SHIPPING,
+                "배송 출발",
+                "출고지시 " + giCode + "의 배송이 출발했습니다. (기사: " + driver.getName() + ")",
+                delivery.getGoodsIssue().getManager().getId(),
+                "/goods-issues/" + giCode
+            ));
+        }
     }
 
     @Override
@@ -58,5 +73,16 @@ public class DeliveryCommandServiceImpl implements DeliveryCommandService {
 
         // 4. 배송 완료
         delivery.completeDelivery();
+
+        // 5. 출고지시 담당자에게 알림 발송
+        if (delivery.getGoodsIssue().getManager() != null) {
+            eventPublisher.publishEvent(new NotificationEvent(
+                NotificationType.SHIPPING,
+                "배송 도착",
+                "출고지시 " + giCode + "의 배송이 완료되었습니다. (기사: " + driver.getName() + ")",
+                delivery.getGoodsIssue().getManager().getId(),
+                "/goods-issues/" + giCode
+            ));
+        }
     }
 }

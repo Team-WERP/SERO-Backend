@@ -107,6 +107,7 @@
         A.po_code,
         A.main_item_name,
         A.total_price,
+        A.total_item_count,
         A.ordered_at,
         A.shipped_at,
         A.status,
@@ -114,28 +115,42 @@
         A.note
         FROM sales_order A
         WHERE A.client_id = #{clientId}
-        <if test="startDate != null and startDate != ''">
+        <if test="startDate != null and startDate != '' and endDate != null and endDate != ''">
             <choose>
-                <when test="dateField == 'shippedAt'">
-                    AND A.shipped_at >= #{startDate}
+                <when test='dateField == "orderedAt"'>
+                    AND A.ordered_at BETWEEN CONCAT(#{startDate}, ' 00:00') AND CONCAT(#{endDate}, ' 23:59')
                 </when>
-                <otherwise>
-                    AND A.ordered_at >= #{startDate}
-                </otherwise>
-            </choose>
-        </if>
-        <if test="endDate != null and endDate != ''">
-            <choose>
-                <when test="dateField == 'shippedAt'">
-                    AND A.shipped_at &lt;= #{endDate}
+                <when test='dateField == "shippedAt"'>
+                    AND A.shipped_at BETWEEN CONCAT(#{startDate}, ' 00:00') AND CONCAT(#{endDate}, ' 23:59')
                 </when>
-                <otherwise>
-                    AND A.ordered_at &lt;= #{endDate}
-                </otherwise>
             </choose>
         </if>
         <if test="status != null and status != ''">
-            AND A.status = #{status}
+            <choose>
+                <when test="status == 'CLI_SO_RED'">
+                    AND A.status = 'ORD_RED'
+                </when>
+
+                <when test="status == 'CLI_SO_ING'">
+                    AND A.status IN ('ORD_RVW', 'ORD_APPR_PEND', 'ORD_APPR_DONE', 'ORD_WORK_REQ', 'ORD_PRO', 'ORD_SHIP_READY')
+                </when>
+
+                <when test="status == 'CLI_SO_SHIPPING'">
+                    AND A.status = 'ORD_SHIPPING'
+                </when>
+
+                <when test="status == 'CLI_SO_DONE'">
+                    AND A.status = 'ORD_DONE'
+                </when>
+
+                <when test="status == 'CLI_SO_CANCEL'">
+                    AND A.status = 'ORD_CANCEL'
+                </when>
+
+                <otherwise>
+                    AND A.status = #{status}
+                </otherwise>
+            </choose>
         </if>
         <if test="searchKeyword != null and searchKeyword != ''">
             AND (
@@ -162,6 +177,7 @@
         <result property="totalPrice" column="total_price"/>
         <result property="managerName" column="manager_name"/>
         <result property="managerContact" column="manager_contact"/>
+        <result property="clientManagerName" column="client_manager_name"/>
         <result property="shippingName" column="shipping_name"/>
         <result property="address" column="address"/>
         <result property="recipientName" column="recipient_name"/>
@@ -210,10 +226,13 @@
             C.quantity,
             C.unit,
             C.unit_price,
-            C.total_price AS item_total_price
+            C.total_price AS item_total_price,
+
+            D.manager_name AS client_manager_name
         FROM sales_order A
                  LEFT JOIN employee B ON A.manager_id = B.id
                  LEFT JOIN sales_order_item C ON A.id = C.so_id
+                 LEFT JOIN client D ON A.client_id = D.id
         WHERE A.id = #{orderId}
         ORDER BY C.id ASC
     </select>
