@@ -5,8 +5,10 @@ import com.werp.sero.employee.command.domain.repository.EmployeeRepository;
 import com.werp.sero.employee.exception.EmployeeNotFoundException;
 import com.werp.sero.order.command.domain.aggregate.SalesOrder;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItem;
+import com.werp.sero.order.command.domain.aggregate.SalesOrderItemHistory;
 import com.werp.sero.order.command.domain.repository.SORepository;
 import com.werp.sero.order.command.domain.repository.SOItemRepository;
+import com.werp.sero.order.command.domain.repository.SalesOrderItemHistoryRepository;
 import com.werp.sero.order.exception.SalesOrderItemNotFoundException;
 import com.werp.sero.order.exception.SalesOrderNotFoundException;
 import com.werp.sero.production.command.application.dto.PRDraftCreateRequestDTO;
@@ -34,6 +36,7 @@ public class PRCommandServiceImpl implements PRCommandService {
     private final SOItemRepository soItemRepository;
     private final EmployeeRepository employeeRepository;
     private final DocumentSequenceCommandService documentSequenceCommandService;
+    private final SalesOrderItemHistoryRepository soItemHistoryRepository;
 
     @Override
     @Transactional
@@ -141,7 +144,30 @@ public class PRCommandServiceImpl implements PRCommandService {
 
         String prCode = documentSequenceCommandService.generateDocumentCode("DOC_PR");
         pr.request(prCode);
-        prRepository.save(pr);
+
+        List<ProductionRequestItem> items =
+                prtItemRepository.findAllByProductionRequest_Id(prId);
+
+        for (ProductionRequestItem prItem : items) {
+
+            int soItemId = prItem.getSalesOrderItem().getId();
+            int qty = prItem.getQuantity();
+
+            SalesOrderItemHistory prev =
+                    soItemHistoryRepository
+                            .findTopBySoItemIdOrderByIdDesc(soItemId)
+                            .orElse(null);
+
+            SalesOrderItemHistory history =
+                    SalesOrderItemHistory.createForProductionRequest(
+                            soItemId,
+                            qty,
+                            employee.getId(),
+                            prev
+                    );
+
+            soItemHistoryRepository.save(history);
+        }
     }
 
     @Override

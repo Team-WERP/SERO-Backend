@@ -47,7 +47,30 @@ public class SalesOrderItemHistory {
     private int creatorId;
 
     /**
-     * 생산 실적 등록 시 생산입고 수량 이력 생성
+     * 생산요청(PR) 등록 시 PR 수량 이력 생성
+     */
+    public static SalesOrderItemHistory createForProductionRequest(
+            int soItemId,
+            int prQuantity,
+            int creatorId,
+            SalesOrderItemHistory previousHistory
+    ) {
+        return SalesOrderItemHistory.builder()
+                .soItemId(soItemId)
+                .prQuantity(prQuantity)
+                .piQuantity(previousHistory != null ? previousHistory.getPiQuantity() : 0)
+                .giQuantity(previousHistory != null ? previousHistory.getGiQuantity() : 0)
+                .doQuantity(previousHistory != null ? previousHistory.getDoQuantity() : 0)
+                .shippedQuantity(previousHistory != null ? previousHistory.getShippedQuantity() : 0)
+                .completedQuantity(previousHistory != null ? previousHistory.getCompletedQuantity() : 0)
+                .createdAt(DateTimeUtils.nowDateTime())
+                .creatorId(creatorId)
+                .build();
+    }
+
+
+    /**
+     * 생산 실적 등록 시 생산입고(PI) 수량 이력 생성
      */
     public static SalesOrderItemHistory createForProductionIn(
             int soItemId,
