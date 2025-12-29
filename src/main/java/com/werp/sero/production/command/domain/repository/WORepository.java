@@ -17,4 +17,10 @@ public interface WORepository extends JpaRepository<WorkOrder, Integer> {
 
     Optional<WorkOrder> findByProductionLine_IdAndWorkDate(int lineId, String workDate);
 
+    @Query("""
+        SELECT COALESCE(SUM(A.plannedQuantity), 0)
+        FROM WorkOrderItem A
+        WHERE A.workOrder.id = :workOrderId
+    """)
+    int sumPlannedQuantityByWorkOrderId(@Param("workOrderId") int workOrderId);
 }

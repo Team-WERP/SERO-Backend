@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -113,6 +114,10 @@ public class WOCommandServiceImpl implements WOCommandService {
                 pr.changeStatus("PR_PRODUCING");
             }
         }
+
+        int totalQuantity =
+                woItemRepository.sumPlannedQuantityByWorkOrderId(wo.getId());
+        wo.recalculateQuantity(totalQuantity);
     }
 
     @Override

@@ -62,6 +62,10 @@ public class WorkOrder {
         this.createdAt = DateTimeUtils.nowDateTime();
     }
 
+    public void recalculateQuantity(int totalQuantity) {
+        this.quantity = totalQuantity;
+    }
+
     public void start() {
         if (!"WO_READY".equals(this.status)) {
             throw new InvalidWorkOrderStatusException(this.status, "WO_READY");
