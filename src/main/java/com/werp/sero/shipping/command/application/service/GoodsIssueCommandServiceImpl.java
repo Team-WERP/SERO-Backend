@@ -309,12 +309,16 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
 
     @Override
     @Transactional
-    public GIAssignManagerResponseDTO assignManager(String giCode, Employee manager) {
+    public GIAssignManagerResponseDTO assignManager(String giCode, int empId) {
         // 1. 출고지시 조회
         GoodsIssue existingGoodsIssue = goodsIssueRepository.findByGiCode(giCode)
                 .orElseThrow(() -> new BusinessException(ErrorCode.GOODS_ISSUE_NOT_FOUND));
 
-        // 2. 담당자 배정 - Builder 패턴으로 새로운 엔티티 생성
+        // 2. 담당자 조회
+        Employee manager = employeeRepository.findById(empId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.EMPLOYEE_NOT_FOUND));
+
+        // 3. 담당자 배정 - Builder 패턴으로 새로운 엔티티 생성
         GoodsIssue updatedGoodsIssue = GoodsIssue.builder()
                 .id(existingGoodsIssue.getId())
                 .giCode(existingGoodsIssue.getGiCode())
@@ -330,10 +334,10 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
                 .warehouse(existingGoodsIssue.getWarehouse())
                 .build();
 
-        // 3. 저장
+        // 4. 저장
         goodsIssueRepository.save(updatedGoodsIssue);
 
-        // 4. 응답 DTO 생성 및 반환
+        // 5. 응답 DTO 생성 및 반환
         return GIAssignManagerResponseDTO.builder()
                 .giCode(giCode)
                 .managerId(manager.getId())
