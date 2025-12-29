@@ -47,6 +47,9 @@ public class SODetailsResponseDTO {
     @Schema(description = "고객사 이름")
     private String clientName;
 
+    @Schema(description = "고객사 주소")
+    private String clientAddress;
+
     @Schema(description = "고객사 담당자명")
     private String clientManagerName;
 
