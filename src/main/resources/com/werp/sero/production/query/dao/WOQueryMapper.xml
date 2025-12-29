@@ -13,31 +13,34 @@
             resultType="com.werp.sero.production.query.dto.WOByDateResponseDTO">
 
         SELECT
-            A.id            AS woId,
-            A.wo_code       AS woCode,
-            A.status        AS woStatus,
-            A.work_date     AS workDate,
+            A.id          AS woId,
+            A.wo_code     AS woCode,
+            A.status      AS woStatus,
+            A.work_date   AS workDate,
 
-            D.id            AS lineId,
-            D.line_name     AS lineName,
+            B.id          AS lineId,
+            B.line_name   AS lineName,
 
-            SUM(W.planned_quantity) AS totalPlannedQuantity,
-            COUNT(W.id)             AS woiCount
+            D.name        AS materialName,
+            D.spec        AS materialSpec,
+            D.base_unit  AS baseUnit,
+
+            A.quantity    AS plannedQuantity
 
         FROM work_order A
-                 JOIN production_line D
-                      ON A.line_id = D.id
-                 JOIN work_order_item W
-                      ON W.work_order_id = A.id
+                 JOIN production_line B
+                      ON A.line_id = B.id
+
+                 JOIN line_material C
+                      ON C.line_id = B.id
+
+                 JOIN material D
+                      ON C.material_id = D.id
 
         WHERE A.work_date = #{date}
 
-        GROUP BY
-            A.id, A.wo_code, A.status, A.work_date,
-            D.id, D.line_name
-
         ORDER BY
-            D.line_name ASC,
+            B.line_name ASC,
             A.wo_code ASC
     </select>
 

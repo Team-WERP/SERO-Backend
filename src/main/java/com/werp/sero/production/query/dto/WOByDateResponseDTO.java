@@ -14,6 +14,9 @@ public class WOByDateResponseDTO {
     private int lineId;
     private String lineName;
 
-    private int totalPlannedQuantity;
-    private int woiCount;
+    private String materialName;
+    private String materialSpec;
+    private String baseUnit;
+
+    private int plannedQuantity;
 }
