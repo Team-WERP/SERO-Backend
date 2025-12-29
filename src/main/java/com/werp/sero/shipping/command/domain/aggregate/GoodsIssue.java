@@ -65,4 +65,8 @@ public class GoodsIssue {
     public void updateStatus(final String status) {
         this.status = status;
     }
+
+    public void updateGiUrl(final String giUrl) {
+        this.giUrl = giUrl;
+    }
 }

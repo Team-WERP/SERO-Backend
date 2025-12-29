@@ -12,6 +12,7 @@
 
         <!-- 기본 출고 지시 정보 -->
         <result property="giId" column="gi_id"/>
+        <result property="giUrl" column="gi_url"/>
         <result property="createdAt" column="created_at"/>
         <result property="scheduledAt" column="scheduled_at"/>
         <result property="status" column="status"/>
@@ -82,6 +83,7 @@
             /* 기본 출고 지시 정보 */
             A.id AS gi_id,
             A.gi_code,
+            A.gi_url,
             A.created_at,
             K.shipped_at AS scheduled_at,
             A.status,
