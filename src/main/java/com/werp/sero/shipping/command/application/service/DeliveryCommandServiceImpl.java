@@ -3,8 +3,11 @@ package com.werp.sero.shipping.command.application.service;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.notification.command.domain.aggregate.enums.NotificationType;
 import com.werp.sero.notification.command.infrastructure.event.NotificationEvent;
+import com.werp.sero.order.command.domain.aggregate.SalesOrder;
+import com.werp.sero.order.command.domain.aggregate.SalesOrderItem;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItemHistory;
 import com.werp.sero.order.command.domain.repository.SalesOrderItemHistoryRepository;
+import com.werp.sero.order.command.domain.repository.SalesOrderRepository;
 import com.werp.sero.shipping.command.domain.aggregate.Delivery;
 import com.werp.sero.shipping.command.domain.aggregate.GoodsIssueItem;
 import com.werp.sero.shipping.command.domain.repository.DeliveryRepository;
@@ -30,6 +33,7 @@ public class DeliveryCommandServiceImpl implements DeliveryCommandService {
     private final DeliveryRepository deliveryRepository;
     private final GoodsIssueItemRepository goodsIssueItemRepository;
     private final SalesOrderItemHistoryRepository salesOrderItemHistoryRepository;
+    private final SalesOrderRepository salesOrderRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
@@ -108,7 +112,10 @@ public class DeliveryCommandServiceImpl implements DeliveryCommandService {
 
         salesOrderItemHistoryRepository.saveAll(histories);
 
-        // 6. 출고지시 담당자에게 알림 발송
+        // 6. 주문 완료 여부 확인 및 상태 업데이트
+        checkAndCompleteOrder(delivery.getGoodsIssue().getSalesOrder());
+
+        // 7. 출고지시 담당자에게 알림 발송
         if (delivery.getGoodsIssue().getManager() != null) {
             eventPublisher.publishEvent(new NotificationEvent(
                 NotificationType.SHIPPING,
@@ -117,6 +124,42 @@ public class DeliveryCommandServiceImpl implements DeliveryCommandService {
                 delivery.getGoodsIssue().getManager().getId(),
                 "/goods-issues/" + giCode
             ));
+        }
+    }
+
+    /**
+     * 주문별 배송 완료 수량과 주문 수량을 비교하여 주문 완료 처리
+     */
+    private void checkAndCompleteOrder(SalesOrder salesOrder) {
+        // 1. 주문의 모든 품목별 이력 조회
+        List<SalesOrderItemHistory> allHistories = salesOrderItemHistoryRepository.findBySalesOrderId(salesOrder.getId());
+
+        // 2. 품목별로 그룹화하여 배송 완료 수량 집계
+        java.util.Map<Integer, Integer> completedQuantityByItem = new java.util.HashMap<>();
+
+        for (SalesOrderItemHistory history : allHistories) {
+            int soItemId = history.getSoItemId();
+            int completedQty = history.getCompletedQuantity();
+
+            completedQuantityByItem.put(soItemId,
+                completedQuantityByItem.getOrDefault(soItemId, 0) + completedQty);
+        }
+
+        // 3. 모든 품목의 주문 수량과 배송 완료 수량 비교
+        boolean allItemsCompleted = goodsIssueItemRepository.findByGoodsIssueSalesOrderId(salesOrder.getId())
+            .stream()
+            .allMatch(giItem -> {
+                SalesOrderItem soItem = giItem.getSalesOrderItem();
+                int orderedQuantity = soItem.getQuantity();
+                int completedQuantity = completedQuantityByItem.getOrDefault(soItem.getId(), 0);
+
+                return completedQuantity >= orderedQuantity;
+            });
+
+        // 4. 모든 품목이 배송 완료되었으면 주문 상태를 완료로 변경
+        if (allItemsCompleted) {
+            salesOrder.completeOrder();
+            salesOrderRepository.save(salesOrder);
         }
     }
 }

@@ -13,6 +13,7 @@ import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.employee.command.domain.repository.EmployeeRepository;
 import com.werp.sero.employee.exception.EmployeeNotFoundException;
 import com.werp.sero.order.command.domain.aggregate.SalesOrder;
+import com.werp.sero.order.command.domain.repository.SalesOrderRepository;
 import com.werp.sero.production.command.domain.aggregate.ProductionRequest;
 import com.werp.sero.shipping.command.domain.aggregate.GoodsIssue;
 import com.werp.sero.system.command.application.service.DocumentSequenceCommandService;
@@ -38,6 +39,7 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
     private final ApprovalLineRepository approvalLineRepository;
     private final ApprovalAttachmentRepository approvalAttachmentRepository;
     private final List<ApprovalRefCodeValidator> approvalRefCodeValidators;
+    private final SalesOrderRepository salesOrderRepository;
 
     private final DocumentSequenceCommandService documentSequenceCommandService;
 
@@ -189,6 +191,16 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
                 }
 
                 gi.updateApprovalInfo(gi.getApprovalCode(), (isRejected ? "GI_APPR_RJCT" : "GI_APPR_DONE"));
+
+                // 출고지시 결재 승인 시 연관된 주문 상태도 업데이트
+                if (!isRejected) {
+                    SalesOrder salesOrder = gi.getSalesOrder();
+                    // 주문이 결재 완료 상태가 아니라면 출고 진행 중 상태로 변경
+                    if ("ORD_APPR_DONE".equals(salesOrder.getStatus())) {
+                        salesOrder.updateApprovalInfo(salesOrder.getApprovalCode(), "ORD_SHIP_READY");
+                        salesOrderRepository.save(salesOrder);
+                    }
+                }
             }
             case "PR" -> {
                 final ProductionRequest pr = (ProductionRequest) object;

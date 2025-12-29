@@ -6,8 +6,10 @@ import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.material.command.domain.aggregate.Material;
 import com.werp.sero.material.command.domain.repository.MaterialRepository;
 import com.werp.sero.order.command.domain.aggregate.SalesOrder;
+import com.werp.sero.order.command.domain.aggregate.SalesOrderItem;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItemHistory;
 import com.werp.sero.order.command.domain.repository.SalesOrderItemHistoryRepository;
+import com.werp.sero.order.command.domain.repository.SalesOrderRepository;
 import com.werp.sero.shipping.command.application.dto.GIAssignManagerResponseDTO;
 import com.werp.sero.shipping.command.application.dto.GICompleteResponseDTO;
 import com.werp.sero.shipping.command.application.dto.GICreateRequestDTO;
@@ -55,6 +57,7 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
     private final WarehouseStockHistoryRepository warehouseStockHistoryRepository;
     private final MaterialRepository materialRepository;
     private final SalesOrderItemHistoryRepository salesOrderItemHistoryRepository;
+    private final SalesOrderRepository salesOrderRepository;
     private final EmployeeRepository employeeRepository;
     private final DocumentSequenceCommandService documentSequenceCommandService;
 
@@ -295,7 +298,14 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
 
         deliveryRepository.save(delivery);
 
-        // 7. 응답 DTO 생성 및 반환
+        // 7. 주문 상태를 배송중(ORD_SHIPPING)으로 변경
+        SalesOrder salesOrder = goodsIssue.getSalesOrder();
+        if ("ORD_SHIP_READY".equals(salesOrder.getStatus())) {
+            salesOrder.updateApprovalInfo(salesOrder.getApprovalCode(), "ORD_SHIPPING");
+            salesOrderRepository.save(salesOrder);
+        }
+
+        // 8. 응답 DTO 생성 및 반환
         return GICompleteResponseDTO.builder()
                 .giCode(giCode)
                 .warehouseName(goodsIssue.getWarehouse().getName())
