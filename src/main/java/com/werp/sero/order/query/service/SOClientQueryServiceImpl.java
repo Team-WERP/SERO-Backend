@@ -128,6 +128,7 @@ public class SOClientQueryServiceImpl implements SOClientQueryService {
                 .recipientName(order.getRecipientName())
                 .recipientContact(order.getRecipientContact())
                 .note(order.getNote())
+                .rejectionReason(order.getRejectionReason())
                 .build();
     }
 
