@@ -3,8 +3,12 @@ package com.werp.sero.shipping.command.application.service;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.notification.command.domain.aggregate.enums.NotificationType;
 import com.werp.sero.notification.command.infrastructure.event.NotificationEvent;
+import com.werp.sero.order.command.domain.aggregate.SalesOrderItemHistory;
+import com.werp.sero.order.command.domain.repository.SalesOrderItemHistoryRepository;
 import com.werp.sero.shipping.command.domain.aggregate.Delivery;
+import com.werp.sero.shipping.command.domain.aggregate.GoodsIssueItem;
 import com.werp.sero.shipping.command.domain.repository.DeliveryRepository;
+import com.werp.sero.shipping.command.domain.repository.GoodsIssueItemRepository;
 import com.werp.sero.shipping.exception.DeliveryNotFoundException;
 import com.werp.sero.shipping.exception.InvalidDeliveryStatusTransitionException;
 import com.werp.sero.shipping.exception.UnauthorizedDeliveryUpdateException;
@@ -13,12 +17,19 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class DeliveryCommandServiceImpl implements DeliveryCommandService {
 
     private final DeliveryRepository deliveryRepository;
+    private final GoodsIssueItemRepository goodsIssueItemRepository;
+    private final SalesOrderItemHistoryRepository salesOrderItemHistoryRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
@@ -74,7 +85,24 @@ public class DeliveryCommandServiceImpl implements DeliveryCommandService {
         // 4. 배송 완료
         delivery.completeDelivery();
 
-        // 5. 출고지시 담당자에게 알림 발송
+        // 5. 주문 품목별 이력 기록 (배송 완료 수량)
+        String createdAt = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        List<GoodsIssueItem> goodsIssueItems = goodsIssueItemRepository.findByGoodsIssueId(delivery.getGoodsIssue().getId());
+        List<SalesOrderItemHistory> histories = new ArrayList<>();
+
+        for (GoodsIssueItem giItem : goodsIssueItems) {
+            SalesOrderItemHistory history = SalesOrderItemHistory.createForCompleted(
+                    giItem.getSalesOrderItem().getId(),
+                    giItem.getQuantity(),
+                    driver.getId(),
+                    createdAt
+            );
+            histories.add(history);
+        }
+
+        salesOrderItemHistoryRepository.saveAll(histories);
+
+        // 6. 출고지시 담당자에게 알림 발송
         if (delivery.getGoodsIssue().getManager() != null) {
             eventPublisher.publishEvent(new NotificationEvent(
                 NotificationType.SHIPPING,

@@ -44,4 +44,92 @@ public class SalesOrderItemHistory {
 
     @Column(name = "creator_id", nullable = false)
     private int creatorId;
+
+    /**
+     * 납품서 생성 시 기납품 수량 이력 생성
+     */
+    public static SalesOrderItemHistory createForDeliveryOrder(
+            int soItemId,
+            int doQuantity,
+            int creatorId,
+            String createdAt
+    ) {
+        return SalesOrderItemHistory.builder()
+                .soItemId(soItemId)
+                .doQuantity(doQuantity)
+                .prQuantity(0)
+                .piQuantity(0)
+                .giQuantity(0)
+                .shippedQuantity(0)
+                .completedQuantity(0)
+                .createdAt(createdAt)
+                .creatorId(creatorId)
+                .build();
+    }
+
+    /**
+     * 출고지시 작성 시 출고지시 수량 이력 생성
+     */
+    public static SalesOrderItemHistory createForGoodsIssue(
+            int soItemId,
+            int giQuantity,
+            int creatorId,
+            String createdAt
+    ) {
+        return SalesOrderItemHistory.builder()
+                .soItemId(soItemId)
+                .giQuantity(giQuantity)
+                .prQuantity(0)
+                .piQuantity(0)
+                .doQuantity(0)
+                .shippedQuantity(0)
+                .completedQuantity(0)
+                .createdAt(createdAt)
+                .creatorId(creatorId)
+                .build();
+    }
+
+    /**
+     * 출고 완료 처리 시 출고 완료 수량 이력 생성
+     */
+    public static SalesOrderItemHistory createForShipped(
+            int soItemId,
+            int shippedQuantity,
+            int creatorId,
+            String createdAt
+    ) {
+        return SalesOrderItemHistory.builder()
+                .soItemId(soItemId)
+                .shippedQuantity(shippedQuantity)
+                .prQuantity(0)
+                .piQuantity(0)
+                .giQuantity(0)
+                .doQuantity(0)
+                .completedQuantity(0)
+                .createdAt(createdAt)
+                .creatorId(creatorId)
+                .build();
+    }
+
+    /**
+     * 배송 완료 처리 시 배송 완료 수량 이력 생성
+     */
+    public static SalesOrderItemHistory createForCompleted(
+            int soItemId,
+            int completedQuantity,
+            int creatorId,
+            String createdAt
+    ) {
+        return SalesOrderItemHistory.builder()
+                .soItemId(soItemId)
+                .completedQuantity(completedQuantity)
+                .prQuantity(0)
+                .piQuantity(0)
+                .giQuantity(0)
+                .doQuantity(0)
+                .shippedQuantity(0)
+                .createdAt(createdAt)
+                .creatorId(creatorId)
+                .build();
+    }
 }
