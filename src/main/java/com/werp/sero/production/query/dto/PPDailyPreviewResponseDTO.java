@@ -11,10 +11,6 @@ public class PPDailyPreviewResponseDTO {
     private int ppId;
     private String ppCode;
 
-    // PR
-    private int prId;
-    private String prCode;
-
     // Line
     private int lineId;
     private String lineName;
@@ -24,16 +20,11 @@ public class PPDailyPreviewResponseDTO {
     private String materialCode;
     private String materialName;
 
-    // Period
-    private String startDate;
-    private String endDate;
-
     // Quantity
-    private int plannedQuantity;
-    private int todayWorkQuantity;
-    private int totalProducedQty;
-    private int todayProducedQty;
-    private int remainingQuantity;
-    private int recommendedQuantity;
-    private int progressRate;
+    private int plannedQuantity;      // PP 총 수량
+    private int remainingQuantity;    // 잔여 수량
+    private int recommendedQuantity;  // 오늘 권장 수량
+
+    // Flag
+    private boolean hasWorkOrder;     // 오늘 해당 라인에 WO 존재 여부
 }
