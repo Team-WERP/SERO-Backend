@@ -61,5 +61,10 @@ public class WorkOrderItem {
         this.status = "WOI_DONE";
         this.updatedAt = DateTimeUtils.nowDateTime();
     }
+
+    public void addProducedQuantity(int qty) {
+        this.producedQuantity += qty;
+    }
+
 }
 

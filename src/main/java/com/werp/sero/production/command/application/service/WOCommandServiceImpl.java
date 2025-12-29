@@ -2,18 +2,20 @@ package com.werp.sero.production.command.application.service;
 
 import com.werp.sero.common.util.DateTimeUtils;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
-import com.werp.sero.production.command.application.dto.WorkOrderCreateRequestDTO;
-import com.werp.sero.production.command.application.dto.WorkOrderEndRequest;
+import com.werp.sero.production.command.application.dto.*;
 import com.werp.sero.production.command.domain.aggregate.*;
 import com.werp.sero.production.command.domain.aggregate.enums.Action;
 import com.werp.sero.production.command.domain.repository.*;
 import com.werp.sero.production.exception.*;
 import com.werp.sero.system.command.application.service.DocumentSequenceCommandService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -25,6 +27,7 @@ public class WOCommandServiceImpl implements WOCommandService {
     private final WorkOrderResultRepository workOrderResultRepository;
     private final WorkOrderHistoryRepository workOrderHistoryRepository;
     private final WOItemRepository woItemRepository;
+    private final WorkOrderItemDistributor distributor;
 
     @Override
     @Transactional
@@ -175,11 +178,15 @@ public class WOCommandServiceImpl implements WOCommandService {
         WorkOrder wo = woRepository.findByIdForUpdate(woId)
                 .orElseThrow(WorkOrderNotFoundException::new);
 
+        // 중복 실적 방지
         if (workOrderResultRepository.existsByWorkOrderId(woId)) {
             throw new WorkOrderResultAlreadyExistsException();
         }
+
+        // WO 종료
         wo.end(); // WO_RUN → WO_DONE
 
+        // 작업 시간 검증
         int workMinutes = DateTimeUtils.minutesBetween(
                 request.getStartTime(),
                 request.getEndTime()
@@ -188,6 +195,35 @@ public class WOCommandServiceImpl implements WOCommandService {
             throw new WorkOrderInvalidWorkTimeException();
         }
 
+        // 아이템별 실적 검증
+        int sum = request.getItems().stream()
+                .mapToInt(WorkOrderEndRequest.ItemResult::getProducedQuantity)
+                .sum();
+
+        if (sum != request.getGoodQuantity()) {
+            throw new InvalidDistributedQuantityException();
+        }
+
+        // 아이템별 실적 반영
+        for (WorkOrderEndRequest.ItemResult r : request.getItems()) {
+
+            WorkOrderItem item = woItemRepository
+                    .findById(r.getWorkOrderItemId())
+                    .orElseThrow(WorkOrderItemNotFoundException::new);
+
+            if (r.getProducedQuantity() < 0) {
+                throw new InvalidProducedQuantityException();
+            }
+
+            if (r.getProducedQuantity() > item.getPlannedQuantity()) {
+                throw new ExceedPlannedQuantityException();
+            }
+
+            item.addProducedQuantity(r.getProducedQuantity());
+            item.complete(); // WOI_READY → WOI_DONE
+        }
+
+        // WorkOrderResult 저장
         WorkOrderResult result = new WorkOrderResult(
                 request.getGoodQuantity(),
                 request.getDefectiveQuantity(),
@@ -199,12 +235,30 @@ public class WOCommandServiceImpl implements WOCommandService {
         );
         workOrderResultRepository.save(result);
 
+        // History 저장
         WorkOrderHistory history = new WorkOrderHistory(
                 wo,
                 Action.END,
                 request.getNote()
         );
         workOrderHistoryRepository.save(history);
+    }
+
+    @Override
+    public WorkOrderResultPreviewResponseDTO previewResult(
+            int woId,
+            WorkOrderResultPreviewRequestDTO request
+    ) {
+        List<WorkOrderItem> items =
+                woItemRepository.findByWorkOrderId(woId);
+
+        List<WorkOrderItemPreviewDTO> distributed =
+                distributor.distribute(items, request.getGoodQuantity());
+
+        return new WorkOrderResultPreviewResponseDTO(
+                request.getGoodQuantity(),
+                distributed
+        );
     }
 
 }
