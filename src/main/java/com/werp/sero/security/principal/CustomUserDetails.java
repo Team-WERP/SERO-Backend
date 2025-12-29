@@ -77,4 +77,16 @@ public class CustomUserDetails implements UserDetails {
     public int getId() {
         return (this.type == Type.EMPLOYEE) ? this.employee.getId() : this.clientEmployee.getId();
     }
+
+    public String getDepartment() {
+        if (this.type == Type.EMPLOYEE && this.employee.getDepartment() != null) {
+            return this.employee.getDepartment().getDeptCode();
+        }
+
+        return null;
+    }
+
+    public String getRank() {
+        return (this.type == Type.EMPLOYEE) ? this.employee.getRankCode() : null;
+    }
 }
