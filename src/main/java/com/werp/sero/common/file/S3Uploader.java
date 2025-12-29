@@ -45,6 +45,37 @@ public class S3Uploader {
         }
     }
 
+    public String uploadBytes(
+            final String objectPath,
+            final byte[] bytes,
+            final String originalFileName,
+            final String contentType
+    ) {
+        try {
+            String extension = StringUtils.getFilenameExtension(originalFileName);
+            String fileName = UUID.randomUUID() + "." + extension;
+            String objectKey = objectPath + fileName;
+
+            PutObjectRequest putRequest = PutObjectRequest.builder()
+                    .bucket(bucket)
+                    .key(objectKey)
+                    .contentType(contentType)
+                    .contentLength((long) bytes.length)
+                    .build();
+
+            s3Client.putObject(
+                    putRequest,
+                    RequestBody.fromBytes(bytes)
+            );
+
+            return generateS3Url(objectKey);
+
+        } catch (S3Exception e) {
+            throw new SystemException(ErrorCode.S3_UPLOAD_FAILED);
+        }
+    }
+
+
     private String generateKey(final String path, final MultipartFile file) {
         final String extension = StringUtils.getFilenameExtension(file.getOriginalFilename());
         final String fileName = UUID.randomUUID() + "." + extension;

@@ -37,6 +37,7 @@ public class PRCommandServiceImpl implements PRCommandService {
     private final EmployeeRepository employeeRepository;
     private final DocumentSequenceCommandService documentSequenceCommandService;
     private final SalesOrderItemHistoryRepository soItemHistoryRepository;
+    private final PRPdfService prPdfService;
 
     @Override
     @Transactional
@@ -144,6 +145,9 @@ public class PRCommandServiceImpl implements PRCommandService {
 
         String prCode = documentSequenceCommandService.generateDocumentCode("DOC_PR");
         pr.request(prCode);
+
+        String pdfUrl = prPdfService.generateAndUpload(prId);
+        pr.updatePrUrl(pdfUrl);
 
         List<ProductionRequestItem> items =
                 prtItemRepository.findAllByProductionRequest_Id(prId);
