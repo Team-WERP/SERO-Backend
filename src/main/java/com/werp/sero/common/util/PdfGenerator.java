@@ -1,4 +1,4 @@
-package com.werp.sero.common.pdf;
+package com.werp.sero.common.util;
 
 import com.itextpdf.html2pdf.ConverterProperties;
 import com.itextpdf.html2pdf.HtmlConverter;

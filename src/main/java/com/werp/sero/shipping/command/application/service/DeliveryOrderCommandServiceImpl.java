@@ -1,7 +1,7 @@
 package com.werp.sero.shipping.command.application.service;
 
 import com.werp.sero.common.file.S3Uploader;
-import com.werp.sero.common.pdf.PdfGenerator;
+import com.werp.sero.common.util.PdfGenerator;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.order.command.domain.aggregate.SalesOrder;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItem;
@@ -117,7 +117,7 @@ public class DeliveryOrderCommandServiceImpl implements DeliveryOrderCommandServ
 
             // 7-4. S3 업로드
             String fileName = doCode + ".pdf";
-            String doUrl = s3Uploader.uploadPdf("delivery-orders/", pdfBytes, fileName);
+            String doUrl = s3Uploader.uploadPdf("sero/documents/delivery-orders/", pdfBytes, fileName);
 
             // 7-5. Entity에 URL 저장
             savedDeliveryOrder.updateDoUrl(doUrl);

@@ -3,7 +3,7 @@ package com.werp.sero.shipping.command.application.service;
 import com.werp.sero.common.error.ErrorCode;
 import com.werp.sero.common.error.exception.BusinessException;
 import com.werp.sero.common.file.S3Uploader;
-import com.werp.sero.common.pdf.PdfGenerator;
+import com.werp.sero.common.util.PdfGenerator;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.material.command.domain.aggregate.Material;
 import com.werp.sero.material.command.domain.repository.MaterialRepository;
@@ -367,7 +367,7 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
 
             // 5-4. S3 업로드
             String fileName = giCode + ".pdf";
-            String giUrl = s3Uploader.uploadPdf("goods-issues/", pdfBytes, fileName);
+            String giUrl = s3Uploader.uploadPdf("sero/documents/goods-issues/", pdfBytes, fileName);
 
             // 5-5. Entity에 URL 저장
             updatedGoodsIssue.updateGiUrl(giUrl);
