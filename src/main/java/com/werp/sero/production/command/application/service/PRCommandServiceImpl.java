@@ -146,9 +146,6 @@ public class PRCommandServiceImpl implements PRCommandService {
         String prCode = documentSequenceCommandService.generateDocumentCode("DOC_PR");
         pr.request(prCode);
 
-        String pdfUrl = prPdfService.generateAndUpload(prId);
-        pr.updatePrUrl(pdfUrl);
-
         List<ProductionRequestItem> items =
                 prtItemRepository.findAllByProductionRequest_Id(prId);
 
@@ -184,6 +181,9 @@ public class PRCommandServiceImpl implements PRCommandService {
                 .orElseThrow(EmployeeNotFoundException::new);
 
         pr.assignManager(manager);
+        
+        String pdfUrl = prPdfService.generateAndUpload(prId);
+        pr.updatePrUrl(pdfUrl);
     }
 
     @Transactional
