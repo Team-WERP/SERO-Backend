@@ -8,6 +8,7 @@
     <!-- 납품서 상세 조회용 ResultMap -->
     <resultMap id="DODetailResultMap" type="com.werp.sero.shipping.query.dto.DODetailResponseDTO">
         <result property="doCode" column="do_code"/>
+        <result property="doUrl" column="do_url"/>
         <result property="createdAt" column="created_at"/>
         <result property="recipient" column="recipient"/>
         <result property="companyName" column="company_name"/>
@@ -39,6 +40,7 @@
         SELECT
             /* 납품서 기본 정보 */
             A.do_code,
+            A.do_url,
             DATE_FORMAT(STR_TO_DATE(A.created_at, '%Y-%m-%d %H:%i:%s'), '%Y-%m-%d') AS created_at,
             A.shipped_at,
             A.note,

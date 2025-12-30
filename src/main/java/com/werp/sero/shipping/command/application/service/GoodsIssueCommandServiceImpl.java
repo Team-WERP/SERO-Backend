@@ -2,11 +2,12 @@ package com.werp.sero.shipping.command.application.service;
 
 import com.werp.sero.common.error.ErrorCode;
 import com.werp.sero.common.error.exception.BusinessException;
+import com.werp.sero.common.file.S3Uploader;
+import com.werp.sero.common.util.PdfGenerator;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.material.command.domain.aggregate.Material;
 import com.werp.sero.material.command.domain.repository.MaterialRepository;
 import com.werp.sero.order.command.domain.aggregate.SalesOrder;
-import com.werp.sero.order.command.domain.aggregate.SalesOrderItem;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItemHistory;
 import com.werp.sero.order.command.domain.repository.SalesOrderItemHistoryRepository;
 import com.werp.sero.order.command.domain.repository.SORepository;
@@ -25,6 +26,8 @@ import com.werp.sero.shipping.command.domain.repository.GoodsIssueItemRepository
 import com.werp.sero.shipping.command.domain.repository.GoodsIssueRepository;
 import com.werp.sero.shipping.exception.DeliveryOrderNotFoundException;
 import com.werp.sero.shipping.exception.GoodsIssueAlreadyExistsException;
+import com.werp.sero.shipping.query.dto.GIDetailResponseDTO;
+import com.werp.sero.shipping.query.service.GIDetailQueryService;
 import com.werp.sero.system.command.application.service.DocumentSequenceCommandService;
 import com.werp.sero.warehouse.command.domain.aggregate.Warehouse;
 import com.werp.sero.warehouse.command.domain.aggregate.WarehouseStock;
@@ -60,6 +63,10 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
     private final SORepository soRepository;
     private final EmployeeRepository employeeRepository;
     private final DocumentSequenceCommandService documentSequenceCommandService;
+    private final GIDetailQueryService giDetailQueryService;
+    private final PdfGenerator pdfGenerator;
+    private final ShippingPdfService shippingPdfService;
+    private final S3Uploader s3Uploader;
 
     @Override
     @Transactional
@@ -347,7 +354,30 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
         // 4. 저장
         goodsIssueRepository.save(updatedGoodsIssue);
 
-        // 5. 응답 DTO 생성 및 반환
+        // 5. PDF 생성 및 S3 업로드 (담당자 배정 후)
+        try {
+            // 5-1. 완전한 출고지시 데이터 조회 (품목 및 담당자 정보 포함)
+            GIDetailResponseDTO giDetail = giDetailQueryService.getGoodsIssueDetail(giCode);
+
+            // 5-2. HTML 템플릿 생성
+            String htmlContent = shippingPdfService.generateGoodsIssueDetailHtml(giDetail);
+
+            // 5-3. PDF 생성
+            byte[] pdfBytes = pdfGenerator.generatePdfFromHtml(htmlContent);
+
+            // 5-4. S3 업로드
+            String fileName = giCode + ".pdf";
+            String giUrl = s3Uploader.uploadPdf("sero/documents/goods-issues/", pdfBytes, fileName);
+
+            // 5-5. Entity에 URL 저장
+            updatedGoodsIssue.updateGiUrl(giUrl);
+            goodsIssueRepository.save(updatedGoodsIssue);
+        } catch (Exception e) {
+            // PDF 생성 실패 시 로그만 남기고 진행 (핵심 비즈니스 로직은 완료됨)
+            System.err.println("출고지시서 PDF 생성 실패: " + e.getMessage());
+        }
+
+        // 6. 응답 DTO 생성 및 반환
         return GIAssignManagerResponseDTO.builder()
                 .giCode(giCode)
                 .managerId(manager.getId())

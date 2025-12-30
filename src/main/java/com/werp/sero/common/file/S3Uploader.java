@@ -52,6 +52,31 @@ public class S3Uploader {
         return path + fileName;
     }
 
+    /**
+     * PDF 파일 업로드 (byte 배열)
+     * @param objectPath S3 경로 (예: "delivery-orders/", "goods-issues/")
+     * @param pdfBytes PDF 파일의 byte 배열
+     * @param fileName 파일명 (예: "DO-20251229-001.pdf")
+     * @return S3 URL
+     */
+    public String uploadPdf(final String objectPath, final byte[] pdfBytes, final String fileName) {
+        try {
+            final String objectKey = objectPath + fileName;
+
+            final PutObjectRequest putRequest = PutObjectRequest.builder()
+                    .bucket(bucket)
+                    .key(objectKey)
+                    .contentType("application/pdf")
+                    .build();
+
+            s3Client.putObject(putRequest, RequestBody.fromBytes(pdfBytes));
+
+            return generateS3Url(objectKey);
+        } catch (S3Exception e) {
+            throw new SystemException(ErrorCode.S3_UPLOAD_FAILED);
+        }
+    }
+
     private String generateS3Url(final String objectKey) {
         return "https://" + bucket + ".s3." + region + ".amazonaws.com/" + objectKey;
     }

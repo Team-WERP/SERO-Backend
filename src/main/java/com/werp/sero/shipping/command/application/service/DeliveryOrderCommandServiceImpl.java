@@ -1,5 +1,7 @@
 package com.werp.sero.shipping.command.application.service;
 
+import com.werp.sero.common.file.S3Uploader;
+import com.werp.sero.common.util.PdfGenerator;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.order.command.domain.aggregate.SalesOrder;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItem;
@@ -15,6 +17,8 @@ import com.werp.sero.shipping.command.domain.aggregate.DeliveryOrder;
 import com.werp.sero.shipping.command.domain.aggregate.DeliveryOrderItem;
 import com.werp.sero.shipping.command.domain.repository.DeliveryOrderItemRepository;
 import com.werp.sero.shipping.command.domain.repository.DeliveryOrderRepository;
+import com.werp.sero.shipping.query.dto.DODetailResponseDTO;
+import com.werp.sero.shipping.query.service.DODetailQueryService;
 import com.werp.sero.system.command.application.service.DocumentSequenceCommandService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -35,6 +39,10 @@ public class DeliveryOrderCommandServiceImpl implements DeliveryOrderCommandServ
     private final SOItemRepository soItemRepository;
     private final SalesOrderItemHistoryRepository salesOrderItemHistoryRepository;
     private final DocumentSequenceCommandService documentSequenceCommandService;
+    private final DODetailQueryService doDetailQueryService;
+    private final PdfGenerator pdfGenerator;
+    private final ShippingPdfService shippingPdfService;
+    private final S3Uploader s3Uploader;
 
     @Override
     @Transactional
@@ -95,6 +103,29 @@ public class DeliveryOrderCommandServiceImpl implements DeliveryOrderCommandServ
 
         // 6. 납품서 품목 일괄 저장
         deliveryOrderItemRepository.saveAll(deliveryOrderItems);
+
+        // 7. PDF 생성 및 S3 업로드
+        try {
+            // 7-1. 완전한 납품서 데이터 조회 (품목 포함)
+            DODetailResponseDTO doDetail = doDetailQueryService.getDeliveryOrderDetail(doCode);
+
+            // 7-2. HTML 템플릿 생성
+            String htmlContent = shippingPdfService.generateDeliveryOrderDetailHtml(doDetail);
+
+            // 7-3. PDF 생성
+            byte[] pdfBytes = pdfGenerator.generatePdfFromHtml(htmlContent);
+
+            // 7-4. S3 업로드
+            String fileName = doCode + ".pdf";
+            String doUrl = s3Uploader.uploadPdf("sero/documents/delivery-orders/", pdfBytes, fileName);
+
+            // 7-5. Entity에 URL 저장
+            savedDeliveryOrder.updateDoUrl(doUrl);
+            deliveryOrderRepository.save(savedDeliveryOrder);
+        } catch (Exception e) {
+            // PDF 생성 실패 시 로그만 남기고 진행 (핵심 비즈니스 로직은 완료됨)
+            System.err.println("납품서 PDF 생성 실패: " + e.getMessage());
+        }
 
         // 7. 주문 품목 이력 생성 (기납품 수량)
         String createdAt = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
