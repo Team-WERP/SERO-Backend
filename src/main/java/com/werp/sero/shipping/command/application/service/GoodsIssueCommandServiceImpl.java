@@ -3,13 +3,11 @@ package com.werp.sero.shipping.command.application.service;
 import com.werp.sero.common.error.ErrorCode;
 import com.werp.sero.common.error.exception.BusinessException;
 import com.werp.sero.common.file.S3Uploader;
-import com.werp.sero.common.pdf.DetailedHtmlTemplateGenerator;
 import com.werp.sero.common.pdf.PdfGenerator;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.material.command.domain.aggregate.Material;
 import com.werp.sero.material.command.domain.repository.MaterialRepository;
 import com.werp.sero.order.command.domain.aggregate.SalesOrder;
-import com.werp.sero.order.command.domain.aggregate.SalesOrderItem;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItemHistory;
 import com.werp.sero.order.command.domain.repository.SalesOrderItemHistoryRepository;
 import com.werp.sero.order.command.domain.repository.SORepository;
@@ -67,7 +65,7 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
     private final DocumentSequenceCommandService documentSequenceCommandService;
     private final GIDetailQueryService giDetailQueryService;
     private final PdfGenerator pdfGenerator;
-    private final DetailedHtmlTemplateGenerator htmlTemplateGenerator;
+    private final ShippingPdfService htmlTemplateGenerator;
     private final S3Uploader s3Uploader;
 
     @Override

@@ -1,4 +1,4 @@
-package com.werp.sero.common.pdf;
+package com.werp.sero.shipping.command.application.service;
 
 import com.werp.sero.shipping.query.dto.DODetailResponseDTO;
 import com.werp.sero.shipping.query.dto.GIDetailResponseDTO;
@@ -13,7 +13,7 @@ import java.util.Locale;
  * 프론트엔드 미리보기와 동일한 상세 PDF 템플릿 생성 클래스
  */
 @Component
-public class DetailedHtmlTemplateGenerator {
+public class ShippingPdfService {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");

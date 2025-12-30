@@ -1,7 +1,6 @@
 package com.werp.sero.shipping.command.application.service;
 
 import com.werp.sero.common.file.S3Uploader;
-import com.werp.sero.common.pdf.DetailedHtmlTemplateGenerator;
 import com.werp.sero.common.pdf.PdfGenerator;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.order.command.domain.aggregate.SalesOrder;
@@ -42,7 +41,7 @@ public class DeliveryOrderCommandServiceImpl implements DeliveryOrderCommandServ
     private final DocumentSequenceCommandService documentSequenceCommandService;
     private final DODetailQueryService doDetailQueryService;
     private final PdfGenerator pdfGenerator;
-    private final DetailedHtmlTemplateGenerator htmlTemplateGenerator;
+    private final ShippingPdfService htmlTemplateGenerator;
     private final S3Uploader s3Uploader;
 
     @Override
