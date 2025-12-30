@@ -28,7 +28,7 @@ public class DeadLineQueryServiceImpl implements DeadLineQueryService {
 
         List<DeadLineQueryResponseDTO> responses = new ArrayList<>();  // 품목별 응답
 
-        // 각 품목별로 납기 가능 여부 계산
+        // 입력 검증
         for (DeadLineQueryRequestDTO.ItemRequest item : request.getItems()) {
 
             // 1. LineMaterial 조회
