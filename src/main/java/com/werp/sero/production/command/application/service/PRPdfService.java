@@ -35,7 +35,7 @@ public class PRPdfService {
 
         String fileName = pr.getPrCode() + ".pdf";
         return s3Uploader.uploadBytes(
-                "sero/pr/",
+                "sero/documents/production-requests",
                 pdfBytes,
                 fileName,
                 "application/pdf"
