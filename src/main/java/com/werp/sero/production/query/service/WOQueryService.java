@@ -5,9 +5,6 @@ import com.werp.sero.production.query.dto.*;
 import java.util.List;
 
 public interface WOQueryService {
-    List<WOByPPResponseDTO> getByProductionPlan(int ppId);
-
-    List<WOByPRResponseDTO> getByProductionRequest(int prId);
 
     List<WOByDateResponseDTO> getByDate(String date);
 

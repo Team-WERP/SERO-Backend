@@ -23,18 +23,6 @@ public class WOQueryServiceImpl implements WOQueryService{
 
     @Override
     @Transactional(readOnly = true)
-    public List<WOByPPResponseDTO> getByProductionPlan(int ppId) {
-        return woQueryMapper.selectByProductionPlan(ppId);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<WOByPRResponseDTO> getByProductionRequest(int prId) {
-        return woQueryMapper.selectByProductionRequest(prId);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public List<WOByDateResponseDTO> getByDate(String date) {
         return woQueryMapper.selectByDate(date);
     }

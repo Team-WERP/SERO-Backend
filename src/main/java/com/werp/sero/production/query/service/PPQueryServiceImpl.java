@@ -2,8 +2,11 @@ package com.werp.sero.production.query.service;
 
 import com.werp.sero.common.util.DateTimeUtils;
 import com.werp.sero.production.command.application.dto.PPMonthlyPlanResponseDTO;
+import com.werp.sero.production.command.domain.aggregate.ProductionLine;
+import com.werp.sero.production.command.domain.repository.ProductionLineRepository;
 import com.werp.sero.production.exception.ProductionRequestItemNotFoundException;
 import com.werp.sero.production.query.dao.PPQueryMapper;
+import com.werp.sero.production.query.dao.PPValidateMapper;
 import com.werp.sero.production.query.dto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,13 +15,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 public class PPQueryServiceImpl implements PPQueryService{
     private final PPQueryMapper ppQueryMapper;
+    private final PPValidateMapper ppValidateMapper;
 
     @Override
     @Transactional(readOnly = true)
@@ -76,5 +79,47 @@ public class PPQueryServiceImpl implements PPQueryService{
     @Transactional(readOnly = true)
     public List<PPDailyPreviewResponseDTO> getDailyPreview(String date) {
         return ppQueryMapper.selectDailyPreview(date);
+    }
+
+    @Override
+    public List<DailyLineSummaryResponseDTO> getDailyLineSummary(String month, Integer factoryId) {
+        YearMonth ym = YearMonth.parse(month);
+        LocalDate start = ym.atDay(1);
+        LocalDate end = ym.atEndOfMonth();
+
+        // 가동 가능한 라인 조회 (dailyCapacity 포함)
+        List<ProductionLineResponseDTO> lines = ppQueryMapper.selectProductionLines(factoryId);
+        List<DailyLineSummaryResponseDTO> result = new ArrayList<>();
+
+        // 라인별, 날짜별 계획 수량 집계
+        for (ProductionLineResponseDTO line : lines) {
+            Map<Integer, Integer> dailyMap = new HashMap<>();
+
+            LocalDate date = start;
+            while (!date.isAfter(end)) {
+                int plannedQty = ppValidateMapper.sumDailyPlannedQty(
+                        line.getLineId(),
+                        date.toString() // yyyy-MM-dd
+                );
+                dailyMap.put(date.getDayOfMonth(), plannedQty);
+                date = date.plusDays(1);
+            }
+
+            result.add(
+                    new DailyLineSummaryResponseDTO(
+                            line.getLineId(),
+                            line.getLineName(),
+                            line.getDailyCapacity(),
+                            dailyMap
+                    )
+            );
+        }
+
+        return result;
+    }
+
+    @Override
+    public PPDetailResponseDTO getProductionPlanDetail(int ppId) {
+        return ppQueryMapper.selectProductionPlanDetail(ppId);
     }
 }

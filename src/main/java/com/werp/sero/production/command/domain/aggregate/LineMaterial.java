@@ -25,6 +25,6 @@ public class LineMaterial {
     private Material material;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "so_id", nullable = false)
+    @JoinColumn(name = "line_id", nullable = false)
     private ProductionLine productionLine;
 }

@@ -8,7 +8,10 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
+import java.util.Optional;
+
 public interface SalesOrderItemHistoryRepository extends JpaRepository<SalesOrderItemHistory, Integer> {
+    Optional<SalesOrderItemHistory> findTopBySoItemIdOrderByIdDesc(int soItemId);
 
     /**
      * 특정 주문 품목의 가장 최신 이력 조회

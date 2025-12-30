@@ -1,6 +1,8 @@
 package com.werp.sero.production.command.application.service;
 
 import com.werp.sero.employee.command.domain.aggregate.Employee;
+import com.werp.sero.material.command.domain.aggregate.Material;
+import com.werp.sero.material.command.domain.repository.MaterialRepository;
 import com.werp.sero.material.exception.MaterialNotFoundException;
 import com.werp.sero.production.command.application.dto.*;
 import com.werp.sero.production.command.domain.aggregate.ProductionLine;
@@ -30,6 +32,8 @@ public class PPCommandServiceImpl implements PPCommandService{
     private final PPRepository ppRepository;
     private final PRItemRepository prItemRepository;
     private final ProductionLineRepository productionLineRepository;
+    private final PRCommandService prCommandService;
+    private final MaterialRepository materialRepository;
 
     /**
      * 생산계획 검증
@@ -70,16 +74,6 @@ public class PPCommandServiceImpl implements PPCommandService{
             throw new MaterialNotFoundException();
         }
 
-        // cycle time
-        Integer cycleTime =
-                ppValidateMapper.selectCycleTime(
-                        materialId,
-                        request.getProductionLineId()
-                );
-        if (cycleTime == null || cycleTime <= 0) {
-            throw new ProductionPlanLineNotCapableException();
-        }
-
         // 기간 유효성
         LocalDate start = LocalDate.parse(request.getStartDate());
         LocalDate end = LocalDate.parse(request.getEndDate());
@@ -88,14 +82,33 @@ public class PPCommandServiceImpl implements PPCommandService{
         }
 
         long days = ChronoUnit.DAYS.between(start, end) + 1;
-        long capa = (days * DAILY_AVAILABLE_SECONDS) / cycleTime;
+        int dailyCapa = productionLineRepository
+                        .findDailyCapacityById(request.getProductionLineId());
+
+        // 신규 계획 일일 생산량
+        int newDailyQty = (int) Math.ceil(
+                (double) request.getProductionQuantity() / days
+        );
 
         // 수량 검증
         if (request.getProductionQuantity() <= 0) {
             throw new ProductionPlanInvalidQuantityException();
         }
-        if (request.getProductionQuantity() > capa) {
-            throw new ProductionPlanCapacityExceededException();
+
+        // 날짜별 검증
+        for (LocalDate d = start; !d.isAfter(end); d = d.plusDays(1)) {
+            int existingDailyQty =
+                    ppValidateMapper.sumDailyPlannedQty(
+                            request.getProductionLineId(),
+                            d.toString()
+                    );
+            if (existingDailyQty + newDailyQty > dailyCapa) {
+                return PPValidationResponseDTO.capacityExceeded(
+                        d.toString(),
+                        dailyCapa,
+                        existingDailyQty + newDailyQty
+                );
+            }
         }
 
         return PPValidationResponseDTO.ok();
@@ -120,7 +133,17 @@ public class PPCommandServiceImpl implements PPCommandService{
 
         prItem.changeStatus("PIS_TARGET");
 
-        ProductionPlan draft = ProductionPlan.createDraft(prItem, employee);
+        String materialCode =
+                ppValidateMapper.selectMaterialCodeByPRItem(request.getPrItemId());
+        if (materialCode == null) {
+            throw new MaterialNotFoundException();
+        }
+
+        Material material = materialRepository
+                .findByMaterialCode(materialCode)
+                .orElseThrow(MaterialNotFoundException::new);
+
+        ProductionPlan draft = ProductionPlan.createDraft(prItem, material, employee);
         ppRepository.save(draft);
     }
 
@@ -166,6 +189,7 @@ public class PPCommandServiceImpl implements PPCommandService{
                 ppCode
         );
         prItem.changeStatus("PIS_PLANNED");
+        prCommandService.updatePRStatusIfNeeded(prItem.getProductionRequest().getId());
 
         return new PPCreateResponseDTO(
                 plan.getId(),

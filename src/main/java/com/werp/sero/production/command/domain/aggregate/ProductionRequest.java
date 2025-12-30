@@ -107,4 +107,15 @@ public class ProductionRequest {
     public void assignManager(Employee manager) {
         this.manager = manager;
     }
+
+    public void changeStatus(String status) {
+        this.status = status;
+    }
+
+    public void startProducing() {
+        if (!"PR_PRODUCING".equals(this.productionStatus)) {
+            this.productionStatus = "PR_PRODUCING";
+        }
+    }
+
 }

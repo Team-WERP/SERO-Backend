@@ -2,6 +2,7 @@ package com.werp.sero.production.command.domain.aggregate;
 
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItem;
+import com.werp.sero.production.exception.InvalidProducedQuantityException;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,6 +18,9 @@ public class ProductionRequestItem {
 
     @Column(nullable = false, columnDefinition = "int default 0")
     private int quantity;
+
+    @Column(name = "produced_quantity", nullable = false, columnDefinition = "int default 0")
+    private int producedQuantity;
 
     @Column(nullable = false)
     private String status;
@@ -53,4 +57,20 @@ public class ProductionRequestItem {
     public void changeStatus(String newStatus) {
         this.status = newStatus;
     }
+
+    public void startProducing() {
+        if (!"PIS_PRODUCING".equals(this.status)) {
+            this.status = "PIS_PRODUCING";
+        }
+    }
+
+    public void addProducedQuantity(int qty) {
+        if (qty < 0) throw new InvalidProducedQuantityException();
+        this.producedQuantity += qty;
+
+        if (this.producedQuantity >= this.quantity) {
+            this.status = "PIS_DONE";
+        }
+    }
+
 }

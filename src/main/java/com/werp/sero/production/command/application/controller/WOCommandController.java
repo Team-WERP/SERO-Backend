@@ -3,6 +3,8 @@ package com.werp.sero.production.command.application.controller;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.production.command.application.dto.WorkOrderCreateRequestDTO;
 import com.werp.sero.production.command.application.dto.WorkOrderEndRequest;
+import com.werp.sero.production.command.application.dto.WorkOrderResultPreviewRequestDTO;
+import com.werp.sero.production.command.application.dto.WorkOrderResultPreviewResponseDTO;
 import com.werp.sero.production.command.application.service.WOCommandService;
 import com.werp.sero.security.annotation.CurrentUser;
 import io.swagger.v3.oas.annotations.Operation;
@@ -71,10 +73,19 @@ public class WOCommandController {
     @PostMapping("/{woId}/end")
     public ResponseEntity<Void> end(
             @PathVariable int woId,
-            @RequestBody WorkOrderEndRequest request
+            @RequestBody WorkOrderEndRequest request,
+            @CurrentUser Employee currentEmployee
     ) {
-        woCommandService.end(woId, request);
+        woCommandService.end(woId, request, currentEmployee);
         return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "생산 실적 분배 미리보기")
+    @PostMapping("/{woId}/result/preview")
+    public WorkOrderResultPreviewResponseDTO preview(
+            @PathVariable int woId,
+            @RequestBody WorkOrderResultPreviewRequestDTO request
+    ) {
+        return woCommandService.previewResult(woId, request);
+    }
 }
