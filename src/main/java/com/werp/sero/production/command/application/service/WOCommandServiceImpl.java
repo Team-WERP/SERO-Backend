@@ -4,7 +4,6 @@ import com.werp.sero.common.util.DateTimeUtils;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.material.command.domain.aggregate.Material;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItemHistory;
-import com.werp.sero.order.command.domain.repository.SOItemRepository;
 import com.werp.sero.order.command.domain.repository.SalesOrderItemHistoryRepository;
 import com.werp.sero.production.command.application.dto.*;
 import com.werp.sero.production.command.domain.aggregate.*;
@@ -12,20 +11,15 @@ import com.werp.sero.production.command.domain.aggregate.enums.Action;
 import com.werp.sero.production.command.domain.repository.*;
 import com.werp.sero.production.exception.*;
 import com.werp.sero.system.command.application.service.DocumentSequenceCommandService;
-import com.werp.sero.warehouse.command.domain.aggregate.Warehouse;
 import com.werp.sero.warehouse.command.domain.aggregate.WarehouseStock;
-import com.werp.sero.warehouse.command.domain.repository.WarehouseRepository;
 import com.werp.sero.warehouse.command.domain.repository.WarehouseStockRepository;
 import com.werp.sero.warehouse.exception.WarehouseStockNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
