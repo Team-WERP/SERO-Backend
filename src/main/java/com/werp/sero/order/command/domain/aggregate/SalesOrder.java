@@ -106,4 +106,12 @@ public class SalesOrder {
         this.approvalCode = approvalCode;
         this.status = status;
     }
+
+    /**
+     * 주문 완료 처리
+     */
+    public void completeOrder() {
+        final String COMPLETE_STATUS = "ORD_DONE";
+        this.status = COMPLETE_STATUS;
+    }
 }

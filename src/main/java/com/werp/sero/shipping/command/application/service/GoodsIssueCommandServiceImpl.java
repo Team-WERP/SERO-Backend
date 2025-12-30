@@ -9,6 +9,7 @@ import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.material.command.domain.aggregate.Material;
 import com.werp.sero.material.command.domain.repository.MaterialRepository;
 import com.werp.sero.order.command.domain.aggregate.SalesOrder;
+import com.werp.sero.order.command.domain.aggregate.SalesOrderItem;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItemHistory;
 import com.werp.sero.order.command.domain.repository.SalesOrderItemHistoryRepository;
 import com.werp.sero.order.command.domain.repository.SORepository;
@@ -60,8 +61,8 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
     private final WarehouseStockRepository warehouseStockRepository;
     private final WarehouseStockHistoryRepository warehouseStockHistoryRepository;
     private final MaterialRepository materialRepository;
-    private final SORepository soRepository;
     private final SalesOrderItemHistoryRepository salesOrderItemHistoryRepository;
+    private final SORepository soRepository;
     private final EmployeeRepository employeeRepository;
     private final DocumentSequenceCommandService documentSequenceCommandService;
     private final GIDetailQueryService giDetailQueryService;
@@ -169,19 +170,23 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
         warehouseStockRepository.saveAll(stocksToUpdate);
 
         // 12. 주문 품목별 이력 기록 (출고지시 수량)
+        String createdAt = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        List<SalesOrderItemHistory> histories = new ArrayList<>();
+
         for (DeliveryOrderItem doItem : deliveryOrderItems) {
-            SalesOrderItemHistory history = SalesOrderItemHistory.builder()
-                    .prQuantity(0)
-                    .piQuantity(0)
-                    .giQuantity(doItem.getDoQuantity())  // 출고지시 수량
-                    .shippedQuantity(0)
-                    .doQuantity(0)
-                    .completedQuantity(0)
-                    .soItemId(doItem.getSalesOrderItem().getId())
-                    .createdAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))
-                    .creatorId(drafter.getId())
-                    .build();
-            salesOrderItemHistoryRepository.save(history);
+            // 이전 이력 조회
+            SalesOrderItemHistory previousHistory = salesOrderItemHistoryRepository
+                    .findLatestBySoItemId(doItem.getSalesOrderItem().getId())
+                    .orElse(null);
+
+            SalesOrderItemHistory history = SalesOrderItemHistory.createForGoodsIssue(
+                    doItem.getSalesOrderItem().getId(),
+                    doItem.getDoQuantity(),
+                    drafter.getId(),
+                    createdAt,
+                    previousHistory
+            );
+            histories.add(history);
         }
 
         // 13. PDF 생성 및 S3 업로드
@@ -207,6 +212,8 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
             System.err.println("출고지시서 PDF 생성 실패: " + e.getMessage());
         }
 
+        salesOrderItemHistoryRepository.saveAll(histories);
+
         return giCode;
     }
 
@@ -226,6 +233,7 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
         List<GoodsIssueItem> goodsIssueItems = goodsIssueItemRepository.findByGoodsIssueId(goodsIssue.getId());
 
         // 3. 실제 재고 차감 및 이력 기록
+        String createdAt = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
         List<WarehouseStock> stocksToUpdate = new ArrayList<>();
         List<WarehouseStockHistory> historiesToSave = new ArrayList<>();
         List<SalesOrderItemHistory> salesHistoriesToSave = new ArrayList<>();
@@ -258,22 +266,23 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
                     .reason(String.format("출고지시(%s) 완료", giCode))
                     .changedQuantity(-quantity)  // 음수로 표기 (감소)
                     .currentStock(stock.getCurrentStock())  // 변경 후 재고
-                    .createdAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))
+                    .createdAt(createdAt)
                     .build();
             historiesToSave.add(history);
 
             // 주문 품목별 이력 기록 (출고 완료 수량)
-            SalesOrderItemHistory salesHistory = SalesOrderItemHistory.builder()
-                    .prQuantity(0)
-                    .piQuantity(0)
-                    .giQuantity(0)
-                    .shippedQuantity(quantity)  // 출고 완료 수량
-                    .doQuantity(0)
-                    .completedQuantity(0)
-                    .soItemId(giItem.getSalesOrderItem().getId())
-                    .createdAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))
-                    .creatorId(goodsIssue.getManager().getId())  // 출고지시 담당자 ID
-                    .build();
+            // 이전 이력 조회
+            SalesOrderItemHistory previousHistory = salesOrderItemHistoryRepository
+                    .findLatestBySoItemId(giItem.getSalesOrderItem().getId())
+                    .orElse(null);
+
+            SalesOrderItemHistory salesHistory = SalesOrderItemHistory.createForShipped(
+                    giItem.getSalesOrderItem().getId(),
+                    quantity,
+                    goodsIssue.getManager().getId(),
+                    createdAt,
+                    previousHistory
+            );
             salesHistoriesToSave.add(salesHistory);
 
             // 응답 DTO 항목 생성
@@ -321,7 +330,14 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
 
         deliveryRepository.save(delivery);
 
-        // 7. 응답 DTO 생성 및 반환
+        // 7. 주문 상태를 배송중(ORD_SHIPPING)으로 변경
+        SalesOrder salesOrder = goodsIssue.getSalesOrder();
+        if ("ORD_SHIP_READY".equals(salesOrder.getStatus())) {
+            salesOrder.updateApprovalInfo(salesOrder.getApprovalCode(), "ORD_SHIPPING");
+            soRepository.save(salesOrder);
+        }
+
+        // 8. 응답 DTO 생성 및 반환
         return GICompleteResponseDTO.builder()
                 .giCode(giCode)
                 .warehouseName(goodsIssue.getWarehouse().getName())
@@ -335,12 +351,16 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
 
     @Override
     @Transactional
-    public GIAssignManagerResponseDTO assignManager(String giCode, Employee manager) {
+    public GIAssignManagerResponseDTO assignManager(String giCode, int empId) {
         // 1. 출고지시 조회
         GoodsIssue existingGoodsIssue = goodsIssueRepository.findByGiCode(giCode)
                 .orElseThrow(() -> new BusinessException(ErrorCode.GOODS_ISSUE_NOT_FOUND));
 
-        // 2. 담당자 배정 - Builder 패턴으로 새로운 엔티티 생성
+        // 2. 담당자 조회
+        Employee manager = employeeRepository.findById(empId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.EMPLOYEE_NOT_FOUND));
+
+        // 3. 담당자 배정 - Builder 패턴으로 새로운 엔티티 생성
         GoodsIssue updatedGoodsIssue = GoodsIssue.builder()
                 .id(existingGoodsIssue.getId())
                 .giCode(existingGoodsIssue.getGiCode())
@@ -356,10 +376,10 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
                 .warehouse(existingGoodsIssue.getWarehouse())
                 .build();
 
-        // 3. 저장
+        // 4. 저장
         goodsIssueRepository.save(updatedGoodsIssue);
 
-        // 4. 응답 DTO 생성 및 반환
+        // 5. 응답 DTO 생성 및 반환
         return GIAssignManagerResponseDTO.builder()
                 .giCode(giCode)
                 .managerId(manager.getId())

@@ -5,6 +5,7 @@ import com.werp.sero.security.annotation.CurrentUser;
 import com.werp.sero.shipping.command.application.dto.GIAssignManagerResponseDTO;
 import com.werp.sero.shipping.command.application.dto.GICompleteResponseDTO;
 import com.werp.sero.shipping.command.application.dto.GICreateRequestDTO;
+import com.werp.sero.shipping.command.application.dto.GIManagerRequestDTO;
 import com.werp.sero.shipping.command.application.service.GoodsIssueCommandService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -235,9 +236,9 @@ public class GoodsIssueCommandController {
     @PatchMapping("/{giCode}/assign-manager")
     public ResponseEntity<GIAssignManagerResponseDTO> assignManager(
             @PathVariable String giCode,
-            @CurrentUser Employee currentEmployee
+            @Valid @RequestBody GIManagerRequestDTO request
     ) {
-        GIAssignManagerResponseDTO response = goodsIssueCommandService.assignManager(giCode, currentEmployee);
+        GIAssignManagerResponseDTO response = goodsIssueCommandService.assignManager(giCode, request.getEmpId());
         return ResponseEntity.ok(response);
     }
 }

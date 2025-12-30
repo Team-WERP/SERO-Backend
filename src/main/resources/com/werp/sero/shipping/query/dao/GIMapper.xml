@@ -113,8 +113,8 @@
             /* 결재 정보 */
             L.id AS approval_id,
             A.approval_code,
-            F.id AS drafter_id,
-            F.name AS drafter_name,
+            G.id AS drafter_id,
+            G.name AS drafter_name,
             P.dept_name AS drafter_department,
             Q.name AS drafter_position,
             R.name AS drafter_rank,
@@ -148,11 +148,10 @@
         INNER JOIN client C ON B.client_id = C.id
         LEFT JOIN client_employee D ON B.client_manager_id = D.id
         INNER JOIN warehouse E ON A.warehouse_id = E.id
-        INNER JOIN employee F ON A.drafter_id = F.id
-        LEFT JOIN department P ON F.dept_id = P.id
-        LEFT JOIN common_code Q ON F.position_code = Q.code
-        LEFT JOIN common_code R ON F.rank_code = R.code
         LEFT JOIN employee G ON A.gi_manager_id = G.id
+        LEFT JOIN department P ON G.dept_id = P.id
+        LEFT JOIN common_code Q ON G.position_code = Q.code
+        LEFT JOIN common_code R ON G.rank_code = R.code
         INNER JOIN goods_issue_item H ON A.id = H.gi_id
         INNER JOIN sales_order_item I ON H.so_item_id = I.id
         LEFT JOIN material J ON I.item_code = J.material_code
