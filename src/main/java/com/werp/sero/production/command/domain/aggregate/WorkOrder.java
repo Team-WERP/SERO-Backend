@@ -88,8 +88,8 @@ public class WorkOrder {
     }
 
     public void end() {
-        if (!"WO_RUN".equals(this.status)) {
-            throw new InvalidWorkOrderStatusException(this.status, "WO_RUN");
+        if (!("WO_RUN".equals(this.status) || "WO_PAUSE".equals(this.status))) {
+            throw new InvalidWorkOrderStatusException(this.status, "WO_RUN or WO_PAUSE");
         }
         this.status = "WO_DONE";
     }
