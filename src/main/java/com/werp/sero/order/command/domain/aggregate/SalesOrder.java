@@ -110,4 +110,9 @@ public class SalesOrder {
     public void updateSoUrl(String pdfUrl) {
         this.soUrl = pdfUrl;
     }
+
+    public void completeOrder() {
+        final String COMPLETE_STATUS = "ORD_DONE";
+        this.status = COMPLETE_STATUS;
+    }
 }

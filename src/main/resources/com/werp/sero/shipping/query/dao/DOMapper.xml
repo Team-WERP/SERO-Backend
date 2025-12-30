@@ -8,6 +8,7 @@
     <!-- 납품서 상세 조회용 ResultMap -->
     <resultMap id="DODetailResultMap" type="com.werp.sero.shipping.query.dto.DODetailResponseDTO">
         <result property="doCode" column="do_code"/>
+        <result property="doUrl" column="do_url"/>
         <result property="createdAt" column="created_at"/>
         <result property="recipient" column="recipient"/>
         <result property="companyName" column="company_name"/>
@@ -39,6 +40,7 @@
         SELECT
             /* 납품서 기본 정보 */
             A.do_code,
+            A.do_url,
             DATE_FORMAT(STR_TO_DATE(A.created_at, '%Y-%m-%d %H:%i:%s'), '%Y-%m-%d') AS created_at,
             A.shipped_at,
             A.note,
@@ -131,6 +133,46 @@
         ORDER BY A.created_at DESC
     </select>
 
+    <!-- 담당자별 납품서 목록 조회 (전체 상태) -->
+    <select id="findByManager" resultType="com.werp.sero.shipping.query.dto.DOListResponseDTO">
+        SELECT
+            /* 납품서 정보 */
+            A.do_code AS doCode,
+            A.created_at AS createdAt,
+            A.shipped_at AS shippedAt,
+            A.status AS status,
+
+            /* 수주 정보 */
+            B.so_code AS soCode,
+
+            /* 고객사 정보 */
+            C.company_name AS companyName,
+
+            /* 담당자 정보 */
+            D.name AS managerName,
+
+            /* 품목 정보 (첫 번째 품목명) */
+            (SELECT F.item_name
+             FROM delivery_order_item E
+             INNER JOIN sales_order_item F ON E.so_item_id = F.id
+             WHERE E.do_id = A.id
+             ORDER BY E.id
+             LIMIT 1) AS itemName,
+
+            /* 총 품목 개수 */
+            (SELECT COUNT(*)
+             FROM delivery_order_item E
+             WHERE E.do_id = A.id) AS itemCount
+
+        FROM delivery_order A
+        INNER JOIN sales_order B ON A.so_id = B.id
+        INNER JOIN client C ON B.client_id = C.id
+        INNER JOIN employee D ON A.manager_id = D.id
+
+        WHERE A.manager_id = #{managerId}
+        ORDER BY A.created_at DESC
+    </select>
+
     <!-- 주문 id별 납품서 목록 조회-->
     <select id="selectDOListByOrderId" resultType="com.werp.sero.shipping.query.dto.DOListResponseDTO">
         SELECT
@@ -151,6 +193,45 @@
             INNER JOIN client C ON B.client_id = C.id
             INNER JOIN employee D ON A.manager_id = D.id
         WHERE A.so_id = #{orderId}
+        ORDER BY A.created_at DESC
+    </select>
+
+    <!-- 전체 납품서 목록 조회 -->
+    <select id="findAll" resultType="com.werp.sero.shipping.query.dto.DOListResponseDTO">
+        SELECT
+            /* 납품서 정보 */
+            A.do_code AS doCode,
+            A.created_at AS createdAt,
+            A.shipped_at AS shippedAt,
+            A.status AS status,
+
+            /* 수주 정보 */
+            B.so_code AS soCode,
+
+            /* 고객사 정보 */
+            C.company_name AS companyName,
+
+            /* 담당자 정보 */
+            D.name AS managerName,
+
+            /* 품목 정보 (첫 번째 품목명) */
+            (SELECT F.item_name
+             FROM delivery_order_item E
+             INNER JOIN sales_order_item F ON E.so_item_id = F.id
+             WHERE E.do_id = A.id
+             ORDER BY E.id
+             LIMIT 1) AS itemName,
+
+            /* 총 품목 개수 */
+            (SELECT COUNT(*)
+             FROM delivery_order_item E
+             WHERE E.do_id = A.id) AS itemCount
+
+        FROM delivery_order A
+        INNER JOIN sales_order B ON A.so_id = B.id
+        INNER JOIN client C ON B.client_id = C.id
+        INNER JOIN employee D ON A.manager_id = D.id
+
         ORDER BY A.created_at DESC
     </select>
 

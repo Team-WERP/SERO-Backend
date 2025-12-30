@@ -37,11 +37,21 @@ public class DODetailQueryServiceImpl implements DODetailQueryService {
     }
 
     @Override
+    public List<DOListResponseDTO> getDeliveryOrdersByManager(int managerId) {
+        return doMapper.findByManager(managerId);
+    }
+
+    @Override
     public List<DOListResponseDTO> getDeliveryOrderListByOrderId(final int orderId) {
         soRepository.findById(orderId).orElseThrow(SalesOrderNotFoundException::new);
 
         List<DOListResponseDTO> list = doMapper.selectDOListByOrderId(orderId);
 
         return list;
+    }
+
+    @Override
+    public List<DOListResponseDTO> getAllDeliveryOrders() {
+        return doMapper.findAll();
     }
 }

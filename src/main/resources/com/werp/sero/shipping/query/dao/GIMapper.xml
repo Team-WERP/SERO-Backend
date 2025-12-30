@@ -12,6 +12,7 @@
 
         <!-- 기본 출고 지시 정보 -->
         <result property="giId" column="gi_id"/>
+        <result property="giUrl" column="gi_url"/>
         <result property="createdAt" column="created_at"/>
         <result property="scheduledAt" column="scheduled_at"/>
         <result property="status" column="status"/>
@@ -82,6 +83,7 @@
             /* 기본 출고 지시 정보 */
             A.id AS gi_id,
             A.gi_code,
+            A.gi_url,
             A.created_at,
             K.shipped_at AS scheduled_at,
             A.status,
@@ -113,9 +115,9 @@
             A.approval_code,
             F.id AS drafter_id,
             F.name AS drafter_name,
-            P.dept_name AS drafter_department,
-            Q.name AS drafter_position,
-            R.name AS drafter_rank,
+            U.dept_name AS drafter_department,
+            V.name AS drafter_position,
+            W.name AS drafter_rank,
             G.id AS manager_id,
             G.name AS manager_name,
 
@@ -146,11 +148,14 @@
         INNER JOIN client C ON B.client_id = C.id
         LEFT JOIN client_employee D ON B.client_manager_id = D.id
         INNER JOIN warehouse E ON A.warehouse_id = E.id
-        INNER JOIN employee F ON A.drafter_id = F.id
-        LEFT JOIN department P ON F.dept_id = P.id
-        LEFT JOIN common_code Q ON F.position_code = Q.code
-        LEFT JOIN common_code R ON F.rank_code = R.code
+        LEFT JOIN employee F ON A.drafter_id = F.id
+        LEFT JOIN department U ON F.dept_id = U.id
+        LEFT JOIN common_code V ON F.position_code = V.code
+        LEFT JOIN common_code W ON F.rank_code = W.code
         LEFT JOIN employee G ON A.gi_manager_id = G.id
+        LEFT JOIN department P ON G.dept_id = P.id
+        LEFT JOIN common_code Q ON G.position_code = Q.code
+        LEFT JOIN common_code R ON G.rank_code = R.code
         INNER JOIN goods_issue_item H ON A.id = H.gi_id
         INNER JOIN sales_order_item I ON H.so_item_id = I.id
         LEFT JOIN material J ON I.item_code = J.material_code
