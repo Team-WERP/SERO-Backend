@@ -79,6 +79,7 @@ public class SOClientQueryServiceImpl implements SOClientQueryService {
                 .map(order -> SOClientListResponseDTO.builder()
                         .orderId(order.getOrderId())
                         .soCode(order.getSoCode())
+                        .orderCount(order.getOrderCount())
                         .poCode(order.getPoCode())
                         .mainItemName(order.getMainItemName())
                         .totalPrice(order.getTotalPrice())
@@ -128,6 +129,7 @@ public class SOClientQueryServiceImpl implements SOClientQueryService {
                 .recipientName(order.getRecipientName())
                 .recipientContact(order.getRecipientContact())
                 .note(order.getNote())
+                .rejectionReason(order.getRejectionReason())
                 .build();
     }
 

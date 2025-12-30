@@ -107,9 +107,10 @@ public class SalesOrder {
         this.status = status;
     }
 
-    /**
-     * 주문 완료 처리
-     */
+    public void updateSoUrl(String pdfUrl) {
+        this.soUrl = pdfUrl;
+    }
+
     public void completeOrder() {
         final String COMPLETE_STATUS = "ORD_DONE";
         this.status = COMPLETE_STATUS;

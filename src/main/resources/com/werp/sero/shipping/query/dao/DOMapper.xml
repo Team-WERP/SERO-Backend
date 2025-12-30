@@ -186,6 +186,7 @@
              WHERE E.do_id = A.id ORDER BY E.id LIMIT 1) AS itemName,
         (SELECT COUNT(*) FROM delivery_order_item E WHERE E.do_id = A.id) AS itemCount,
         A.status AS status,
+        A.do_url AS doUrl,
         DATE_FORMAT(A.created_at, '%Y-%m-%d') AS createdAt
         FROM delivery_order A
             INNER JOIN sales_order B ON A.so_id = B.id

@@ -7,6 +7,7 @@ import com.itextpdf.io.font.PdfEncodings;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.layout.font.FontProvider;
+import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import com.werp.sero.common.error.ErrorCode;
 import com.werp.sero.common.error.exception.SystemException;
 import lombok.RequiredArgsConstructor;
@@ -24,12 +25,21 @@ import java.io.ByteArrayOutputStream;
 @Component
 public class PdfGenerator {
 
-    /**
-     * HTML 문자열을 PDF byte 배열로 변환
-     *
-     * @param htmlContent HTML 문자열
-     * @return PDF byte 배열
-     */
+    public static byte[] generate(String html) {
+        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+
+            PdfRendererBuilder builder = new PdfRendererBuilder();
+            builder.withHtmlContent(html, null);
+            builder.toStream(os);
+            builder.run();
+
+            return os.toByteArray();
+
+        } catch (Exception e) {
+            throw new RuntimeException("PDF 생성 실패", e);
+        }
+    }
+
     public byte[] generatePdfFromHtml(final String htmlContent) {
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
 

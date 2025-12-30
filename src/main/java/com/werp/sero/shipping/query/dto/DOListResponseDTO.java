@@ -39,4 +39,7 @@ public class DOListResponseDTO {
 
     @Schema(description = "상태", example = "DO_BEFORE_GI")
     private String status;
+
+    @Schema(description = "납품서 url")
+    private String doUrl;
 }
