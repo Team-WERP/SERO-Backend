@@ -9,7 +9,7 @@ import com.werp.sero.order.command.domain.aggregate.SalesOrder;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItem;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItemHistory;
 import com.werp.sero.order.command.domain.repository.SalesOrderItemHistoryRepository;
-import com.werp.sero.order.command.domain.repository.SalesOrderRepository;
+import com.werp.sero.order.command.domain.repository.SORepository;
 import com.werp.sero.shipping.command.application.dto.GIAssignManagerResponseDTO;
 import com.werp.sero.shipping.command.application.dto.GICompleteResponseDTO;
 import com.werp.sero.shipping.command.application.dto.GICreateRequestDTO;
@@ -57,7 +57,7 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
     private final WarehouseStockHistoryRepository warehouseStockHistoryRepository;
     private final MaterialRepository materialRepository;
     private final SalesOrderItemHistoryRepository salesOrderItemHistoryRepository;
-    private final SalesOrderRepository salesOrderRepository;
+    private final SORepository soRepository;
     private final EmployeeRepository employeeRepository;
     private final DocumentSequenceCommandService documentSequenceCommandService;
 
@@ -302,7 +302,7 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
         SalesOrder salesOrder = goodsIssue.getSalesOrder();
         if ("ORD_SHIP_READY".equals(salesOrder.getStatus())) {
             salesOrder.updateApprovalInfo(salesOrder.getApprovalCode(), "ORD_SHIPPING");
-            salesOrderRepository.save(salesOrder);
+            soRepository.save(salesOrder);
         }
 
         // 8. 응답 DTO 생성 및 반환

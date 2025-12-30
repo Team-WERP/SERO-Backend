@@ -7,7 +7,7 @@ import com.werp.sero.order.command.domain.aggregate.SalesOrder;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItem;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItemHistory;
 import com.werp.sero.order.command.domain.repository.SalesOrderItemHistoryRepository;
-import com.werp.sero.order.command.domain.repository.SalesOrderRepository;
+import com.werp.sero.order.command.domain.repository.SORepository;
 import com.werp.sero.shipping.command.domain.aggregate.Delivery;
 import com.werp.sero.shipping.command.domain.aggregate.GoodsIssueItem;
 import com.werp.sero.shipping.command.domain.repository.DeliveryRepository;
@@ -33,7 +33,7 @@ public class DeliveryCommandServiceImpl implements DeliveryCommandService {
     private final DeliveryRepository deliveryRepository;
     private final GoodsIssueItemRepository goodsIssueItemRepository;
     private final SalesOrderItemHistoryRepository salesOrderItemHistoryRepository;
-    private final SalesOrderRepository salesOrderRepository;
+    private final SORepository soRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
@@ -159,7 +159,7 @@ public class DeliveryCommandServiceImpl implements DeliveryCommandService {
         // 4. 모든 품목이 배송 완료되었으면 주문 상태를 완료로 변경
         if (allItemsCompleted) {
             salesOrder.completeOrder();
-            salesOrderRepository.save(salesOrder);
+            soRepository.save(salesOrder);
         }
     }
 }
