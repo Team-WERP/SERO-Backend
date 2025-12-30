@@ -18,6 +18,9 @@ public class SOClientListResponseDTO {
     @Schema(description = "주문 번호")
     private String soCode;
 
+    @Schema(description = "총 주문건 수")
+    private String orderCount;
+
     @Schema(description = "PO 번호")
     private String poCode;
 

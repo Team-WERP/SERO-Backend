@@ -104,6 +104,7 @@
         SELECT
         A.id as orderId,
         A.so_code,
+        COUNT(*) OVER() AS orderCount,
         A.po_code,
         A.main_item_name,
         A.total_price,
