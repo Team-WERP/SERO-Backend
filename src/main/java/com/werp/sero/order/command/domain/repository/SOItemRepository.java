@@ -10,4 +10,6 @@ public interface SOItemRepository extends JpaRepository<SalesOrderItem, Integer>
     List<SalesOrderItem> findBySalesOrderId(final int salesOrderId);
 
     boolean existsByIdAndSalesOrderId(final Integer itemId, final int orderId);
+
+    List<SalesOrderItem> findBySalesOrder_Id(final int orderId);
 }

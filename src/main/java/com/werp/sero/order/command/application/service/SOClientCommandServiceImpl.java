@@ -27,6 +27,7 @@ public class SOClientCommandServiceImpl implements SOClientCommandService {
     private final SOItemRepository orderItemRepository;
     private final ClientRepository  clientRepository;
 
+    private final SOPdfService soPdfService;
     private final DocumentSequenceCommandService documentSequenceCommandService;
 
     @Transactional
@@ -86,7 +87,10 @@ public class SOClientCommandServiceImpl implements SOClientCommandService {
 
         List<SalesOrderItem> savedItems = orderItemRepository.saveAll(orderItems);
 
-        // 미수금 반영
+        String s3Url = soPdfService.generateAndUpload(savedOrder.getId());
+
+        savedOrder.updateSoUrl(s3Url);        // 미수금 반영
+
         Client client = clientRepository.findById(clientEmployee.getClient().getId())
                 .orElseThrow(ClientNotFoundException::new);
         client.addReceivables(totalOrderPrice);

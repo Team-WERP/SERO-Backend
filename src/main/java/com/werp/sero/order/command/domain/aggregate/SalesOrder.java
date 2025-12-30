@@ -106,4 +106,8 @@ public class SalesOrder {
         this.approvalCode = approvalCode;
         this.status = status;
     }
+
+    public void updateSoUrl(String pdfUrl) {
+        this.soUrl = pdfUrl;
+    }
 }
