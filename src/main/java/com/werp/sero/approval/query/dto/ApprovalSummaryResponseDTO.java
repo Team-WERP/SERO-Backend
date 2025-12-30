@@ -62,4 +62,7 @@ public class ApprovalSummaryResponseDTO {
 
     @Schema(description = "열람일시")
     private String viewedAt;
+
+    @Schema(description = "완료일시")
+    private String completedAt;
 }

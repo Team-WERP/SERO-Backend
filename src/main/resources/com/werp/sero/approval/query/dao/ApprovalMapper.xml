@@ -76,6 +76,7 @@
       , B.position_code AS drafterPositionCode
       , B.rank_code AS drafterRankCode
       , C.dept_name AS drafterDepartment
+      , A.completed_at AS completedAt
       , CASE
              WHEN EXISTS (SELECT
                                  1
