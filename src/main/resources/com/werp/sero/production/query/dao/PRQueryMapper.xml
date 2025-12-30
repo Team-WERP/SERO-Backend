@@ -219,6 +219,7 @@
                 AND (
                 A.pr_code LIKE CONCAT('%', #{keyword}, '%')
                 OR B.so_code LIKE CONCAT('%', #{keyword}, '%')
+                OR D.name LIKE CONCAT('%', #{keyword}, '%')
                 OR EXISTS (
                 SELECT 1
                 FROM production_request_item E
