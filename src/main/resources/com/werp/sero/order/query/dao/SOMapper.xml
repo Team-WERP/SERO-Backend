@@ -124,8 +124,10 @@
         <result property="status" column="status"/>
         <result property="note" column="note"/>
         <result property="clientName" column="company_name"/>
+        <result property="clientAddress" column="client_address"/>
         <result property="clientManagerName" column="client_manager_name"/>
         <result property="clientManagerContact" column="client_manager_contact"/>
+        <result property="managerId" column="manager_id"/>
         <result property="managerName" column="manager_name"/>
         <result property="creditLimit" column="credit_limit"/>
         <result property="availablePrice" column="available_price"/>
@@ -161,6 +163,7 @@
             A.status,
 
             B.company_name,
+            B.address AS client_address,
             B.credit_limit,
             (B.credit_limit - B.receivables) AS available_price,
             ((B.credit_limit - B.receivables) - A.total_price) AS remaining_amount,
@@ -168,6 +171,7 @@
             C.name AS client_manager_name,
             C.contact AS client_manager_contact,
 
+            G.id   AS manager_id,
             G.name AS manager_name,
 
             D.id AS item_id,

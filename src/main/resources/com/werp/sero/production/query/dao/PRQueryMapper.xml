@@ -219,6 +219,7 @@
                 AND (
                 A.pr_code LIKE CONCAT('%', #{keyword}, '%')
                 OR B.so_code LIKE CONCAT('%', #{keyword}, '%')
+                OR D.name LIKE CONCAT('%', #{keyword}, '%')
                 OR EXISTS (
                 SELECT 1
                 FROM production_request_item E
@@ -490,7 +491,8 @@
 
         C.name            AS drafterName,
         D.name            AS managerName,
-        A.status          AS status
+        A.status          AS status,
+        A.pr_url          AS prUrl
 
         FROM production_request A
             JOIN sales_order B ON A.so_id = B.id

@@ -167,6 +167,7 @@ public class PRCommandServiceImpl implements PRCommandService {
                             prev
                     );
 
+            prItem.changeStatus("PIS_WAIT");
             soItemHistoryRepository.save(history);
         }
     }
@@ -202,6 +203,7 @@ public class PRCommandServiceImpl implements PRCommandService {
                 case "PIS_TARGET" -> hasTarget = true;
                 case "PIS_PLANNED" -> hasPlanned = true;
                 case "PIS_PRODUCING" -> hasProducing = true;
+                default -> { /* ignore */ }
             }
             if (!"PIS_DONE".equals(item.getStatus())) {
                 allDone = false;
