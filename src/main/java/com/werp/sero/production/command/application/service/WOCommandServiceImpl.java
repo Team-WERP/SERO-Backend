@@ -246,12 +246,12 @@ public class WOCommandServiceImpl implements WOCommandService {
 
             // 3) WarehouseStock 증가 (material 기준)
             Material material = woi.getProductionPlan().getMaterial();
-            Warehouse factory = woi.getWorkOrder()
-                    .getProductionLine()
-                    .getFactory();
+//            Warehouse factory = woi.getWorkOrder()
+//                    .getProductionLine()
+//                    .getFactory();
 
             WarehouseStock stock =
-                    warehouseStockRepository.findByWarehouseIdAndMaterialId(factory.getId(), material.getId())
+                    warehouseStockRepository.findByWarehouseIdAndMaterialId(1, material.getId())
                             .orElseThrow(WarehouseStockNotFoundException::new);
             stock.increaseStock(qty);
 

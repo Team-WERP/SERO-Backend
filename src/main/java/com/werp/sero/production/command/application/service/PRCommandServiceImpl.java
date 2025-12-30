@@ -166,6 +166,7 @@ public class PRCommandServiceImpl implements PRCommandService {
                             prev
                     );
 
+            prItem.changeStatus("PIS_WAIT");
             soItemHistoryRepository.save(history);
         }
     }
