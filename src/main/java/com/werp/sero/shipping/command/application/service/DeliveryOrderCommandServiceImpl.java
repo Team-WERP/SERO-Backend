@@ -3,8 +3,10 @@ package com.werp.sero.shipping.command.application.service;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.order.command.domain.aggregate.SalesOrder;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItem;
+import com.werp.sero.order.command.domain.aggregate.SalesOrderItemHistory;
 import com.werp.sero.order.command.domain.repository.SOItemRepository;
 import com.werp.sero.order.command.domain.repository.SORepository;
+import com.werp.sero.order.command.domain.repository.SalesOrderItemHistoryRepository;
 import com.werp.sero.order.exception.SalesOrderItemNotFoundException;
 import com.werp.sero.order.exception.SalesOrderNotFoundException;
 import com.werp.sero.shipping.command.application.dto.DOCreateRequestDTO;
@@ -31,6 +33,7 @@ public class DeliveryOrderCommandServiceImpl implements DeliveryOrderCommandServ
     private final DeliveryOrderItemRepository deliveryOrderItemRepository;
     private final SORepository soRepository;
     private final SOItemRepository soItemRepository;
+    private final SalesOrderItemHistoryRepository salesOrderItemHistoryRepository;
     private final DocumentSequenceCommandService documentSequenceCommandService;
 
     @Override
@@ -92,6 +95,22 @@ public class DeliveryOrderCommandServiceImpl implements DeliveryOrderCommandServ
 
         // 6. 납품서 품목 일괄 저장
         deliveryOrderItemRepository.saveAll(deliveryOrderItems);
+
+        // 7. 주문 품목 이력 생성 (기납품 수량)
+        String createdAt = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        List<SalesOrderItemHistory> histories = new ArrayList<>();
+
+        for (DeliveryOrderItem doItem : deliveryOrderItems) {
+            SalesOrderItemHistory history = SalesOrderItemHistory.createForDeliveryOrder(
+                    doItem.getSalesOrderItem().getId(),
+                    doItem.getDoQuantity(),
+                    manager.getId(),
+                    createdAt
+            );
+            histories.add(history);
+        }
+
+        salesOrderItemHistoryRepository.saveAll(histories);
 
         return doCode;
     }
