@@ -127,7 +127,7 @@
         <result property="clientAddress" column="client_address"/>
         <result property="clientManagerName" column="client_manager_name"/>
         <result property="clientManagerContact" column="client_manager_contact"/>
-        <result property="managerId" column="manager_id"/>
+        <result property="managerId" column="so_manager_id"/>
         <result property="managerName" column="manager_name"/>
         <result property="creditLimit" column="credit_limit"/>
         <result property="availablePrice" column="available_price"/>
@@ -171,7 +171,7 @@
             C.name AS client_manager_name,
             C.contact AS client_manager_contact,
 
-            G.id AS manager_id,
+            G.id AS so_manager_id,
             G.name AS manager_name,
 
             D.id AS item_id,
