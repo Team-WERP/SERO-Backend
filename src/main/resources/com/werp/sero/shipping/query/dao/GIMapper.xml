@@ -49,6 +49,9 @@
         <result property="drafterRank" column="drafter_rank"/>
         <result property="managerId" column="manager_id"/>
         <result property="managerName" column="manager_name"/>
+        <result property="managerDepartment" column="manager_department"/>
+        <result property="managerPosition" column="manager_position"/>
+        <result property="managerRank" column="manager_rank"/>
 
         <!-- 출고지시 품목 목록 (Collection) -->
         <collection property="items" ofType="com.werp.sero.shipping.query.dto.GIDetailResponseDTO$GIDetailItemDTO">
@@ -120,6 +123,9 @@
             W.name AS drafter_rank,
             G.id AS manager_id,
             G.name AS manager_name,
+            P.dept_name AS manager_department,
+            Q.name AS manager_position,
+            R.name AS manager_rank,
 
             /* 품목 정보 */
             CONCAT(A.gi_code, '-', LPAD(H.id, 3, '0')) AS gi_item_code,
