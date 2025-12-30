@@ -60,10 +60,18 @@ dependencies {
     /* AWS S3 */
     implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3:3.2.1'
 
+    /* PDF Generation */
+    implementation 'com.itextpdf:itext7-core:7.2.5'
+    implementation 'com.itextpdf:html2pdf:4.0.5'
+    implementation 'com.itextpdf:font-asian:7.2.5'
+
     /* Test */
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.5'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    /* OpenHTMLtoPDF */
+    implementation 'com.openhtmltopdf:openhtmltopdf-pdfbox:1.0.10'
 }
 
 tasks.named('test') {

@@ -72,4 +72,7 @@ public class GIListResponseDTO {
 
     @Schema(description = "상태")
     private String status;
+
+    @Schema(description = "문서 url")
+    private String giUrl;
 }

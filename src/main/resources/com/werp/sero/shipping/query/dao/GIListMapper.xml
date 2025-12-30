@@ -25,6 +25,7 @@
         <result property="recipientName" column="recipient_name"/>
         <result property="recipientContact" column="recipient_contact"/>
         <result property="status" column="status"/>
+        <result property="giUrl" column="gi_url"/>
     </resultMap>
 
 
@@ -113,7 +114,8 @@
         B.address AS client_address,
         B.recipient_name AS recipient_name,
         B.recipient_contact AS recipient_contact,
-        A.status
+        A.status,
+        A.gi_url
         FROM goods_issue A
             INNER JOIN sales_order B ON A.so_id = B.id
             INNER JOIN warehouse C ON A.warehouse_id = C.id

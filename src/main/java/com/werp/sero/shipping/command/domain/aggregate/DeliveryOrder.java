@@ -58,4 +58,8 @@ public class DeliveryOrder {
     public void updateStatus(String status) {
         this.status = status;
     }
+
+    public void updateDoUrl(String doUrl) {
+        this.doUrl = doUrl;
+    }
 }

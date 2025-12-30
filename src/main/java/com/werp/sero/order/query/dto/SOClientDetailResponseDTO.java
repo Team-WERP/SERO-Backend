@@ -72,4 +72,7 @@ public class SOClientDetailResponseDTO {
 
     @Schema(description = "비고")
     private String note;
+
+    @Schema(description = "취소 사유")
+    private String rejectionReason;
 }

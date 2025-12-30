@@ -104,6 +104,7 @@
         SELECT
         A.id as orderId,
         A.so_code,
+        COUNT(*) OVER() AS orderCount,
         A.po_code,
         A.main_item_name,
         A.total_price,
@@ -183,6 +184,7 @@
         <result property="recipientName" column="recipient_name"/>
         <result property="recipientContact" column="recipient_contact"/>
         <result property="note" column="note"/>
+        <result property="rejectionReason" column="rejection_reason"/>
         <result property="clientId" column="client_id"/>
 
         <collection property="items" ofType="com.werp.sero.order.query.dto.SOClientItemResponseDTO">
@@ -215,6 +217,7 @@
             A.address,
             A.recipient_name,
             A.recipient_contact,
+            A.rejection_reason,
 
             B.name AS manager_name,
             B.contact AS manager_contact,

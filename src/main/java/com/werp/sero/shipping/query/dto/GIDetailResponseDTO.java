@@ -22,6 +22,9 @@ public class GIDetailResponseDTO {
     @Schema(description = "출고지시 번호", example = "GI-20251207-001")
     private String giCode;
 
+    @Schema(description = "출고지시서 PDF URL", example = "https://sero-bucket.s3.ap-northeast-2.amazonaws.com/goods-issues/GI-20251207-001.pdf")
+    private String giUrl;
+
     @Schema(description = "출고지시 일시", example = "2025-12-07 14:00")
     private String createdAt;
 

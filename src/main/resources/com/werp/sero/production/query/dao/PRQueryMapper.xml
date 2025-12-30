@@ -491,7 +491,8 @@
 
         C.name            AS drafterName,
         D.name            AS managerName,
-        A.status          AS status
+        A.status          AS status,
+        A.pr_url          AS prUrl
 
         FROM production_request A
             JOIN sales_order B ON A.so_id = B.id

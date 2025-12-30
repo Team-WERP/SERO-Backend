@@ -18,6 +18,9 @@ public class DODetailResponseDTO {
     @Schema(description = "납품서 문서번호", example = "DO-20251219-001")
     private String doCode;
 
+    @Schema(description = "납품서 PDF URL", example = "https://sero-bucket.s3.ap-northeast-2.amazonaws.com/delivery-orders/DO-20251219-001.pdf")
+    private String doUrl;
+
     @Schema(description = "일자 (납품서 생성일자)", example = "2025-12-09")
     private String createdAt;
 

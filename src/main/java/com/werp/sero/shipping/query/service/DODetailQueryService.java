@@ -11,5 +11,9 @@ public interface DODetailQueryService {
 
     List<DOListResponseDTO> getDeliveryOrdersByStatusAndManager(String status, int managerId);
 
+    List<DOListResponseDTO> getDeliveryOrdersByManager(int managerId);
+
     List<DOListResponseDTO> getDeliveryOrderListByOrderId(final int orderId);
+
+    List<DOListResponseDTO> getAllDeliveryOrders();
 }
