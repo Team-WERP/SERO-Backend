@@ -41,7 +41,7 @@ public class DeliveryOrderCommandServiceImpl implements DeliveryOrderCommandServ
     private final DocumentSequenceCommandService documentSequenceCommandService;
     private final DODetailQueryService doDetailQueryService;
     private final PdfGenerator pdfGenerator;
-    private final ShippingPdfService htmlTemplateGenerator;
+    private final ShippingPdfService shippingPdfService;
     private final S3Uploader s3Uploader;
 
     @Override
@@ -110,7 +110,7 @@ public class DeliveryOrderCommandServiceImpl implements DeliveryOrderCommandServ
             DODetailResponseDTO doDetail = doDetailQueryService.getDeliveryOrderDetail(doCode);
 
             // 7-2. HTML 템플릿 생성
-            String htmlContent = htmlTemplateGenerator.generateDeliveryOrderDetailHtml(doDetail);
+            String htmlContent = shippingPdfService.generateDeliveryOrderDetailHtml(doDetail);
 
             // 7-3. PDF 생성
             byte[] pdfBytes = pdfGenerator.generatePdfFromHtml(htmlContent);
