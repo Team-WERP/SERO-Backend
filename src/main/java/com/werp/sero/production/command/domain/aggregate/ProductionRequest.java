@@ -118,4 +118,7 @@ public class ProductionRequest {
         }
     }
 
+    public void updatePrUrl(String pdfUrl) {
+        this.prUrl = pdfUrl;
+    }
 }

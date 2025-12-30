@@ -37,6 +37,7 @@ public class PRCommandServiceImpl implements PRCommandService {
     private final EmployeeRepository employeeRepository;
     private final DocumentSequenceCommandService documentSequenceCommandService;
     private final SalesOrderItemHistoryRepository soItemHistoryRepository;
+    private final PRPdfService prPdfService;
 
     @Override
     @Transactional
@@ -181,6 +182,9 @@ public class PRCommandServiceImpl implements PRCommandService {
                 .orElseThrow(EmployeeNotFoundException::new);
 
         pr.assignManager(manager);
+        
+        String pdfUrl = prPdfService.generateAndUpload(prId);
+        pr.updatePrUrl(pdfUrl);
     }
 
     @Transactional
