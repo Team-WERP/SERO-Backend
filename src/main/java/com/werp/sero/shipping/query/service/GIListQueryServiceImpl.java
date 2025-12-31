@@ -41,6 +41,7 @@ public class GIListQueryServiceImpl implements GIListQueryService {
         params.put("startDate", filter.getStartDate());
         params.put("endDate", filter.getEndDate());
         params.put("searchKeyword", filter.getSearchKeyword());
+        params.put("drafterId", filter.getDrafterId());
         params.put("limit", limit);
         params.put("offset", offset);
 

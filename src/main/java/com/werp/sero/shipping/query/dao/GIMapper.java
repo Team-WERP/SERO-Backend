@@ -7,9 +7,9 @@ import org.apache.ibatis.annotations.Mapper;
 public interface GIMapper {
 
     /**
-     * 출고지시 번호로 출고지시서 상세 조회
-     * @param giCode 출고지시 번호
+     * 출고지시 ID로 출고지시서 상세 조회
+     * @param id 출고지시 ID
      * @return 출고지시서 상세 정보
      */
-    GIDetailResponseDTO findByGiCode(String giCode);
+    GIDetailResponseDTO findById(Long id);
 }

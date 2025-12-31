@@ -31,6 +31,7 @@ public class GIQueryController {
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate,
             @RequestParam(required = false) String searchKeyword,
+            @RequestParam(required = false) Integer drafterId,
             @Parameter(description = "페이지 번호 (1부터 시작, 미입력시 전체 조회)", example = "1")
             @RequestParam(value = "page", required = false) Integer page) {
 
@@ -40,17 +41,18 @@ public class GIQueryController {
                 .startDate(startDate)
                 .endDate(endDate)
                 .searchKeyword(searchKeyword)
+                .drafterId(drafterId)
                 .build();
 
         return ResponseEntity.ok(giListQueryService.findGoodsIssueList(filter, page));
     }
 
-    @Operation(summary = "출고지시서 상세 조회", description = "출고지시 번호로 출고지시서 상세 정보 조회")
-    @GetMapping("/{giCode}")
+    @Operation(summary = "출고지시서 상세 조회", description = "출고지시 ID로 출고지시서 상세 정보 조회")
+    @GetMapping("/{id}")
     public ResponseEntity<GIDetailResponseDTO> getGoodsIssueDetail(
-            @Parameter(description = "출고지시 번호", example = "GI-20251207-001")
-            @PathVariable String giCode) {
-        return ResponseEntity.ok(giDetailQueryService.getGoodsIssueDetail(giCode));
+            @Parameter(description = "출고지시 ID", example = "1")
+            @PathVariable Long id) {
+        return ResponseEntity.ok(giDetailQueryService.getGoodsIssueDetail(id));
     }
 
 
