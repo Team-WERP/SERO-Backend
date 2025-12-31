@@ -31,6 +31,7 @@ public class GIQueryController {
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate,
             @RequestParam(required = false) String searchKeyword,
+            @RequestParam(required = false) Integer drafterId,
             @Parameter(description = "페이지 번호 (1부터 시작, 미입력시 전체 조회)", example = "1")
             @RequestParam(value = "page", required = false) Integer page) {
 
@@ -40,6 +41,7 @@ public class GIQueryController {
                 .startDate(startDate)
                 .endDate(endDate)
                 .searchKeyword(searchKeyword)
+                .drafterId(drafterId)
                 .build();
 
         return ResponseEntity.ok(giListQueryService.findGoodsIssueList(filter, page));
