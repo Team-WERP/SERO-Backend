@@ -143,13 +143,16 @@ public class PRCommandServiceImpl implements PRCommandService {
             throw new ProductionRequestEmptyException();
         }
 
-        String prCode = documentSequenceCommandService.generateDocumentCode("DOC_PR");
-        pr.request(prCode);
-
         List<ProductionRequestItem> items =
                 prtItemRepository.findAllByProductionRequest_Id(prId);
 
+        int totalQty = 0;
         for (ProductionRequestItem prItem : items) {
+
+            if (prItem.getQuantity() == 0) {
+                prtItemRepository.delete(prItem);
+                continue;
+            }
 
             int soItemId = prItem.getSalesOrderItem().getId();
             int qty = prItem.getQuantity();
@@ -168,8 +171,16 @@ public class PRCommandServiceImpl implements PRCommandService {
                     );
 
             prItem.changeStatus("PIS_WAIT");
+            totalQty += qty;
             soItemHistoryRepository.save(history);
         }
+
+        if (totalQty <= 0) {
+            throw new ProductionRequestEmptyException();
+        }
+
+        String prCode = documentSequenceCommandService.generateDocumentCode("DOC_PR");
+        pr.request(prCode);
     }
 
     @Override
