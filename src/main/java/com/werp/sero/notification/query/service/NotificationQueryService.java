@@ -7,4 +7,6 @@ public interface NotificationQueryService {
     List<NotificationResponse> getMyNotifications(int employeeId);
     int getUnreadCount(int employeeId);
     void markAsRead(int notificationId);
+    void markAllAsRead(int employeeId);
+    void deleteNotification(int notificationId);
 }

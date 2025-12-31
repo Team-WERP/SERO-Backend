@@ -49,6 +49,7 @@ public class NotificationEventListener {
             data.put("title", notification.getTitle());
             data.put("content", notification.getContent());
             data.put("redirectUrl", notification.getRedirectUrl());
+            data.put("isRead", notification.isRead());
             data.put("createdAt", notification.getCreatedAt());
 
             sseCommandService.sendToUser(event.getReceiverId(), data);

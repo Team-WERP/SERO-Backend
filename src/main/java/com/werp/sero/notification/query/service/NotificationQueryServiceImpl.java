@@ -33,9 +33,24 @@ public class NotificationQueryServiceImpl implements NotificationQueryService {
     @Override
     @Transactional
     public void markAsRead(int notificationId) {
+        if (!notificationRepository.existsById(notificationId)) {
+            throw new BusinessException(ErrorCode.ENTITY_NOT_FOUND);
+        }
+        notificationMapper.markAsRead(notificationId);
+    }
+
+    @Override
+    @Transactional
+    public void markAllAsRead(int employeeId) {
+        notificationMapper.markAllAsRead(employeeId);
+    }
+
+    @Override
+    @Transactional
+    public void deleteNotification(int notificationId) {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND));
 
-        notification.read();
+        notificationRepository.delete(notification);
     }
 }

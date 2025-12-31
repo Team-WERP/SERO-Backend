@@ -287,8 +287,8 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
         int dailyCount = deliveryRepository.countByDate(today);
         String trackingNumber = String.format("SERO-%s-D%03d", today, dailyCount + 1);
 
-        // 6-2. 배송기사 조회 (ID=12, 김기사)
-        Employee driver = employeeRepository.findById(12)
+        // 6-2. 배송기사 조회 (ID=23, 김기사)
+        Employee driver = employeeRepository.findById(23)
                 .orElseThrow(() -> new BusinessException(ErrorCode.EMPLOYEE_NOT_FOUND));
 
         // 6-3. 배송 데이터 생성

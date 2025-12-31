@@ -9,7 +9,10 @@ import java.util.List;
 @Mapper
 public interface NotificationMapper {
     List<NotificationResponse> findByReceiverId(
-        
+
     @Param("receiverId") int receiverId);
     int countUnreadByReceiverId(@Param("receiverId") int receiverId);
+    void markAsRead(@Param("notificationId") int notificationId);
+    void markAllAsRead(@Param("receiverId") int receiverId);
+    void deleteNotification(@Param("notificationId") int notificationId);
 }
