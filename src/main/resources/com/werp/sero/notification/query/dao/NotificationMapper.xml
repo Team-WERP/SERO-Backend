@@ -28,4 +28,25 @@
         AND is_read = false
     </select>
 
+    <!-- 알림 읽음 처리 -->
+    <update id="markAsRead">
+        UPDATE notification
+        SET is_read = true
+        WHERE id = #{notificationId}
+    </update>
+
+    <!-- 모든 알림 읽음 처리 -->
+    <update id="markAllAsRead">
+        UPDATE notification
+        SET is_read = true
+        WHERE receiver_id = #{receiverId}
+        AND is_read = false
+    </update>
+
+    <!-- 알림 삭제 -->
+    <delete id="deleteNotification">
+        DELETE FROM notification
+        WHERE id = #{notificationId}
+    </delete>
+
 </mapper>

@@ -38,4 +38,19 @@ public class NotificationQueryServiceImpl implements NotificationQueryService {
 
         notification.read();
     }
+
+    @Override
+    @Transactional
+    public void markAllAsRead(int employeeId) {
+        notificationMapper.markAllAsRead(employeeId);
+    }
+
+    @Override
+    @Transactional
+    public void deleteNotification(int notificationId) {
+        if (!notificationRepository.existsById(notificationId)) {
+            throw new BusinessException(ErrorCode.ENTITY_NOT_FOUND);
+        }
+        notificationMapper.deleteNotification(notificationId);
+    }
 }
