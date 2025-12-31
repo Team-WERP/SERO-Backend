@@ -12,7 +12,7 @@
             content,
             type,
             redirect_url as redirectUrl,
-            is_read as isRead,
+            CASE WHEN is_read = 1 THEN 1 ELSE 0 END as isRead,
             created_at as createdAt
         FROM notification
         WHERE receiver_id = #{receiverId}

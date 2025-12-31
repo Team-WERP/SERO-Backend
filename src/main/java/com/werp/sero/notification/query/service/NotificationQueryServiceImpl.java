@@ -33,10 +33,10 @@ public class NotificationQueryServiceImpl implements NotificationQueryService {
     @Override
     @Transactional
     public void markAsRead(int notificationId) {
-        Notification notification = notificationRepository.findById(notificationId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND));
-
-        notification.read();
+        if (!notificationRepository.existsById(notificationId)) {
+            throw new BusinessException(ErrorCode.ENTITY_NOT_FOUND);
+        }
+        notificationMapper.markAsRead(notificationId);
     }
 
     @Override
@@ -48,9 +48,9 @@ public class NotificationQueryServiceImpl implements NotificationQueryService {
     @Override
     @Transactional
     public void deleteNotification(int notificationId) {
-        if (!notificationRepository.existsById(notificationId)) {
-            throw new BusinessException(ErrorCode.ENTITY_NOT_FOUND);
-        }
-        notificationMapper.deleteNotification(notificationId);
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.ENTITY_NOT_FOUND));
+
+        notificationRepository.delete(notification);
     }
 }
