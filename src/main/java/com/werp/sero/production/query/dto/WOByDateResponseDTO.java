@@ -10,17 +10,13 @@ public class WOByDateResponseDTO {
     private String woCode;
     private String woStatus;
     private String workDate;
-    private int quantity;
-
-    private int ppId;
-    private String ppCode;
-    private String ppStatus;
 
     private int lineId;
     private String lineName;
 
-    private int prId;
-    private String prCode;
     private String materialName;
-    private String materialCode;
+    private String materialSpec;
+    private String baseUnit;
+
+    private int plannedQuantity;
 }

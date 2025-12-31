@@ -2,6 +2,8 @@ package com.werp.sero.production.command.application.dto;
 
 import lombok.Getter;
 
+import java.util.List;
+
 @Getter
 public class WorkOrderEndRequest {
     private int goodQuantity;
@@ -11,4 +13,12 @@ public class WorkOrderEndRequest {
     private String endTime;
 
     private String note;
+
+    private List<ItemResult> items;
+
+    @Getter
+    public static class ItemResult {
+        private int workOrderItemId;
+        private int producedQuantity;
+    }
 }

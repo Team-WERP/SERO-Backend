@@ -6,6 +6,9 @@ import com.werp.sero.auth.exception.LoginFailedException;
 import com.werp.sero.security.dto.JwtToken;
 import com.werp.sero.security.enums.Type;
 import com.werp.sero.security.jwt.JwtTokenProvider;
+import com.werp.sero.security.jwt.exception.ExpiredTokenException;
+import com.werp.sero.security.jwt.exception.InvalidTokenException;
+import com.werp.sero.security.principal.CustomUserDetails;
 import com.werp.sero.util.CookieUtil;
 import com.werp.sero.util.HeaderUtil;
 import com.werp.sero.util.RedisUtil;
@@ -19,6 +22,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 public class AuthServiceImpl implements AuthService {
-    private static final String REFRESH_TOKEN_PREFIX = "RT: ";
+    private static final String REFRESH_TOKEN_PREFIX = "RT:";
     private static final String GRANT_TYPE = "Bearer";
 
     private final RedisUtil redisUtil;
@@ -65,8 +69,10 @@ public class AuthServiceImpl implements AuthService {
 
             cookieUtil.generateRefreshTokenCookie(response, refreshToken);
 
+            final String employeeName = ((CustomUserDetails) authentication.getPrincipal()).getName();
+
             return new LoginResponseDTO(accessToken.getToken(), GRANT_TYPE,
-                    accessToken.getAuthorities());
+                    accessToken.getAuthorities(), employeeName);
         } catch (InternalAuthenticationServiceException | BadCredentialsException e) {
             throw new LoginFailedException();
         }
@@ -95,6 +101,43 @@ public class AuthServiceImpl implements AuthService {
             redisUtil.setData(accessToken, "logout", expirationTime, TimeUnit.MILLISECONDS);
         } catch (JwtException e) {
             throw new JwtException(e.getMessage());
+        }
+    }
+
+    @Transactional
+    @Override
+    public LoginResponseDTO reissue(final CustomUserDetails customUserDetails, final String cookieRefreshToken,
+                                    final HttpServletResponse response) {
+        validateRefreshToken(cookieRefreshToken, customUserDetails.getUsername());
+
+        final Authentication authentication = new UsernamePasswordAuthenticationToken(customUserDetails,
+                null, customUserDetails.getAuthorities());
+
+        final JwtToken accessToken = jwtTokenProvider.generateAccessToken(authentication);
+
+        final JwtToken refreshToken = jwtTokenProvider.generateRefreshToken(authentication);
+
+        final CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
+
+        redisUtil.setData(REFRESH_TOKEN_PREFIX + principal.getUsername(), refreshToken.getToken(),
+                refreshToken.getExpirationTime(), TimeUnit.MILLISECONDS);
+
+        cookieUtil.generateRefreshTokenCookie(response, refreshToken);
+
+        return new LoginResponseDTO(accessToken.getToken(), GRANT_TYPE, accessToken.getAuthorities(), principal.getName());
+    }
+
+    private void validateRefreshToken(final String refreshToken, final String username) {
+        final String redisRefreshToken = redisUtil.getData(REFRESH_TOKEN_PREFIX + username);
+
+        if (redisRefreshToken == null || refreshToken == null) {
+            throw new ExpiredTokenException();
+        }
+
+        jwtTokenProvider.validateToken(redisRefreshToken);
+
+        if (!refreshToken.equals(redisRefreshToken)) {
+            throw new InvalidTokenException();
         }
     }
 

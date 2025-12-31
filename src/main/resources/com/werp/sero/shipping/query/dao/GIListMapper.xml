@@ -18,7 +18,14 @@
         <result property="shippedAt" column="shipped_at"/>
         <result property="requesterName" column="requester_name"/>
         <result property="managerName" column="manager_name"/>
+        <result property="clientManagerName" column="client_manager_name"/>
+        <result property="clientName" column="client_name"/>
+        <result property="deliveryNote" column="delivery_note"/>
+        <result property="clientAddress" column="client_address"/>
+        <result property="recipientName" column="recipient_name"/>
+        <result property="recipientContact" column="recipient_contact"/>
         <result property="status" column="status"/>
+        <result property="giUrl" column="gi_url"/>
     </resultMap>
 
 
@@ -29,26 +36,35 @@
             A.gi_code,
             B.so_code,
             A.do_code,
-            (SELECT G.item_name
-             FROM goods_issue_item F
-             INNER JOIN sales_order_item G ON F.so_item_id = G.id
-             WHERE F.gi_id = A.id
-             ORDER BY F.id
+            (SELECT I.item_name
+             FROM goods_issue_item H
+             INNER JOIN sales_order_item I ON H.so_item_id = I.id
+             WHERE H.gi_id = A.id
+             ORDER BY H.id
              LIMIT 1) AS item_name,
             (SELECT COUNT(*)
-             FROM goods_issue_item F
-             WHERE F.gi_id = A.id) AS item_count,
+             FROM goods_issue_item H
+             WHERE H.gi_id = A.id) AS item_count,
             C.name AS warehouse_name,
             A.created_at,
             B.shipped_at,
             D.name AS requester_name,
             E.name AS manager_name,
+            F.name AS client_manager_name,
+            H.company_name AS client_name,
+            G.note AS delivery_note,
+            B.address AS client_address,
+            B.recipient_name AS recipient_name,
+            B.recipient_contact AS recipient_contact,
             A.status
         FROM goods_issue A
         INNER JOIN sales_order B ON A.so_id = B.id
         INNER JOIN warehouse C ON A.warehouse_id = C.id
         LEFT JOIN employee D ON A.drafter_id = D.id
         LEFT JOIN employee E ON A.gi_manager_id = E.id
+        LEFT JOIN employee F ON B.client_manager_id = F.id
+        LEFT JOIN delivery_order G ON A.do_code = G.do_code
+        LEFT JOIN client H ON B.client_id = H.id
         <where>
             <if test="warehouseId != null and warehouseId > 0">
                 AND A.warehouse_id = #{warehouseId}
@@ -77,27 +93,37 @@
             B.so_code,
             A.do_code,
             /* 대표 품목명 조회 */
-            (SELECT G.item_name
-             FROM goods_issue_item F
-                      INNER JOIN sales_order_item G ON F.so_item_id = G.id
-             WHERE F.gi_id = A.id
-             ORDER BY F.id
+            (SELECT I.item_name
+             FROM goods_issue_item H
+                      INNER JOIN sales_order_item I ON H.so_item_id = I.id
+             WHERE H.gi_id = A.id
+             ORDER BY H.id
                     LIMIT 1) AS item_name,
         /* 품목 종류 수 */
         (SELECT COUNT(*)
-         FROM goods_issue_item F
-         WHERE F.gi_id = A.id) AS item_count,
+         FROM goods_issue_item H
+         WHERE H.gi_id = A.id) AS item_count,
         C.name AS warehouse_name,
         DATE_FORMAT(A.created_at, '%Y-%m-%d') AS created_at,
         B.shipped_at,
         D.name AS requester_name,
         E.name AS manager_name,
-        A.status
+        F.name AS client_manager_name,
+        H.company_name AS client_name,
+        G.note AS delivery_note,
+        B.address AS client_address,
+        B.recipient_name AS recipient_name,
+        B.recipient_contact AS recipient_contact,
+        A.status,
+        A.gi_url
         FROM goods_issue A
             INNER JOIN sales_order B ON A.so_id = B.id
             INNER JOIN warehouse C ON A.warehouse_id = C.id
             LEFT JOIN employee D ON A.drafter_id = D.id
             LEFT JOIN employee E ON A.gi_manager_id = E.id
+            LEFT JOIN employee F ON B.client_manager_id = F.id
+            LEFT JOIN delivery_order G ON A.do_code = G.do_code
+            LEFT JOIN client H ON B.client_id = H.id
         WHERE A.so_id = #{orderId}
         ORDER BY A.created_at DESC
     </select>

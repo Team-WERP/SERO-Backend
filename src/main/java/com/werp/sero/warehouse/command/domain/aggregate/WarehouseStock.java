@@ -62,6 +62,13 @@ public class WarehouseStock {
         }
 
         this.currentStock -= quantity;
+        this.availableStock -= quantity; // 가용 재고도 함께 감소
     }
+
+    public void increaseStock(int quantity) {
+        this.currentStock += quantity;
+        this.availableStock += quantity; // 가용도 증가
+    }
+
 
 }

@@ -11,6 +11,8 @@
         <id property="giCode" column="gi_code"/>
 
         <!-- 기본 출고 지시 정보 -->
+        <result property="giId" column="gi_id"/>
+        <result property="giUrl" column="gi_url"/>
         <result property="createdAt" column="created_at"/>
         <result property="scheduledAt" column="scheduled_at"/>
         <result property="status" column="status"/>
@@ -22,24 +24,34 @@
         <result property="recipientContact" column="recipient_contact"/>
 
         <!-- 관련 주문 정보 -->
+        <result property="soId" column="so_id"/>
         <result property="soCode" column="so_code"/>
+        <result property="doId" column="do_id"/>
         <result property="doCode" column="do_code"/>
+        <result property="clientId" column="client_id"/>
         <result property="clientName" column="client_name"/>
         <result property="shippedAt" column="shipped_at"/>
 
         <!-- 출고 창고 정보 -->
+        <result property="warehouseId" column="warehouse_id"/>
         <result property="warehouseName" column="warehouse_name"/>
 
         <!-- 특이사항 -->
         <result property="note" column="note"/>
 
         <!-- 결재 정보 -->
+        <result property="approvalId" column="approval_id"/>
         <result property="approvalCode" column="approval_code"/>
+        <result property="drafterId" column="drafter_id"/>
         <result property="drafterName" column="drafter_name"/>
         <result property="drafterDepartment" column="drafter_department"/>
         <result property="drafterPosition" column="drafter_position"/>
         <result property="drafterRank" column="drafter_rank"/>
+        <result property="managerId" column="manager_id"/>
         <result property="managerName" column="manager_name"/>
+        <result property="managerDepartment" column="manager_department"/>
+        <result property="managerPosition" column="manager_position"/>
+        <result property="managerRank" column="manager_rank"/>
 
         <!-- 출고지시 품목 목록 (Collection) -->
         <collection property="items" ofType="com.werp.sero.shipping.query.dto.GIDetailResponseDTO$GIDetailItemDTO">
@@ -72,7 +84,9 @@
     <select id="findByGiCode" resultMap="GIDetailResultMap">
         SELECT
             /* 기본 출고 지시 정보 */
+            A.id AS gi_id,
             A.gi_code,
+            A.gi_url,
             A.created_at,
             K.shipped_at AS scheduled_at,
             A.status,
@@ -84,24 +98,34 @@
             D.contact AS recipient_contact,
 
             /* 관련 주문 정보 */
+            B.id AS so_id,
             B.so_code,
+            K.id AS do_id,
             A.do_code,
+            C.id AS client_id,
             C.company_name AS client_name,
             B.shipped_at,
 
             /* 출고 창고 정보 */
+            E.id AS warehouse_id,
             E.name AS warehouse_name,
 
             /* 특이사항 */
             A.note,
 
             /* 결재 정보 */
+            L.id AS approval_id,
             A.approval_code,
+            F.id AS drafter_id,
             F.name AS drafter_name,
-            P.dept_name AS drafter_department,
-            Q.name AS drafter_position,
-            R.name AS drafter_rank,
+            U.dept_name AS drafter_department,
+            V.name AS drafter_position,
+            W.name AS drafter_rank,
+            G.id AS manager_id,
             G.name AS manager_name,
+            P.dept_name AS manager_department,
+            Q.name AS manager_position,
+            R.name AS manager_rank,
 
             /* 품목 정보 */
             CONCAT(A.gi_code, '-', LPAD(H.id, 3, '0')) AS gi_item_code,
@@ -130,11 +154,14 @@
         INNER JOIN client C ON B.client_id = C.id
         LEFT JOIN client_employee D ON B.client_manager_id = D.id
         INNER JOIN warehouse E ON A.warehouse_id = E.id
-        INNER JOIN employee F ON A.drafter_id = F.id
-        LEFT JOIN department P ON F.dept_id = P.id
-        LEFT JOIN common_code Q ON F.position_code = Q.code
-        LEFT JOIN common_code R ON F.rank_code = R.code
+        LEFT JOIN employee F ON A.drafter_id = F.id
+        LEFT JOIN department U ON F.dept_id = U.id
+        LEFT JOIN common_code V ON F.position_code = V.code
+        LEFT JOIN common_code W ON F.rank_code = W.code
         LEFT JOIN employee G ON A.gi_manager_id = G.id
+        LEFT JOIN department P ON G.dept_id = P.id
+        LEFT JOIN common_code Q ON G.position_code = Q.code
+        LEFT JOIN common_code R ON G.rank_code = R.code
         INNER JOIN goods_issue_item H ON A.id = H.gi_id
         INNER JOIN sales_order_item I ON H.so_item_id = I.id
         LEFT JOIN material J ON I.item_code = J.material_code

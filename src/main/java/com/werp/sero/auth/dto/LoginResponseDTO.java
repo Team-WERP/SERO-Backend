@@ -13,4 +13,5 @@ public class LoginResponseDTO {
     private String accessToken;
     private String grantType;
     private String permissions;
+    private String name;
 }

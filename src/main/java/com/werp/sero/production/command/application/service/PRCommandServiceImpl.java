@@ -5,8 +5,10 @@ import com.werp.sero.employee.command.domain.repository.EmployeeRepository;
 import com.werp.sero.employee.exception.EmployeeNotFoundException;
 import com.werp.sero.order.command.domain.aggregate.SalesOrder;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItem;
+import com.werp.sero.order.command.domain.aggregate.SalesOrderItemHistory;
 import com.werp.sero.order.command.domain.repository.SORepository;
 import com.werp.sero.order.command.domain.repository.SOItemRepository;
+import com.werp.sero.order.command.domain.repository.SalesOrderItemHistoryRepository;
 import com.werp.sero.order.exception.SalesOrderItemNotFoundException;
 import com.werp.sero.order.exception.SalesOrderNotFoundException;
 import com.werp.sero.production.command.application.dto.PRDraftCreateRequestDTO;
@@ -23,6 +25,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class PRCommandServiceImpl implements PRCommandService {
@@ -32,6 +36,8 @@ public class PRCommandServiceImpl implements PRCommandService {
     private final SOItemRepository soItemRepository;
     private final EmployeeRepository employeeRepository;
     private final DocumentSequenceCommandService documentSequenceCommandService;
+    private final SalesOrderItemHistoryRepository soItemHistoryRepository;
+    private final PRPdfService prPdfService;
 
     @Override
     @Transactional
@@ -139,7 +145,31 @@ public class PRCommandServiceImpl implements PRCommandService {
 
         String prCode = documentSequenceCommandService.generateDocumentCode("DOC_PR");
         pr.request(prCode);
-        prRepository.save(pr);
+
+        List<ProductionRequestItem> items =
+                prtItemRepository.findAllByProductionRequest_Id(prId);
+
+        for (ProductionRequestItem prItem : items) {
+
+            int soItemId = prItem.getSalesOrderItem().getId();
+            int qty = prItem.getQuantity();
+
+            SalesOrderItemHistory prev =
+                    soItemHistoryRepository
+                            .findTopBySoItemIdOrderByIdDesc(soItemId)
+                            .orElse(null);
+
+            SalesOrderItemHistory history =
+                    SalesOrderItemHistory.createForProductionRequest(
+                            soItemId,
+                            qty,
+                            employee.getId(),
+                            prev
+                    );
+
+            prItem.changeStatus("PIS_WAIT");
+            soItemHistoryRepository.save(history);
+        }
     }
 
     @Override
@@ -152,5 +182,45 @@ public class PRCommandServiceImpl implements PRCommandService {
                 .orElseThrow(EmployeeNotFoundException::new);
 
         pr.assignManager(manager);
+        
+        String pdfUrl = prPdfService.generateAndUpload(prId);
+        pr.updatePrUrl(pdfUrl);
     }
+
+    @Transactional
+    @Override
+    public void updatePRStatusIfNeeded(int prId) {
+        List<ProductionRequestItem> items =
+                prtItemRepository.findAllByProductionRequest_Id(prId);
+
+        boolean hasTarget = false;
+        boolean hasPlanned = false;
+        boolean hasProducing = false;
+        boolean allDone = true;
+
+        for (var item : items) {
+            switch (item.getStatus()) {
+                case "PIS_TARGET" -> hasTarget = true;
+                case "PIS_PLANNED" -> hasPlanned = true;
+                case "PIS_PRODUCING" -> hasProducing = true;
+                default -> { /* ignore */ }
+            }
+            if (!"PIS_DONE".equals(item.getStatus())) {
+                allDone = false;
+            }
+        }
+
+        ProductionRequest pr = prRepository.findById(prId).orElseThrow();
+
+        if (hasProducing) {
+            pr.changeStatus("PR_PRODUCING");
+        } else if (allDone) {
+            pr.changeStatus("PR_COMPLETED");
+        } else if (hasTarget) {
+            pr.changeStatus("PR_PLANNING");
+        } else if (hasPlanned) {
+            pr.changeStatus("PR_PLANNED");
+        }
+    }
+
 }

@@ -1,0 +1,460 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.werp.sero.approval.query.dao.ApprovalMapper">
+    <resultMap id="approvalDetailResponseResultMap" type="com.werp.sero.approval.query.dto.ApprovalDetailResponseDTO">
+        <id column="approval_id" property="approvalId"/>
+        <result column="approval_code" property="approvalCode"/>
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+        <result column="ref_doc_code" property="refDocCode"/>
+        <result column="ref_doc_type" property="refDocType"/>
+        <result column="drafted_at" property="draftedAt"/>
+        <result column="status" property="status"/>
+        <result column="completed_at" property="completedAt"/>
+        <result column="total_line" property="totalLine"/>
+        <result column="drafter_id" property="drafterId"/>
+        <result column="drafter_name" property="drafterName"/>
+        <result column="drafter_department" property="drafterDepartment"/>
+        <result column="drafter_position_code" property="drafterPositionCode"/>
+        <result column="drafter_rank_code" property="drafterRankCode"/>
+
+        <collection property="approvalAttachments" ofType="com.werp.sero.approval.query.dto.ApprovalAttachmentInfoResponseDTO">
+            <id column="approval_attachment_id" property="approvalAttachmentId"/>
+            <result column="approval_attachment_name" property="approvalAttachmentName"/>
+            <result column="approval_attachment_url" property="approvalAttachmentUrl"/>
+        </collection>
+
+        <collection property="totalApprovalLines" ofType="com.werp.sero.approval.query.dto.ApprovalLineInfoResponseDTO">
+            <id column="approval_line_id" property="approvalLineId"/>
+            <result column="approver_id" property="approverId"/>
+            <result column="approver_name" property="approverName"/>
+            <result column="approver_department" property="approverDepartment"/>
+            <result column="approver_position_code" property="approverPositionCode"/>
+            <result column="approver_rank_code" property="approverRankCode"/>
+            <result column="sequence" property="sequence"/>
+            <result column="line_status" property="status"/>
+            <result column="line_type" property="lineType"/>
+            <result column="note" property="note"/>
+            <result column="viewed_at" property="viewedAt"/>
+            <result column="processed_at" property="processedAt"/>
+        </collection>
+    </resultMap>
+
+    <sql id="approvalCommonColumns">
+        A.id AS approvalId
+      , A.approval_code AS approvalCode
+      , A.title AS title
+      , A.status AS approvalStatus
+      , A.total_line AS totalLine
+      , (SELECT
+                COUNT(1)
+           FROM approval_line AA
+          WHERE AA.approval_id = A.id
+            AND AA.status = 'ALS_APPR'
+            AND AA.line_type IN ('AT_APPR', 'AT_RVW')
+        ) AS currentApprovedCount
+      , (SELECT
+                BB.name
+           FROM approval_line AA
+           JOIN employee BB ON AA.approver_id = BB.id
+          WHERE AA.approval_id = A.id
+            AND AA.status = 'ALS_RJCT'
+        ) AS rejecterName
+      , (SELECT
+                BB.name
+           FROM approval_line AA
+           JOIN employee BB ON AA.approver_id = BB.id
+          WHERE AA.approval_id = A.id
+            AND AA.status = 'ALS_RVW'
+        ) AS currentApproverName
+      , LEFT(A.ref_code, 2) AS refDocType
+      , A.ref_code AS refDocCode
+      , A.drafted_at AS draftedAt
+      , A.drafter_id AS drafterId
+      , B.name AS drafterName
+      , B.position_code AS drafterPositionCode
+      , B.rank_code AS drafterRankCode
+      , C.dept_name AS drafterDepartment
+      , A.completed_at AS completedAt
+      , CASE
+             WHEN EXISTS (SELECT
+                                 1
+                            FROM approval_attachment F
+                           WHERE A.id = F.approval_id)
+             THEN true
+             ELSE false
+        END AS isApprovalAttachment
+    </sql>
+
+    <sql id="commonWhereClause">
+        <if test="keyword != null and keyword != ''">
+            AND (
+            A.title LIKE CONCAT('%', #{keyword}, '%')
+            OR B.name LIKE CONCAT('%', #{keyword}, '%')
+            OR A.approval_code LIKE CONCAT('%', #{keyword}, '%')
+            OR A.ref_code LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
+        <if test="startDate != null">
+            AND A.drafted_at >= CONCAT(#{startDate}, ' 00:00:00')
+        </if>
+        <if test="endDate != null">
+            AND CONCAT(#{endDate}, ' 23:59:59') >= A.drafted_at
+        </if>
+        <if test="refDocType != null and refDocType != ''">
+            AND A.ref_code LIKE CONCAT(#{refDocType}, '%')
+        </if>
+    </sql>
+
+    <select id="countSubmittedApprovalsByFilterDTO" resultType="_long">
+        SELECT
+              COUNT(A.id)
+         FROM approval A
+         JOIN employee B ON A.drafter_id = B.id
+         WHERE A.drafter_id = #{employeeId}
+        <include refid="commonWhereClause"/>
+        <if test="approvalStatus != null and approvalStatus != ''">
+            AND A.status = #{approvalStatus}
+        </if>
+    </select>
+
+    <select id="findSubmittedApprovalsByFilterDTO" resultType="com.werp.sero.approval.query.dto.ApprovalSummaryResponseDTO">
+        SELECT <include refid="approvalCommonColumns"/>
+          FROM approval A
+          JOIN employee B ON A.drafter_id = B.id
+          LEFT JOIN department C ON B.dept_id = C.id
+         WHERE A.drafter_id = #{employeeId}
+        <include refid="commonWhereClause"/>
+        <if test="approvalStatus != null and approvalStatus != ''">
+            AND A.status = #{approvalStatus}
+        </if>
+        ORDER BY A.id DESC
+        LIMIT #{limit}
+        OFFSET #{offset}
+    </select>
+
+    <select id="countRequestedApprovalsByFilterDTO" resultType="_long">
+        SELECT COUNT(A.id)
+        FROM approval A
+        JOIN employee B ON A.drafter_id = B.id
+        JOIN approval_line E ON A.id = E.approval_id
+        WHERE E.approver_id = #{employeeId}
+        AND E.status = 'ALS_RVW'
+        AND A.status = 'AS_ING'
+        <include refid="commonWhereClause"/>
+        <if test="isRead != null">
+            AND (CASE WHEN #{isRead} = true THEN E.viewed_at IS NOT NULL ELSE E.viewed_at IS NULL END)
+        </if>
+        AND E.line_type IN
+        <choose>
+            <when test="approvalTypeList == null or approvalTypeList.size() == 0">
+                ('AT_APPR', 'AT_RVW')
+            </when>
+            <otherwise>
+                <foreach collection="approvalTypeList" item="approvalType" open="(" separator="," close=")">
+                    #{approvalType}
+                </foreach>
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="findRequestedApprovalsByFilterDTO" resultType="com.werp.sero.approval.query.dto.ApprovalSummaryResponseDTO">
+        SELECT <include refid="approvalCommonColumns"/>
+        , E.viewed_at AS viewedAt
+        FROM approval A
+        JOIN employee B ON A.drafter_id = B.id
+        LEFT JOIN department C ON B.dept_id = C.id
+        LEFT JOIN department D ON C.parent_dept_id = D.id
+        JOIN approval_line E ON A.id = E.approval_id
+        WHERE E.approver_id = #{employeeId}
+        AND E.status = 'ALS_RVW'
+        AND A.status = 'AS_ING'
+        <include refid="commonWhereClause"/>
+        <if test="isRead != null">
+            AND (CASE WHEN #{isRead} = true THEN E.viewed_at IS NOT NULL ELSE E.viewed_at IS NULL END)
+        </if>
+        AND E.line_type IN
+        <choose>
+            <when test="approvalTypeList == null or approvalTypeList.size() == 0">
+                ('AT_APPR', 'AT_RVW')
+            </when>
+            <otherwise>
+                <foreach collection="approvalTypeList" item="approvalType" open="(" separator="," close=")">
+                    #{approvalType}
+                </foreach>
+            </otherwise>
+        </choose>
+        ORDER BY A.id DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countArchivedApprovalsByFilterDTO" resultType="_long">
+        SELECT
+               COUNT(A.id)
+          FROM approval A
+          JOIN employee B
+            ON A.drafter_id = B.id
+          JOIN approval_line E
+            ON A.id = E.approval_id
+         WHERE E.approver_id = #{employeeId}
+           AND E.status IN
+           <choose>
+               <when test="approvalLineStatusList == null or approvalLineStatusList.size() == 0">
+                   ('ALS_APPR', 'ALS_RJCT')
+               </when>
+               <otherwise>
+                   <foreach collection="approvalLineStatusList" item="approvalLineStatus" open="(" separator="," close=")">
+                       #{approvalLineStatus}
+                   </foreach>
+               </otherwise>
+           </choose>
+        <include refid="commonWhereClause"/>
+        <if test="approvalStatus != null and approvalStatus != ''">
+            AND A.status = #{approvalStatus}
+        </if>
+           AND E.line_type IN
+        <choose>
+            <when test="approvalTypeList == null or approvalTypeList.size() == 0">
+                ('AT_APPR', 'AT_RVW')
+            </when>
+            <otherwise>
+                <foreach collection="approvalTypeList" item="approvalType" open="(" separator="," close=")">
+                    #{approvalType}
+                </foreach>
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="findArchivedApprovalsByFilterDTO" resultType="com.werp.sero.approval.query.dto.ApprovalSummaryResponseDTO">
+        SELECT <include refid="approvalCommonColumns"/>
+             , E.viewed_at AS viewedAt
+          FROM approval A
+          JOIN employee B ON A.drafter_id = B.id
+          LEFT JOIN department C ON B.dept_id = C.id
+          JOIN approval_line E ON A.id = E.approval_id
+        WHERE E.approver_id = #{employeeId}
+        AND E.status IN
+        <choose>
+            <when test="approvalLineStatusList == null or approvalLineStatusList.size() == 0">
+                ('ALS_APPR', 'ALS_RJCT')
+            </when>
+            <otherwise>
+                <foreach collection="approvalLineStatusList" item="approvalLineStatus" open="(" separator="," close=")">
+                    #{approvalLineStatus}
+                </foreach>
+            </otherwise>
+        </choose>
+        <include refid="commonWhereClause"/>
+        <if test="approvalStatus != null and approvalStatus != ''">
+            AND A.status = #{approvalStatus}
+        </if>
+        AND E.line_type IN
+        <choose>
+            <when test="approvalTypeList == null or approvalTypeList.size() == 0">
+                ('AT_APPR', 'AT_RVW')
+            </when>
+            <otherwise>
+                <foreach collection="approvalTypeList" item="approvalType" open="(" separator="," close=")">
+                    #{approvalType}
+                </foreach>
+            </otherwise>
+        </choose>
+        ORDER BY A.id DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countReceivedApprovalsByFilterDTO" resultType="_long">
+        SELECT COUNT(A.id)
+          FROM approval A
+          JOIN employee B ON A.drafter_id = B.id
+          JOIN approval_line E ON A.id = E.approval_id
+         WHERE E.approver_id = #{employeeId}
+           AND E.line_type = 'AT_RCPT'
+           AND A.status = 'AS_APPR'
+           <include refid="commonWhereClause"/>
+        <if test="isRead != null">
+            AND (CASE WHEN #{isRead} = true THEN E.viewed_at IS NOT NULL ELSE E.viewed_at IS NULL END)
+        </if>
+    </select>
+
+    <select id="findReceivedApprovalsByFilterDTO" resultType="com.werp.sero.approval.query.dto.ApprovalSummaryResponseDTO">
+        SELECT <include refid="approvalCommonColumns"/>
+        , E.viewed_at AS viewedAt
+        FROM approval A
+        JOIN employee B ON A.drafter_id = B.id
+        LEFT JOIN department C ON B.dept_id = C.id
+        JOIN approval_line E ON A.id = E.approval_id
+        WHERE E.approver_id = #{employeeId}
+        AND E.line_type = 'AT_RCPT'
+        AND A.status = 'AS_APPR'
+        <include refid="commonWhereClause"/>
+        <if test="isRead != null">
+            AND (CASE WHEN #{isRead} = true THEN E.viewed_at IS NOT NULL ELSE E.viewed_at IS NULL END)
+        </if>
+        ORDER BY A.id DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countReferencedApprovalsByFilterDTO" resultType="_long">
+        SELECT COUNT(A.id)
+        FROM approval A
+        JOIN employee B ON A.drafter_id = B.id
+        JOIN approval_line E ON A.id = E.approval_id
+        WHERE E.approver_id = #{employeeId}
+        AND E.line_type = 'AT_REF'
+        <include refid="commonWhereClause"/>
+        <if test="approvalStatus != null and approvalStatus != ''">
+            AND A.status = #{approvalStatus}
+        </if>
+        <if test="isRead != null">
+            AND (CASE WHEN #{isRead} = true THEN E.viewed_at IS NOT NULL ELSE E.viewed_at IS NULL END)
+        </if>
+    </select>
+
+    <select id="findReferencedApprovalsByFilterDTO" resultType="com.werp.sero.approval.query.dto.ApprovalSummaryResponseDTO">
+        SELECT <include refid="approvalCommonColumns"/>
+        , E.viewed_at AS viewedAt
+        FROM approval A
+        JOIN employee B ON A.drafter_id = B.id
+        LEFT JOIN department C ON B.dept_id = C.id
+        JOIN approval_line E ON A.id = E.approval_id
+        WHERE E.approver_id = #{employeeId}
+        AND E.line_type = 'AT_REF'
+        <include refid="commonWhereClause"/>
+        <if test="approvalStatus != null and approvalStatus != ''">
+            AND A.status = #{approvalStatus}
+        </if>
+        <if test="isRead != null">
+            AND (CASE WHEN #{isRead} = true THEN E.viewed_at IS NOT NULL ELSE E.viewed_at IS NULL END)
+        </if>
+        ORDER BY A.id DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="findApprovalByApprovalId" parameterType="_int" resultMap="approvalDetailResponseResultMap">
+        SELECT
+               A.id AS approval_id
+             , A.approval_code AS approval_code
+             , A.title as title
+             , A.content as content
+             , A.ref_code as ref_doc_code
+             , LEFT(A.ref_code, 2) AS ref_doc_type
+             , A.drafted_at AS drafted_at
+             , A.status AS status
+             , A.completed_at AS completed_at
+             , A.total_line AS total_line
+             , C.id AS drafter_id
+             , C.name AS drafter_name
+             , D.dept_name AS drafter_department
+             , C.position_code AS drafter_position_code
+             , C.rank_code AS drafter_rank_code
+             , B.id AS approval_attachment_id
+             , B.name AS approval_attachment_name
+             , B.url AS approval_attachment_url
+             , E.id AS approval_line_id
+             , E.approver_id AS approver_id
+             , F.name AS approver_name
+             , G.dept_name AS approver_department
+             , F.position_code AS approver_position_code
+             , F.rank_code AS approver_rank_code
+             , E.sequence AS sequence
+             , E.status AS line_status
+             , E.line_type AS line_type
+             , E.note AS note
+             , E.viewed_at AS viewed_at
+             , E.processed_at AS processed_at
+          FROM approval A
+          LEFT JOIN approval_attachment B
+            ON A.id = B.approval_id
+          JOIN employee C
+            ON A.drafter_id = C.id
+          LEFT JOIN department D
+            ON C.dept_id = D.id
+          LEFT JOIN approval_line E
+            ON A.id = E.approval_id
+          JOIN employee F
+            ON E.approver_id = F.id
+          LEFT JOIN department G
+            ON F.dept_id = G.id
+         WHERE A.id = #{approvalId}
+    </select>
+
+    <select id="findRefDocIdByRefDocCode" resultType="_int">
+        SELECT
+               B.id
+          FROM approval A
+        <if test="refDocType == 'SO'">
+          JOIN sales_order B
+            ON A.ref_code = B.so_code
+        </if>
+        <if test="refDocType == 'PR'">
+          JOIN production_request B
+            ON A.ref_code = B.pr_code
+        </if>
+        <if test="refDocType == 'GI'">
+            JOIN goods_issue B
+            ON A.ref_code = B.gi_code
+        </if>
+        <where>
+            A.ref_code = #{refDocCode}
+        </where>
+    </select>
+
+    <update id="updateApprovalLineViewAt">
+        UPDATE
+               approval_line A
+           SET
+               A.viewed_at = #{viewedAt}
+         WHERE A.id = #{approvalLineId}
+    </update>
+
+    <select id="findApprovalLineByApprovalCode" resultType="com.werp.sero.approval.query.dto.ApprovalLineInfoResponseDTO">
+        SELECT
+               B.id AS approvalLineId
+             , C.id AS approverId
+             , C.name AS approverName
+             , D.dept_name AS approverDepartment
+             , C.position_code AS approverPositionCode
+             , C.rank_code AS approverRankCode
+             , B.sequence AS sequence
+             , B.status AS status
+             , B.line_type AS lineType
+             , B.note AS note
+             , B.viewed_at AS viewedAt
+             , B.processed_at AS processedAt
+          FROM approval A
+          JOIN approval_line B
+            ON A.id = B.approval_id
+          JOIN employee C
+            ON B.approver_id = C.id
+          LEFT JOIN department D
+            ON C.dept_id = D.id
+        WHERE A.approval_code = #{approvalCode}
+          AND B.line_type IN ('AT_APPR', 'AT_RVW')
+        ORDER BY B.sequence;
+    </select>
+
+    <select id="findApprovalByApprovalCode"
+            resultType="com.werp.sero.approval.query.dto.ApprovalLineSummaryInfoResponseDTO">
+        SELECT
+               A.id AS approvalId
+             , A.title AS title
+             , A.status AS approvalStatus
+             , A.completed_at AS completedAt
+             , A.total_line AS totalLine
+             , A.drafted_at AS draftedAt
+             , B.id AS drafterId
+             , B.name AS drafterName
+             , C.dept_name AS drafterDepartment
+             , B.position_code AS drafterPositionCode
+             , B.rank_code AS drafterRankCode
+             , B.position_code AS approverPositionCode
+          FROM approval A
+          JOIN employee B
+            ON A.drafter_id = B.id
+          LEFT JOIN department C
+            ON B.dept_id = C.id
+        WHERE A.approval_code = #{approvalCode};
+    </select>
+</mapper>

@@ -16,8 +16,14 @@ import java.util.List;
 public class GIDetailResponseDTO {
 
     // 1. 기본 출고 지시 정보
+    @Schema(description = "출고지시 ID (PK)", example = "1")
+    private int giId;
+
     @Schema(description = "출고지시 번호", example = "GI-20251207-001")
     private String giCode;
+
+    @Schema(description = "출고지시서 PDF URL", example = "https://sero-bucket.s3.ap-northeast-2.amazonaws.com/goods-issues/GI-20251207-001.pdf")
+    private String giUrl;
 
     @Schema(description = "출고지시 일시", example = "2025-12-07 14:00")
     private String createdAt;
@@ -42,11 +48,20 @@ public class GIDetailResponseDTO {
     private String recipientContact;
 
     // 3. 관련 주문 정보
+    @Schema(description = "수주 ID (PK)", example = "1")
+    private int soId;
+
     @Schema(description = "수주 번호", example = "SO-20251201-001")
     private String soCode;
 
+    @Schema(description = "납품서 ID (PK)", example = "1")
+    private int doId;
+
     @Schema(description = "납품서 번호", example = "DO-20251201-001")
     private String doCode;
+
+    @Schema(description = "고객사 ID (PK)", example = "1")
+    private int clientId;
 
     @Schema(description = "고객사명", example = "현대모비스")
     private String clientName;
@@ -55,6 +70,9 @@ public class GIDetailResponseDTO {
     private String shippedAt;
 
     // 4. 출고 창고 정보
+    @Schema(description = "출고 창고 ID (PK)", example = "1")
+    private int warehouseId;
+
     @Schema(description = "출고 창고명", example = "서울 본사 창고")
     private String warehouseName;
 
@@ -67,8 +85,14 @@ public class GIDetailResponseDTO {
     private List<GIDetailItemDTO> items;
 
     // 7. 결재 정보 (담당자 배정 이후)
+    @Schema(description = "결재 ID (PK)", example = "1")
+    private Integer approvalId;
+
     @Schema(description = "결재 코드", example = "APV-20251207-001")
     private String approvalCode;
+
+    @Schema(description = "기안자 ID (PK)", example = "1")
+    private int drafterId;
 
     @Schema(description = "기안자명", example = "김철수")
     private String drafterName;
@@ -82,8 +106,20 @@ public class GIDetailResponseDTO {
     @Schema(description = "기안자 직급", example = "사원")
     private String drafterRank;
 
+    @Schema(description = "출고 담당자 ID (PK)", example = "2")
+    private Integer managerId;
+
     @Schema(description = "출고 담당자명", example = "이영희")
     private String managerName;
+
+    @Schema(description = "출고 담당자 부서", example = "물류재고관리부")
+    private String managerDepartment;
+
+    @Schema(description = "출고 담당자 직책", example = "과장")
+    private String managerPosition;
+
+    @Schema(description = "출고 담당자 직급", example = "대리")
+    private String managerRank;
 
     @Schema(description = "결재선 목록")
     private List<GIApprovalLineDTO> approvalLines;

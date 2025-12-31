@@ -76,7 +76,7 @@ public enum ErrorCode {
     INVALID_GOODS_ISSUE_STATUS(HttpStatus.BAD_REQUEST, "SHIPPING004", "출고 처리할 수 없는 상태입니다. 결재 승인된 출고지시만 처리 가능합니다."),
 
     /* APPROVAL */
-    INVALID_DOCUMENT_TYPE(HttpStatus.NOT_FOUND, "APPROVAL001", "지원하지 않는 결재 문서 유형입니다."),
+    INVALID_DOCUMENT_TYPE(HttpStatus.BAD_REQUEST, "APPROVAL001", "지원하지 않는 결재 문서 유형입니다."),
     APPROVAL_DUPLICATED(HttpStatus.CONFLICT, "APPROVAL002", "이미 존재하는 결재입니다."),
     APPROVAL_LINE_SEQUENCE_REQUIRED(HttpStatus.BAD_REQUEST, "APPROVAL003", "결재 및 협조는 결재 순서 지정이 필수입니다."),
     APPROVAL_LINE_SEQUENCE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "APPROVAL004", "수신 및 참조는 결재 순서를 지정할 수 없습니다."),
@@ -89,8 +89,11 @@ public enum ErrorCode {
     APPROVAL_NOT_CURRENT_SEQUENCE(HttpStatus.BAD_REQUEST, "APPROVAL011", "본인의 결재 순서가 아닙니다."),
     APPROVAL_LINE_NOT_FOUND(HttpStatus.NOT_FOUND, "APPROVAL012", "결재자 정보를 찾을 수 없습니다."),
     APPROVAL_NOT_SUBMITTED(HttpStatus.BAD_REQUEST, "APPROVAL013", "결재가 상신되지 않은 문서입니다."),
-    APPROVAL_TEMPLATE_NAME_DUPLICATED(HttpStatus.CONFLICT, "APPROVAL014", "이미 존재하는 결재선 템플릿 이름입니다."),
-    APPROVAL_TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND, "APPROVAL015", "결재선 템플릿 정보를 찾을 수 없습니다."),
+    INVALID_APPROVAL_STATUS(HttpStatus.BAD_REQUEST, "APPROVAL014", "유효하지 않는 결재 상태입니다."),
+    INVALID_APPROVER_TYPE(HttpStatus.BAD_REQUEST, "APPROVAL015", "잘못된 결재자 타입입니다. 결재 또는 협조 타입만 허용됩니다."),
+    INVALID_PROCESSED_APPROVAL_LINE_STATUS(HttpStatus.BAD_REQUEST, "APPROVAL016", "잘못된 결재선 상태입니다. 승인 또는 반려 상태만 허용됩니다."),
+    APPROVAL_TEMPLATE_NAME_DUPLICATED(HttpStatus.CONFLICT, "APPROVAL017", "이미 존재하는 결재선 템플릿 이름입니다."),
+    APPROVAL_TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND, "APPROVAL018", "결재선 템플릿 정보를 찾을 수 없습니다."),
 
     /* DELIVERY ORDER */
     DELIVERY_ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "SHIPPING002", "납품서 정보를 찾을 수 없습니다."),
@@ -104,9 +107,8 @@ public enum ErrorCode {
     FILE_NOT_FOUND(HttpStatus.BAD_REQUEST, "FILE001", "파일이 존재하지 않습니다."),
     FILE_INVALID_EXTENSION(HttpStatus.BAD_REQUEST, "FILE002", "허용되지 않은 파일 형식입니다."),
     S3_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "FILE003", "S3 파일 업로드에 실패했습니다."),
+    PDF_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "FILE004", "PDF 생성에 실패했습니다."),
     S3_URL_INVALID(HttpStatus.BAD_REQUEST, "FILE005", "유효하지 않은 S3 URL입니다."),
-
-
 
     /* PRODUCTION PLAN */
     PP_ALREADY_EXISTS(HttpStatus.CONFLICT, "PRODUCTION101", "이미 해당 생산요청 품목에 대한 생산계획이 존재합니다."),
@@ -131,7 +133,15 @@ public enum ErrorCode {
     WO_WORK_TIME_REQUIRED(HttpStatus.BAD_REQUEST, "PRODUCTION208", "작업 시작/종료 시간이 필요합니다."),
     WO_INVALID_STATUS(HttpStatus.BAD_REQUEST, "PRODUCTION209", "작업지시 상태가 올바르지 않습니다."),
 
-    PR_INVALID_MONTH(HttpStatus.BAD_REQUEST, "PRODUCTION010", "월(month) 형식이 올바르지 않습니다. (yyyy-MM)");
+    PR_INVALID_MONTH(HttpStatus.BAD_REQUEST, "PRODUCTION010", "월(month) 형식이 올바르지 않습니다. (yyyy-MM)"),
+    WO_ITEM_ALREADY_EXISTS(HttpStatus.CONFLICT, "PRODUCTION210", "이미 등록된 작업지시 아이템입니다."),
+    WO_INVALID_REQUEST(HttpStatus.BAD_REQUEST, "PRODUCTION211", "작업지시 요청 형식이 올바르지 않습니다."),
+    PRODUCTION_LINE_MISMATCH(HttpStatus.BAD_REQUEST, "PRODUCTION212", "잘못된 생산 라인입니다."),
+    WO_INVALID_DISTRIBUTED_QUANTITY(HttpStatus.BAD_REQUEST,"PRODUCTION213", "아이템별 생산 수량 합계가 양품 수량과 일치하지 않습니다."),
+    WO_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "PRODUCTION214", "작업지시 아이템을 찾을 수 없습니다."),
+    WO_INVALID_PRODUCED_QUANTITY(HttpStatus.BAD_REQUEST,"PRODUCTION215", "생산 수량은 0 이상이어야 합니다."),
+    WO_EXCEED_PLANNED_QUANTITY(HttpStatus.BAD_REQUEST,"PRODUCTION216", "아이템 생산 수량이 계획 수량을 초과할 수 없습니다.");
+
 
     private final HttpStatus status;
     private final String code;

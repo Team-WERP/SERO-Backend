@@ -20,6 +20,9 @@ public class ProductionLine {
     @Column(nullable = false, columnDefinition = "varchar(100) default 'PL_ACTIVE'")
     private String status;
 
+    @Column(name = "daily_capacity", nullable = false)
+    private int dailyCapacity;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "factory_id")
     private Warehouse factory;

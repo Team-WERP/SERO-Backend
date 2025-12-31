@@ -21,6 +21,6 @@ public class PRListSearchCondition {
     @Schema(description = "생산요청 상태", example = "PR_REQ")
     private String status;
 
-    @Schema(description = "검색 키워드 (요청번호/주문번호/품목명)", example = "PR-2025")
+    @Schema(description = "검색 키워드 (요청번호/주문번호/품목명/담당자명)", example = "PR-2025")
     private String keyword;
 }

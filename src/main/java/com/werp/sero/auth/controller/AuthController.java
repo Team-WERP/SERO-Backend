@@ -4,13 +4,18 @@ import com.werp.sero.auth.dto.LoginRequestDTO;
 import com.werp.sero.auth.dto.LoginResponseDTO;
 import com.werp.sero.auth.service.AuthService;
 import com.werp.sero.security.enums.Type;
+import com.werp.sero.security.principal.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -53,5 +58,25 @@ public class AuthController {
         authService.logout(request, response);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "본사 직원용 토큰 재발급")
+    @PostMapping("/auth/reissue")
+    public ResponseEntity<LoginResponseDTO> reissueEmployee(@AuthenticationPrincipal final CustomUserDetails customUserDetails,
+                                                            @CookieValue(value = "refreshToken") final String refreshToken,
+                                                            final HttpServletResponse response) {
+        final LoginResponseDTO responseDTO = authService.reissue(customUserDetails, refreshToken, response);
+
+        return ResponseEntity.ok(responseDTO);
+    }
+
+    @Operation(summary = "고객사 직원용 토큰 재발급")
+    @PostMapping("/clients/auth/reissue")
+    public ResponseEntity<LoginResponseDTO> reissueClientEmployee(@AuthenticationPrincipal final CustomUserDetails customUserDetails,
+                                                                  @CookieValue(value = "refreshToken") final String refreshToken,
+                                                                  final HttpServletResponse response) {
+        final LoginResponseDTO responseDTO = authService.reissue(customUserDetails, refreshToken, response);
+
+        return ResponseEntity.ok(responseDTO);
     }
 }
