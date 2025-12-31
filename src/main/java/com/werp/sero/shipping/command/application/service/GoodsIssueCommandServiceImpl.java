@@ -357,7 +357,7 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
         // 5. PDF 생성 및 S3 업로드 (담당자 배정 후)
         try {
             // 5-1. 완전한 출고지시 데이터 조회 (품목 및 담당자 정보 포함)
-            GIDetailResponseDTO giDetail = giDetailQueryService.getGoodsIssueDetail(giCode);
+            GIDetailResponseDTO giDetail = giDetailQueryService.getGoodsIssueDetail(Long.valueOf(updatedGoodsIssue.getId()));
 
             // 5-2. HTML 템플릿 생성
             String htmlContent = shippingPdfService.generateGoodsIssueDetailHtml(giDetail);

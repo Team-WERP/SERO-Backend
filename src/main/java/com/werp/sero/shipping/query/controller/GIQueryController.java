@@ -45,12 +45,12 @@ public class GIQueryController {
         return ResponseEntity.ok(giListQueryService.findGoodsIssueList(filter, page));
     }
 
-    @Operation(summary = "출고지시서 상세 조회", description = "출고지시 번호로 출고지시서 상세 정보 조회")
-    @GetMapping("/{giCode}")
+    @Operation(summary = "출고지시서 상세 조회", description = "출고지시 ID로 출고지시서 상세 정보 조회")
+    @GetMapping("/{id}")
     public ResponseEntity<GIDetailResponseDTO> getGoodsIssueDetail(
-            @Parameter(description = "출고지시 번호", example = "GI-20251207-001")
-            @PathVariable String giCode) {
-        return ResponseEntity.ok(giDetailQueryService.getGoodsIssueDetail(giCode));
+            @Parameter(description = "출고지시 ID", example = "1")
+            @PathVariable Long id) {
+        return ResponseEntity.ok(giDetailQueryService.getGoodsIssueDetail(id));
     }
 
 
