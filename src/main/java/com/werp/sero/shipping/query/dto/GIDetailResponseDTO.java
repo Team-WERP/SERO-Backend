@@ -112,6 +112,15 @@ public class GIDetailResponseDTO {
     @Schema(description = "출고 담당자명", example = "이영희")
     private String managerName;
 
+    @Schema(description = "출고 담당자 부서", example = "물류재고관리부")
+    private String managerDepartment;
+
+    @Schema(description = "출고 담당자 직책", example = "과장")
+    private String managerPosition;
+
+    @Schema(description = "출고 담당자 직급", example = "대리")
+    private String managerRank;
+
     @Schema(description = "결재선 목록")
     private List<GIApprovalLineDTO> approvalLines;
 
