@@ -197,7 +197,7 @@
         JOIN employee C ON A.drafter_id = C.id
         LEFT JOIN employee D ON A.manager_id = D.id
 
-        WHERE A.status NOT IN ('PR_TMP')
+        WHERE A.status != ('PR_TMP')
 
         <trim prefix="AND" prefixOverrides="AND |OR ">
             <if test="status != null and status != ''">

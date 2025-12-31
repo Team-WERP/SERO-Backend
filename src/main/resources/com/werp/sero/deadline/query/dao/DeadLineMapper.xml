@@ -5,21 +5,21 @@
 <mapper namespace="com.werp.sero.deadline.query.dao.DeadLineMapper">
 
 <!-- LineMaterialInfo ResultMap 정의 -->
-    <resultMap id="lineMaterialInfoResultMap" type="com.werp.sero.deadline.query.dao.DeadLineMapper$LineMaterialInfo">
+    <resultMap id="lineMaterialInfoResultMap" type="com.werp.sero.deadline.query.dto.LineMaterialInfo">
         <id property="lineMaterialId" column="line_material_id"/>
         <result property="productionLineId" column="production_line_id"/>
         <result property="productionLineName" column="production_line_name"/>
         <result property="productionLineStatus" column="production_line_status"/>
-        <result property="cycleTime" column="cycle_time"/>
+        <result property="dailyCapacity" column="daily_capacity"/>
     </resultMap>
 
 <!-- 자재 코드로 LineMaterial 정보 조회 -->
     <select id="findLineMaterialByMaterialCode" resultMap="lineMaterialInfoResultMap">
         SELECT A.id                  AS line_material_id
-             , A.cycle_time          AS cycle_time
              , B.id                  AS production_line_id
              , B.line_name           AS production_line_name
              , B.status              AS production_line_status
+             , B.daily_capacity      AS daily_capacity
           FROM line_material A
          INNER JOIN production_line B ON A.line_id = B.id
          INNER JOIN material C ON A.material_id = C.id
@@ -27,13 +27,5 @@
          LIMIT 1
     </select>
 
-<!-- 특정 생산라인의 최신 생산계획 종료일 조회 -->
-    <select id="findLastestProduction" resultType="string">
-        SELECT end_date
-          FROM production_plan
-         WHERE production_line_id = #{productionLineId}
-         ORDER BY end_date DESC
-         LIMIT 1
-    </select>
 
 </mapper>

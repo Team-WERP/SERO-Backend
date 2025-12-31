@@ -1,13 +1,16 @@
 package com.werp.sero.deadline.query.service;
 
-import com.werp.sero.common.util.DateTimeUtils;
 import com.werp.sero.deadline.query.dao.DeadLineMapper;
 import com.werp.sero.deadline.query.dto.DeadLineQueryRequestDTO;
 import com.werp.sero.deadline.query.dto.DeadLineQueryResponseDTO;
+import com.werp.sero.deadline.query.dto.LineMaterialInfo;
+import com.werp.sero.production.query.dao.PPValidateMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -15,14 +18,13 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class DeadLineQueryServiceImpl implements DeadLineQueryService {
 
     private final DeadLineMapper deadLineMapper;
-
-    private static final int WORKING_MINUTES_PER_DAY = 480; // 8시간
-    private static final int WORK_START_HOUR = 9;           // 근무 시작 시간
-    private static final int WORK_END_HOUR = 18;            // 근무 종료 시간
+    private final PPValidateMapper ppValidateMapper;
     private static final int SHIPPING_DAYS = 2;             // 배송 소요 일수
+    private static final int ETA_SEARCH_LIMIT_DAYS = 30; // ETA 최대 탐색 범위
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
 
@@ -32,142 +34,210 @@ public class DeadLineQueryServiceImpl implements DeadLineQueryService {
 
         List<DeadLineQueryResponseDTO> responses = new ArrayList<>();  // 품목별 응답
 
-        // 각 품목별로 납기 가능 여부 계산
+        /* =========================
+         * 1. 희망 납기일 입력 검증
+         * ========================= */
+        String desiredDateStr = normalizeToMinute(request.getDesiredDeliveryDate());
+        if (desiredDateStr == null || desiredDateStr.length() < 16) {
+            for (DeadLineQueryRequestDTO.ItemRequest item : request.getItems()) {
+
+                responses.add(new DeadLineQueryResponseDTO(
+                        item.getMaterialCode(),
+                        request.getDesiredDeliveryDate(),
+                        null,
+                        false,
+                        "희망 납기일 형식이 올바르지 않습니다. (yyyy-MM-dd HH:mm)"
+                ));
+            }
+            return responses;
+        }
+
+        LocalDateTime desiredDeliveryDateTime;
+        try {
+            desiredDeliveryDateTime = LocalDateTime.parse(desiredDateStr, FORMATTER);
+        } catch (Exception e) {
+            for (DeadLineQueryRequestDTO.ItemRequest item : request.getItems()) {
+                responses.add(new DeadLineQueryResponseDTO(
+                        item.getMaterialCode(),
+                        request.getDesiredDeliveryDate(),
+                        null,
+                        false,
+                        "희망 납기일 파싱에 실패했습니다. (yyyy-MM-dd HH:mm)"
+                ));
+            }
+            return responses;
+        }
+
+        /* =========================
+         * 2. 생산 마감일 계산
+         * ========================= */
+        LocalDate productionDeadlineDate =
+                desiredDeliveryDateTime.toLocalDate().minusDays(SHIPPING_DAYS);
+
+        LocalDate today = LocalDate.now();
+        LocalDate startDate = today;
+
+        // 배송 고려 시 이미 생산 시작 불가
+        if (productionDeadlineDate.isBefore(today)) {
+            for (DeadLineQueryRequestDTO.ItemRequest item : request.getItems()) {
+                responses.add(new DeadLineQueryResponseDTO(
+                        item.getMaterialCode(),
+                        request.getDesiredDeliveryDate(),
+                        null,
+                        false,
+                        "희망 납기일이 너무 임박하여(배송기간 고려) 생산이 불가능합니다."
+                ));
+            }
+            return responses;
+        }
+
+        /* =========================
+         * 3. 품목별 시뮬레이션
+         * ========================= */
         for (DeadLineQueryRequestDTO.ItemRequest item : request.getItems()) {
 
-            // 1. LineMaterial 조회
-            DeadLineMapper.LineMaterialInfo lineMaterial = deadLineMapper
-                    .findLineMaterialByMaterialCode(item.getMaterialCode())
-                    .get();
+            String materialCode = item.getMaterialCode();
+            int orderQty = item.getQuantity();
 
-            // 2. 최신 생산계획 종료일 조회
-            String latestEndDateStr = deadLineMapper
-                    .findLastestProduction(lineMaterial.getProductionLineId())
+            if (orderQty <= 0) {
+                responses.add(new DeadLineQueryResponseDTO(
+                        materialCode,
+                        request.getDesiredDeliveryDate(),
+                        null,
+                        false,
+                        "주문 수량은 1 이상이어야 합니다."
+                ));
+                continue;
+            }
+
+            LineMaterialInfo info = deadLineMapper
+                    .findLineMaterialByMaterialCode(materialCode)
                     .orElse(null);
 
-            // 3. 생산 시작 시간 결정 (이번 주문이 들어온다면)
-            LocalDateTime productionStartTime;
-            if (latestEndDateStr != null) {
-                // 기존 생산계획이 있으면, 그 종료일의 다음날 09:00 부터 시작한다고 가정!
-                LocalDateTime latestEndDate = LocalDateTime.parse(latestEndDateStr, FORMATTER);
-                productionStartTime = latestEndDate.plusDays(1)
-                        .withHour(WORK_START_HOUR)
-                        .withMinute(0)
-                        .withSecond(0);
+            if (info == null) {
+                responses.add(new DeadLineQueryResponseDTO(
+                        materialCode,
+                        request.getDesiredDeliveryDate(),
+                        null,
+                        false,
+                        "해당 제품의 생산라인이 등록되어 있지 않습니다."
+                ));
+                continue;
+            }
+
+            int lineId = info.getProductionLineId();
+            int dailyCapacity = info.getDailyCapacity();
+
+            if (dailyCapacity <= 0) {
+                responses.add(new DeadLineQueryResponseDTO(
+                        materialCode,
+                        request.getDesiredDeliveryDate(),
+                        null,
+                        false,
+                        "생산라인의 일일 생산능력(daily_capacity)이 0 이하입니다."
+                ));
+                continue;
+            }
+
+            int remainingQty = orderQty;
+            LocalDate finishDate = null;
+
+            /* =========================
+             * 3-1. 희망 납기 충족 여부 판단
+             * ========================= */
+            for (LocalDate d = startDate;
+                 !d.isAfter(productionDeadlineDate);
+                 d = d.plusDays(1)) {
+
+                int plannedQty =
+                        ppValidateMapper.sumDailyPlannedQty(lineId, d.toString());
+
+                int available = Math.max(0, dailyCapacity - plannedQty);
+                int used = Math.min(available, remainingQty);
+                remainingQty -= used;
+
+                log.info(
+                        "[DEADLINE] material={}, line={}, date={}, daily={}, planned={}, available={}, remaining={}",
+                        materialCode, lineId, d, dailyCapacity, plannedQty, available, remainingQty
+                );
+
+                if (remainingQty <= 0) {
+                    finishDate = d;
+                    break;
+                }
+            }
+
+            /* =========================
+             * 3-2. ETA 탐색 (희망 납기 실패 시)
+             * ========================= */
+            if (finishDate == null) {
+                LocalDate etaLimit = productionDeadlineDate.plusDays(ETA_SEARCH_LIMIT_DAYS);
+
+                for (LocalDate d = productionDeadlineDate.plusDays(1);
+                     !d.isAfter(etaLimit);
+                     d = d.plusDays(1)) {
+
+                    int plannedQty =
+                            ppValidateMapper.sumDailyPlannedQty(lineId, d.toString());
+
+                    int available = Math.max(0, dailyCapacity - plannedQty);
+                    int used = Math.min(available, remainingQty);
+                    remainingQty -= used;
+
+                    if (remainingQty <= 0) {
+                        finishDate = d;
+                        break;
+                    }
+                }
+            }
+
+            /* =========================
+             * 4. 결과 정리
+             * ========================= */
+            boolean deliverable =
+                    finishDate != null && !finishDate.isAfter(productionDeadlineDate);
+
+            String expectedDeliveryDateStr = null;
+            String errorMessage = null;
+
+            if (finishDate != null) {
+                LocalDate eta = finishDate.plusDays(SHIPPING_DAYS);
+                expectedDeliveryDateStr =
+                        eta.atStartOfDay().format(FORMATTER);
+
+                if (!deliverable) {
+                    errorMessage =
+                            "희망 납기일에는 불가하며, " +
+                                    expectedDeliveryDateStr +
+                                    "부터 납품 가능합니다.";
+                }
             } else {
-                // 기존 생산계획이 없으면 현재 시간 기준으로 생산 시작 시간 결정
-                LocalDateTime now = LocalDateTime.now();
-                int currentHour = now.getHour();
-
-                // 근무시간(9~18시) 중이면 다음날 09:00, 근무시간 외면 모레 09:00
-                int daysToAdd = (currentHour >= WORK_START_HOUR && currentHour < WORK_END_HOUR) ? 1 : 2;
-
-                productionStartTime = now.plusDays(daysToAdd)
-                        .withHour(WORK_START_HOUR)
-                        .withMinute(0)
-                        .withSecond(0);
+                errorMessage = "생산 CAPA가 부족하여 납기 산정이 불가능합니다.";
             }
 
-            // 4. 생산 소요 시간 계산
-            // 개수 x 시간으로 판단
-            int totalProductionMinutes = item.getQuantity() * lineMaterial.getCycleTime();
-
-
-
-            // 5. 생산 완료 예정일 계산
-            LocalDateTime productionEndTime = calculateProductionEndTime(
-                    productionStartTime,
-                    totalProductionMinutes
-            );
-
-            // 6. 배송 시간 추가하여 최종 납기 예정일 계산 (생산 완료 + 배송 2일)
-            LocalDateTime expectedDeliveryDate = productionEndTime.plusDays(SHIPPING_DAYS);
-
-            // 7. 희망 납기일 파싱 (초 단위가 있으면 제거)
-            String desiredDateStr = request.getDesiredDeliveryDate();
-            if (desiredDateStr.length() > 16 && desiredDateStr.charAt(16) == ':') {
-                desiredDateStr = desiredDateStr.substring(0, 16);
-            }
-            LocalDateTime desiredDeliveryDate = LocalDateTime.parse(desiredDateStr, FORMATTER);
-
-            // 8. 납기 가능 여부 판단 (생산 완료 + 배송까지 고려)
-            boolean deliveryPossible = !expectedDeliveryDate.isAfter(desiredDeliveryDate);
-
-            // 9. 응답 DTO 생성
-            DeadLineQueryResponseDTO response = new DeadLineQueryResponseDTO(
-                    item.getMaterialCode(),
+            responses.add(new DeadLineQueryResponseDTO(
+                    materialCode,
                     request.getDesiredDeliveryDate(),
-                    expectedDeliveryDate.format(FORMATTER),
-                    deliveryPossible,
-                    null
-            );
-
-            responses.add(response);
+                    expectedDeliveryDateStr,
+                    deliverable,
+                    errorMessage
+            ));
         }
 
         return responses;
     }
 
+
     /**
-     * 생산 시작 시간과 총 소요 시간을 기반으로 생산 완료 시간 계산
-     * 근무 시간(09:00 ~ 18:00)만 고려하여 계산
-     *
-     * 예시:
-     * - 시작: 2025-01-15 15:00, 소요: 600분(10시간)
-     * - 1일차: 15:00~18:00 = 180분 소진, 남은 시간 420분
-     * - 2일차: 09:00~16:00 = 420분 소진, 완료
-     * - 결과: 2025-01-16 16:00:00 (생산 완료 시간)
-     *
-     * @param startTime 생산 시작 시간
-     * @param totalMinutes 총 생산 소요 시간(분)
-     * @return 생산 완료 예정 시간
+     * "yyyy-MM-dd HH:mm:ss" 같이 초가 포함된 값이 들어와도
+     * "yyyy-MM-dd HH:mm"로 안전하게 잘라서 파싱되도록 정규화
      */
-    private LocalDateTime calculateProductionEndTime(LocalDateTime startTime, int totalMinutes) {
-        // 계산용 변수 초기화
-        LocalDateTime calculatingTime = startTime;   // 현재 계산 중인 시간 (생산 진행 중)
-        int remainingMinutes = totalMinutes;         // 아직 처리해야 할 남은 작업 시간
-
-        // 남은 작업 시간이 0이 될 때까지 반복
-        while (remainingMinutes > 0) {
-            int currentHour = calculatingTime.getHour();       // 현재 시간 (0~23)
-            int currentMinute = calculatingTime.getMinute();   // 현재 분 (0~59)
-
-            // 근무시간 전이라면 당일 09:00으로 조정
-            // 예: 07:30 -> 09:00으로 점프 (아직 작업 시간 소진 안 함)
-            if (currentHour < WORK_START_HOUR) {
-                calculatingTime = calculatingTime.withHour(WORK_START_HOUR).withMinute(0).withSecond(0);
-                continue;  // 다음 반복으로 (시간 조정만 하고 작업 시간은 소진 안 함)
-            }
-
-            // 근무시간 이후라면 다음날 09:00으로 조정
-            // 예: 19:30 -> 다음날 09:00으로 점프
-            if (currentHour >= WORK_END_HOUR) {
-                calculatingTime = calculatingTime.plusDays(1).withHour(WORK_START_HOUR).withMinute(0).withSecond(0);
-                continue;  // 다음 반복으로 (시간 조정만 하고 작업 시간은 소진 안 함)
-            }
-
-            // 오늘 남은 근무 시간 계산 (분)
-            // 예: 현재 14:30, 퇴근 18:00 -> (18-14)*60 - 30 = 210분 (3시간 30분)
-            int minutesUntilEndOfDay = (WORK_END_HOUR - currentHour) * 60 - currentMinute;
-
-            // 케이스 A: 오늘 남은 근무 시간 내에 작업 완료 가능
-            if (remainingMinutes <= minutesUntilEndOfDay) {
-                // 남은 작업 시간만큼 더하고 완료
-                // 예: 14:30 + 120분 = 16:30
-                calculatingTime = calculatingTime.plusMinutes(remainingMinutes);
-                remainingMinutes = 0;  // 작업 완료, 반복문 종료
-            }
-            // 케이스 B: 오늘 안에 완료 불가, 다음날로 넘어감
-            else {
-                // 오늘 남은 시간만큼만 소진
-                // 예: 남은 작업 600분, 오늘 남은 시간 180분 -> 420분은 내일 처리
-                remainingMinutes -= minutesUntilEndOfDay;
-                // 다음날 09:00으로 설정하고 반복 계속
-                calculatingTime = calculatingTime.plusDays(1).withHour(WORK_START_HOUR).withMinute(0).withSecond(0);
-            }
+    private String normalizeToMinute(String dateTimeStr) {
+        if (dateTimeStr == null) return null;
+        // yyyy-MM-dd HH:mm 까지 = 16자리
+        if (dateTimeStr.length() >= 16) {
+            return dateTimeStr.substring(0, 16);
         }
-
-        // 생산 완료 시간 반환 
-        return calculatingTime;
+        return dateTimeStr;
     }
 }
