@@ -24,6 +24,7 @@ public class DeadLineQueryServiceImpl implements DeadLineQueryService {
     private final DeadLineMapper deadLineMapper;
     private final PPValidateMapper ppValidateMapper;
     private static final int SHIPPING_DAYS = 2;             // 배송 소요 일수
+    private static final int ETA_SEARCH_LIMIT_DAYS = 30; // ETA 최대 탐색 범위
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
 
@@ -33,7 +34,9 @@ public class DeadLineQueryServiceImpl implements DeadLineQueryService {
 
         List<DeadLineQueryResponseDTO> responses = new ArrayList<>();  // 품목별 응답
 
-        // 입력 검증
+        /* =========================
+         * 1. 희망 납기일 입력 검증
+         * ========================= */
         String desiredDateStr = normalizeToMinute(request.getDesiredDeliveryDate());
         if (desiredDateStr == null || desiredDateStr.length() < 16) {
             for (DeadLineQueryRequestDTO.ItemRequest item : request.getItems()) {
@@ -65,13 +68,16 @@ public class DeadLineQueryServiceImpl implements DeadLineQueryService {
             return responses;
         }
 
-        // 생산 마감일(날짜 단위): 희망 납기일 - 배송일수
-        LocalDate productionDeadlineDate = desiredDeliveryDateTime.toLocalDate().minusDays(SHIPPING_DAYS);
+        /* =========================
+         * 2. 생산 마감일 계산
+         * ========================= */
+        LocalDate productionDeadlineDate =
+                desiredDeliveryDateTime.toLocalDate().minusDays(SHIPPING_DAYS);
 
         LocalDate today = LocalDate.now();
         LocalDate startDate = today;
 
-        // 마감일이 오늘보다 과거면: 어떤 품목이든 생산 불가 (배송 고려)
+        // 배송 고려 시 이미 생산 시작 불가
         if (productionDeadlineDate.isBefore(today)) {
             for (DeadLineQueryRequestDTO.ItemRequest item : request.getItems()) {
                 responses.add(new DeadLineQueryResponseDTO(
@@ -85,8 +91,11 @@ public class DeadLineQueryServiceImpl implements DeadLineQueryService {
             return responses;
         }
 
-        // 2) 품목별 시뮬레이션
+        /* =========================
+         * 3. 품목별 시뮬레이션
+         * ========================= */
         for (DeadLineQueryRequestDTO.ItemRequest item : request.getItems()) {
+
             String materialCode = item.getMaterialCode();
             int orderQty = item.getQuantity();
 
@@ -133,17 +142,22 @@ public class DeadLineQueryServiceImpl implements DeadLineQueryService {
             int remainingQty = orderQty;
             LocalDate finishDate = null;
 
-            for (LocalDate d = startDate; !d.isAfter(productionDeadlineDate); d = d.plusDays(1)) {
+            /* =========================
+             * 3-1. 희망 납기 충족 여부 판단
+             * ========================= */
+            for (LocalDate d = startDate;
+                 !d.isAfter(productionDeadlineDate);
+                 d = d.plusDays(1)) {
 
-                int plannedQty = ppValidateMapper.sumDailyPlannedQty(lineId, d.toString());
+                int plannedQty =
+                        ppValidateMapper.sumDailyPlannedQty(lineId, d.toString());
+
                 int available = Math.max(0, dailyCapacity - plannedQty);
-
-                // available이 remainingQty보다 클 수 있으니 의미상 깔끔하게 캡
                 int used = Math.min(available, remainingQty);
                 remainingQty -= used;
 
                 log.info(
-                        "[DEADLINE TEST] material={}, line={}, date={}, daily={}, planned={}, available={}, remaining={}",
+                        "[DEADLINE] material={}, line={}, date={}, daily={}, planned={}, available={}, remaining={}",
                         materialCode, lineId, d, dailyCapacity, plannedQty, available, remainingQty
                 );
 
@@ -153,15 +167,52 @@ public class DeadLineQueryServiceImpl implements DeadLineQueryService {
                 }
             }
 
-            boolean deliverable = (finishDate != null);
+            /* =========================
+             * 3-2. ETA 탐색 (희망 납기 실패 시)
+             * ========================= */
+            if (finishDate == null) {
+                LocalDate etaLimit = productionDeadlineDate.plusDays(ETA_SEARCH_LIMIT_DAYS);
+
+                for (LocalDate d = productionDeadlineDate.plusDays(1);
+                     !d.isAfter(etaLimit);
+                     d = d.plusDays(1)) {
+
+                    int plannedQty =
+                            ppValidateMapper.sumDailyPlannedQty(lineId, d.toString());
+
+                    int available = Math.max(0, dailyCapacity - plannedQty);
+                    int used = Math.min(available, remainingQty);
+                    remainingQty -= used;
+
+                    if (remainingQty <= 0) {
+                        finishDate = d;
+                        break;
+                    }
+                }
+            }
+
+            /* =========================
+             * 4. 결과 정리
+             * ========================= */
+            boolean deliverable =
+                    finishDate != null && !finishDate.isAfter(productionDeadlineDate);
+
             String expectedDeliveryDateStr = null;
             String errorMessage = null;
 
-            if (deliverable) {
-                LocalDate expectedDeliveryDate = finishDate.plusDays(SHIPPING_DAYS);
-                expectedDeliveryDateStr = expectedDeliveryDate.atStartOfDay().format(FORMATTER);
+            if (finishDate != null) {
+                LocalDate eta = finishDate.plusDays(SHIPPING_DAYS);
+                expectedDeliveryDateStr =
+                        eta.atStartOfDay().format(FORMATTER);
+
+                if (!deliverable) {
+                    errorMessage =
+                            "희망 납기일에는 불가하며, " +
+                                    expectedDeliveryDateStr +
+                                    "부터 납품 가능합니다.";
+                }
             } else {
-                errorMessage = "마감일까지 생산 CAPA가 부족합니다.";
+                errorMessage = "생산 CAPA가 부족하여 납기 산정이 불가능합니다.";
             }
 
             responses.add(new DeadLineQueryResponseDTO(

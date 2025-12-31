@@ -18,10 +18,10 @@ public class DeadLineQueryResponseDTO {
     @Schema(description = "희망 납기일 (yyyy-MM-dd HH:mm)")
     private String desiredDeliveryDate;
 
-    @Schema(description = "예상 납기일 (yyyy-MM-dd HH:mm)")
+    @Schema(description = "실제 가능 납기일 (ETA) (yyyy-MM-dd HH:mm)")
     private String expectedDeliveryDate;
 
-    @Schema(description = "납기 가능 여부")
+    @Schema(description = "희망 납기일 가능 여부")
     private boolean deliverable;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
