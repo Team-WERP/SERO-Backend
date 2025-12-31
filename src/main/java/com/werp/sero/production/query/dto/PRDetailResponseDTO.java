@@ -32,6 +32,7 @@ public class PRDetailResponseDTO {
         private Integer managerId;
         private String managerName;
         private int totalQuantity;
+        private String reason;
         private Integer approvalId;
         private String approvalCode;
         private String drafterDepartment;

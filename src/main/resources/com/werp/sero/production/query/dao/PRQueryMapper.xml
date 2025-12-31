@@ -189,7 +189,8 @@
         A.due_at          AS dueAt,
         C.name            AS drafterName,
         D.name            AS managerName,
-        A.status          AS status
+        A.status          AS status,
+        A.pr_url  AS prUrl
 
         FROM production_request A
         JOIN sales_order B ON A.so_id = B.id
@@ -257,6 +258,7 @@
             <result property="managerId" column="manager_id"/>
             <result property="managerName" column="manager_name"/>
             <result property="totalQuantity" column="total_quantity"/>
+            <result property="reason" column="reason"/>
             <result property="approvalId" column="approval_id"/>
             <result property="approvalCode" column="approval_code"/>
             <result property="drafterDepartment" column="drafter_department"/>
@@ -310,6 +312,7 @@
         A.requested_at   AS requested_at,
         A.due_at         AS due_at,
         A.total_quantity AS total_quantity,
+        A.reason         AS reason,
 
         A.manager_id     AS manager_id,
         C.name           AS drafter_name,
