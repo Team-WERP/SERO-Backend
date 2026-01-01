@@ -3,6 +3,8 @@ package com.werp.sero.production.command.application.service;
 import com.werp.sero.common.util.DateTimeUtils;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.material.command.domain.aggregate.Material;
+import com.werp.sero.notification.command.domain.aggregate.enums.NotificationType;
+import com.werp.sero.notification.command.infrastructure.event.NotificationEvent;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItemHistory;
 import com.werp.sero.order.command.domain.repository.SalesOrderItemHistoryRepository;
 import com.werp.sero.production.command.application.dto.*;
@@ -15,6 +17,7 @@ import com.werp.sero.warehouse.command.domain.aggregate.WarehouseStock;
 import com.werp.sero.warehouse.command.domain.repository.WarehouseStockRepository;
 import com.werp.sero.warehouse.exception.WarehouseStockNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +39,8 @@ public class WOCommandServiceImpl implements WOCommandService {
     private final WarehouseStockRepository warehouseStockRepository;
     private final SalesOrderItemHistoryRepository soItemHistoryRepository;
     private final PRCommandService prCommandService;
+    private final ApplicationEventPublisher eventPublisher;
+    private final PRRepository prRepository;
 
     @Override
     @Transactional
@@ -308,7 +313,27 @@ public class WOCommandServiceImpl implements WOCommandService {
                 .collect(Collectors.toSet());
 
         for (int prId : prIds) {
+            ProductionRequest pr = prRepository.findById(prId)
+                    .orElseThrow(ProductionRequestNotFoundException::new);
+
+            String beforeStatus = pr.getStatus();
             prCommandService.updatePRStatusIfNeeded(prId);
+
+            // PR 완료 시 알림
+            if (!"PR_DONE".equals(beforeStatus) && "PR_DONE".equals(pr.getStatus())) {
+
+                Employee salesEmployee = pr.getDrafter(); // 생산요청 올린 영업 담당자
+
+                eventPublisher.publishEvent(
+                        new NotificationEvent(
+                                NotificationType.PRODUCTION,
+                                "생산 완료",
+                                "생산요청 " + pr.getPrCode() + "의 생산이 완료되었습니다.",
+                                salesEmployee.getId(),
+                                "/production/requests/" + pr.getId()
+                        )
+                );
+            }
         }
     }
 
