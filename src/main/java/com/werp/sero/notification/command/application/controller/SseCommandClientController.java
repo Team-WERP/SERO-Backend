@@ -16,14 +16,14 @@ import lombok.RequiredArgsConstructor;
 
 @Tag(name = "SSE 알림(고객사)" , description = "고객사 실시간 알림 연결 API")
 @RestController
-@RequestMapping("/notifications")
+@RequestMapping("/clients/notifications")
 @RequiredArgsConstructor
 public class SseCommandClientController {
     private final SseCommandService sseCommandService;
 
     // 연결 하면 SSE 스트림 생성. JWT 인증은 기존 필터로 처리
     @Operation(summary = "SSE 연결", description = "고객사 직원이 실시간 알림을 받기 위한 SSE 연결")
-    @GetMapping(value = "/clients/sse/connect", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @GetMapping(value = "/sse/connect", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter connect(@CurrentUser final ClientEmployee clientEmployee) {
         return sseCommandService.createEmitter(clientEmployee.getId());
 
