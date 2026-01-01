@@ -53,4 +53,23 @@ public class NotificationQueryServiceImpl implements NotificationQueryService {
 
         notificationRepository.delete(notification);
     }
+
+    // 고객사 직원용 메서드들
+    @Override
+    @Transactional(readOnly = true)
+    public List<NotificationResponse> getMyNotificationsForClient(int clientEmployeeId) {
+        return notificationMapper.findByClientEmployeeId(clientEmployeeId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public int getUnreadCountForClient(int clientEmployeeId) {
+        return notificationMapper.countUnreadByClientEmployeeId(clientEmployeeId);
+    }
+
+    @Override
+    @Transactional
+    public void markAllAsReadForClient(int clientEmployeeId) {
+        notificationMapper.markAllAsReadForClient(clientEmployeeId);
+    }
 }
