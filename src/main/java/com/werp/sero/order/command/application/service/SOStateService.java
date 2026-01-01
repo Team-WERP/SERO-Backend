@@ -31,41 +31,51 @@ public class SOStateService {
 
 
     private String calculateState(List<SOItemsHistoryResponseDTO.SOItemHistoryDTO> items) {
-        boolean isPro = false;
-        boolean isShipping = false;
-        boolean isPartial = false;
-        boolean isApprDone = false;
-        boolean isShippingDone = false;
+        if (items == null || items.isEmpty()) return "ORD_APPR_DONE";
+
+        int totalItemCount = items.size();
+        int completedCount = 0;
+
+        boolean hasPartial = false;
+        boolean hasPro = false;
+        boolean hasShipping = false;
 
         for (SOItemsHistoryResponseDTO.SOItemHistoryDTO item : items) {
             int pr = item.getPrQuantity();
             int pi = item.getPiQuantity();
             int doc = item.getDoQuantity();
             int comp = item.getCompletedQuantity();
+            int orderedQty = item.getItem().getQuantity();
 
-            if (pr > pi && doc != 0) {
-                isPartial = true;
+            if (orderedQty <= comp) {
+                completedCount++;
+            }
+            else if (pr > pi && doc != 0) {
+                hasPartial = true;
             }
             else if (pr > pi && doc == 0) {
-                isPro = true;
+                hasPro = true;
             }
-            else if ((pr > 0 && pr == pi && doc > comp) || (pr == 0 && pi == 0 && doc > comp)) {
-                isShipping = true;
-            }
-            else if (pr > 0 && pi == 0 && doc == 0) {
-                isApprDone = true;
-            }
-
-            else if (doc == comp) {
-                isShippingDone = true;
+            else if (((pr > 0 && pr == pi) || (pr == 0 && pi == 0)) && orderedQty > comp) {
+                hasShipping = true;
             }
         }
 
-        if (isPartial) return "ORD_PARTIAL_ING";
-        if (isPro) return "ORD_PRO";
-        if (isShipping) return "ORD_SHIPPING";
-        if (isApprDone) return "ORD_APPR_DONE";
-        if (isShippingDone) return "ORD_DONE";
+        if (completedCount == totalItemCount) {
+            return "ORD_DONE";
+        }
+
+        if (hasPartial || (hasPro && hasShipping)) {
+            return "ORD_PARTIAL_ING";
+        }
+
+        if (hasPro) {
+            return "ORD_PRO";
+        }
+
+        if (hasShipping) {
+            return "ORD_SHIPPING";
+        }
 
         return "ORD_APPR_DONE";
     }
