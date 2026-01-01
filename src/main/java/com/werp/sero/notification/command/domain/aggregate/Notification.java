@@ -41,8 +41,11 @@ public class Notification {
     @Column(nullable = false)
     private NotificationType type; // 타입(주문 관련, 배송관련, 생산 관련 등등)
 
-    @Column(name = "receiver_id", nullable = false)
-    private int receiverId; // 알림을 받는 직원 ID (수신자)
+    @Column(name = "receiver_id")
+    private Integer receiverId; // 알림을 받는 본사 직원 ID (수신자)
+
+    @Column(name = "client_employee_id")
+    private Integer clientEmployeeId; // 알림을 받는 고객사 직원 ID (수신자)
 
     @Column(name = "redirect_url")
     private String redirectUrl; // 이동할 URL
