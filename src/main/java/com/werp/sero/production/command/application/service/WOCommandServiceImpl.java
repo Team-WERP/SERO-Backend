@@ -20,6 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +35,7 @@ public class WOCommandServiceImpl implements WOCommandService {
     private final WorkOrderItemDistributor distributor;
     private final WarehouseStockRepository warehouseStockRepository;
     private final SalesOrderItemHistoryRepository soItemHistoryRepository;
+    private final PRCommandService prCommandService;
 
     @Override
     @Transactional
@@ -118,7 +121,7 @@ public class WOCommandServiceImpl implements WOCommandService {
 
             // PR 상태 변경 (같은 PR은 여러 번 와도 idempotent)
             ProductionRequest pr = prItem.getProductionRequest();
-            if (!"PR_PRODUCING".equals(pr.getProductionStatus())) {
+            if (!"PR_PRODUCING".equals(pr.getStatus())) {
                 pr.changeStatus("PR_PRODUCING");
             }
         }
@@ -238,11 +241,14 @@ public class WOCommandServiceImpl implements WOCommandService {
             ProductionRequestItem prItem = woi.getProductionRequestItem();
             prItem.addProducedQuantity(qty);
 
+            if (prItem.getProducedQuantity() >= prItem.getQuantity()) {
+                prItem.changeStatus("PIS_DONE");
+            } else {
+                prItem.changeStatus("PIS_PRODUCING");
+            }
+
             // 3) WarehouseStock 증가 (material 기준)
             Material material = woi.getProductionPlan().getMaterial();
-//            Warehouse factory = woi.getWorkOrder()
-//                    .getProductionLine()
-//                    .getFactory();
 
             WarehouseStock stock =
                     warehouseStockRepository.findByWarehouseIdAndMaterialId(1, material.getId())
@@ -289,6 +295,21 @@ public class WOCommandServiceImpl implements WOCommandService {
                 request.getNote()
         );
         workOrderHistoryRepository.save(history);
+
+        Set<Integer> prIds = request.getItems().stream()
+                .map(r -> {
+                    WorkOrderItem woi = woItemRepository
+                            .findById(r.getWorkOrderItemId())
+                            .orElseThrow();
+                    return woi.getProductionRequestItem()
+                            .getProductionRequest()
+                            .getId();
+                })
+                .collect(Collectors.toSet());
+
+        for (int prId : prIds) {
+            prCommandService.updatePRStatusIfNeeded(prId);
+        }
     }
 
     @Override
