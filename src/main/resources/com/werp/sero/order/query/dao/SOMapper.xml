@@ -68,7 +68,7 @@
                         AND A.status IN ('ORD_APPR_PEND', 'ORD_APPR_DONE','ORD_APPR_RJCT')
                     </when>
                     <when test='statusType.equals("ORD_ING")'>
-                        AND A.status IN ('ORD_WORK_REQ', 'ORD_PRO','ORD_SHIP_READY', 'ORD_SHIPPING')
+                        AND A.status IN ('ORD_WORK_REQ', 'ORD_PRO','ORD_SHIPPING', 'ORD_PARTIAL_ING')
                     </when>
                     <when test='statusType.equals("ORD_DONE")'>
                         AND A.status IN ('ORD_DONE', 'ORD_CANCEL')
