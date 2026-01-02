@@ -105,17 +105,12 @@ public class DeliveryCommandServiceImpl implements DeliveryCommandService {
         List<SalesOrderItemHistory> histories = new ArrayList<>();
 
         for (GoodsIssueItem giItem : goodsIssueItems) {
-            // 이전 이력 조회
-            SalesOrderItemHistory previousHistory = salesOrderItemHistoryRepository
-                    .findLatestBySoItemId(giItem.getSalesOrderItem().getId())
-                    .orElse(null);
-
             SalesOrderItemHistory history = SalesOrderItemHistory.createForCompleted(
                     giItem.getSalesOrderItem().getId(),
                     giItem.getQuantity(),
                     driver.getId(),
                     createdAt,
-                    previousHistory
+                    null  // 더 이상 previousHistory 필요 없음 (각 이벤트는 독립적으로 저장)
             );
             histories.add(history);
         }
