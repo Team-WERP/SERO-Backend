@@ -249,12 +249,27 @@
         FROM material D
         INNER JOIN warehouse_stock E ON D.id = E.material_id
         WHERE D.material_code = B.item_code) AS available_stock,
-        IFNULL(C.pr_quantity, 0) AS pr_quantity,
-        IFNULL(C.pi_quantity, 0) AS pi_quantity,
-        IFNULL(C.gi_quantity, 0) AS gi_quantity,
-        IFNULL(C.shipped_quantity, 0) AS shipped_quantity,
-        IFNULL(C.do_quantity, 0) AS do_quantity,
-        IFNULL(C.completed_quantity, 0) AS completed_quantity,
+
+        <choose>
+            <when test="isLatestOnly == true">
+                <!-- 누적 합계 계산 -->
+                IFNULL((SELECT SUM(H.pr_quantity) FROM sales_order_item_history H WHERE H.so_item_id = B.id), 0) AS pr_quantity,
+                IFNULL((SELECT SUM(H.pi_quantity) FROM sales_order_item_history H WHERE H.so_item_id = B.id), 0) AS pi_quantity,
+                IFNULL((SELECT SUM(H.gi_quantity) FROM sales_order_item_history H WHERE H.so_item_id = B.id), 0) AS gi_quantity,
+                IFNULL((SELECT SUM(H.shipped_quantity) FROM sales_order_item_history H WHERE H.so_item_id = B.id), 0) AS shipped_quantity,
+                IFNULL((SELECT SUM(H.do_quantity) FROM sales_order_item_history H WHERE H.so_item_id = B.id), 0) AS do_quantity,
+                IFNULL((SELECT SUM(H.completed_quantity) FROM sales_order_item_history H WHERE H.so_item_id = B.id), 0) AS completed_quantity,
+            </when>
+            <otherwise>
+                <!-- 개별 이력 조회 시에는 각 레코드의 값 -->
+                IFNULL(C.pr_quantity, 0) AS pr_quantity,
+                IFNULL(C.pi_quantity, 0) AS pi_quantity,
+                IFNULL(C.gi_quantity, 0) AS gi_quantity,
+                IFNULL(C.shipped_quantity, 0) AS shipped_quantity,
+                IFNULL(C.do_quantity, 0) AS do_quantity,
+                IFNULL(C.completed_quantity, 0) AS completed_quantity,
+            </otherwise>
+        </choose>
         C.created_at
         FROM sales_order A
         INNER JOIN sales_order_item B ON A.id = B.so_id

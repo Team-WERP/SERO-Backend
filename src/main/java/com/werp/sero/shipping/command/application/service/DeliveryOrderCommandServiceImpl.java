@@ -127,7 +127,7 @@ public class DeliveryOrderCommandServiceImpl implements DeliveryOrderCommandServ
             System.err.println("납품서 PDF 생성 실패: " + e.getMessage());
         }
 
-        // 7. 주문 품목 이력 생성 (기납품 수량)
+        // 7. 주문 품목 이력 생성 (이번 납품 수량만 기록, SUM으로 누적 계산됨)
         String createdAt = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
         List<SalesOrderItemHistory> histories = new ArrayList<>();
 
@@ -136,7 +136,8 @@ public class DeliveryOrderCommandServiceImpl implements DeliveryOrderCommandServ
                     doItem.getSalesOrderItem().getId(),
                     doItem.getDoQuantity(),
                     manager.getId(),
-                    createdAt
+                    createdAt,
+                    null  // 더 이상 previousHistory 필요 없음 (각 이벤트는 독립적으로 저장)
             );
             histories.add(history);
         }
