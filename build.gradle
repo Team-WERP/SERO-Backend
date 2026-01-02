@@ -77,3 +77,13 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+// plain jar 생성 비활성화 (bootJar만 생성)
+jar {
+    enabled = false
+}
+
+// bootJar 파일명을 application.jar로 설정
+bootJar {
+    archiveFileName = 'application.jar'
+}
