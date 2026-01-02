@@ -37,8 +37,8 @@
         SELECT
             A.name
         FROM common_code A
-            INNER JOIN common_code_type B
-                ON A.type_code = B.code
+                 INNER JOIN common_code_type B
+                            ON A.type_code = B.code
         WHERE B.code = #{typeCode}
           AND A.code = #{code}
           AND A.is_used = 1
