@@ -15,8 +15,8 @@ public class GIDetailQueryServiceImpl implements GIDetailQueryService {
 
     @Override
     @Transactional(readOnly = true)
-    public GIDetailResponseDTO getGoodsIssueDetail(String giCode) {
-        GIDetailResponseDTO result = giMapper.findByGiCode(giCode);
+    public GIDetailResponseDTO getGoodsIssueDetail(Long id) {
+        GIDetailResponseDTO result = giMapper.findById(id);
 
         if (result == null) {
             throw new GoodsIssueNotFoundException();

@@ -28,7 +28,7 @@ public class MaterialQueryServiceImpl implements MaterialQueryService {
     private static final List<String> VALID_MATERIAL_TYPES = Arrays.asList("MAT_FG", "MAT_RM");
 
     // 허용되는 자재 상태
-    private static final List<String> VALID_MATERIAL_STATUSES = Arrays.asList("MAT_NORMAL", "MAT_STOP");
+    private static final List<String> VALID_MATERIAL_STATUSES = Arrays.asList("MAT_NORMAL", "MAT_STOP_PREP", "MAT_STOP", "MAT_DISCONTINUED");
 
     @Override
     public List<MaterialListResponseDTO> getMaterialList(

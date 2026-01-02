@@ -13,7 +13,6 @@ public class NotificationResponse {
     private String title;
     private String content;
     private NotificationType type;
-    private Integer referenceId;
     private String redirectUrl;
     private boolean isRead;
     private String createdAt;

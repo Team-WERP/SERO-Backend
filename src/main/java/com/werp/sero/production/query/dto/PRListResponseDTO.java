@@ -42,6 +42,6 @@ public class PRListResponseDTO {
     @Schema(description = "생산요청 상태", example = "PR_RVW")
     private String status;
 
-    @Schema(description = "문서 url")
-    private String prUrl;
+//    @Schema(description = "문서 url")
+//    private String prUrl;
 }

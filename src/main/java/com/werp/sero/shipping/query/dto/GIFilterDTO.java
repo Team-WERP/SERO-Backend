@@ -26,4 +26,7 @@ public class GIFilterDTO {
 
     @Schema(description = "검색어 (출고지시번호)", example = "GI-20251207-001")
     private String searchKeyword;
+
+    @Schema(description = "작성자 ID (null이면 전체 조회)", example = "1")
+    private Integer drafterId;
 }

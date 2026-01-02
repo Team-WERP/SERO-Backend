@@ -32,7 +32,7 @@ public class MaterialQueryController {
             @Parameter(description = "자재 유형 (MAT_FG: 완제품, MAT_RM: 원부자재)", example = "MAT_FG")
             @RequestParam(required = false) String type,
 
-            @Parameter(description = "자재 상태 (MAT_NORMAL, MAT_STOP 등)", example = "MAT_NORMAL")
+            @Parameter(description = "자재 상태 (MAT_NORMAL: 정상, MAT_STOP_PREP: 판매 중단 예정, MAT_STOP: 판매 중단, MAT_DISCONTINUED: 단종)", example = "MAT_NORMAL")
             @RequestParam(required = false) String status,
 
             @Parameter(description = "검색어 (자재명 또는 자재코드)", example = "브레이크")

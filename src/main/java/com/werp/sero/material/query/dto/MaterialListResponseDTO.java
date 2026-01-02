@@ -23,6 +23,7 @@ public class MaterialListResponseDTO {
     private String baseUnit;
     private Long unitPrice;
     private int safetyStock;
+    private Integer cycleTime;
     private Integer rawMaterialCount;
     private String createdAt;
 }

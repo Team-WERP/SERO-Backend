@@ -81,7 +81,7 @@
     </resultMap>
 
     <!-- 출고지시서 상세 조회 -->
-    <select id="findByGiCode" resultMap="GIDetailResultMap">
+    <select id="findById" resultMap="GIDetailResultMap">
         SELECT
             /* 기본 출고 지시 정보 */
             A.id AS gi_id,
@@ -173,7 +173,7 @@
         LEFT JOIN common_code S ON N.position_code = S.code
         LEFT JOIN common_code T ON N.rank_code = T.code
 
-        WHERE A.gi_code = #{giCode}
+        WHERE A.id = #{id}
         ORDER BY H.id, M.sequence
     </select>
 

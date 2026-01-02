@@ -38,4 +38,18 @@ public class NotificationQueryController {
         notificationQueryService.markAsRead(notificationId);
         return ResponseEntity.ok().build();
     }
+
+    @Operation(summary = "모든 알림 읽음 처리", description = "로그인한 직원의 모든 읽지 않은 알림을 읽음 상태로 변경")
+    @PatchMapping("/read-all")
+    public ResponseEntity<Void> markAllAsRead(@CurrentUser final Employee employee) {
+        notificationQueryService.markAllAsRead(employee.getId());
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "알림 삭제", description = "특정 알림을 삭제")
+    @DeleteMapping("/{notificationId}")
+    public ResponseEntity<Void> deleteNotification(@PathVariable final int notificationId) {
+        notificationQueryService.deleteNotification(notificationId);
+        return ResponseEntity.ok().build();
+    }
 }
