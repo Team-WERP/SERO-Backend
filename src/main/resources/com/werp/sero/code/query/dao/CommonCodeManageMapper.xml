@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.werp.sero.code.query.dao.CommonCodeManageMapper">
+
+    <resultMap id="CommonCodeManageResultMap"
+               type="com.werp.sero.code.query.dto.CommonCodeManageDTO">
+        <result property="code" column="code"/>
+        <result property="name" column="name"/>
+        <result property="description" column="description"/>
+        <result property="sortOrder" column="sort_order"/>
+    </resultMap>
+
+    <select id="findByCode" resultMap="CommonCodeManageResultMap">
+        SELECT
+            A.code,
+            A.name,
+            A.description,
+            A.sort_order
+        FROM common_code A
+                 INNER JOIN common_code_type B
+                            ON A.type_code = B.code
+        WHERE B.code = #{typeCode}
+          AND A.code = #{code}
+          AND A.is_used = 1
+            LIMIT 1
+    </select>
+
+    <select id="findName" resultType="string">
+        SELECT
+            A.name
+        FROM common_code A
+            INNER JOIN common_code_type B
+                ON A.type_code = B.code
+        WHERE B.code = #{typeCode}
+          AND A.code = #{code}
+          AND A.is_used = 1
+            LIMIT 1
+    </select>
+
+    <select id="findByType" resultMap="CommonCodeManageResultMap">
+        SELECT
+            A.code,
+            A.name,
+            A.description,
+            A.sort_order
+        FROM common_code A
+                 INNER JOIN common_code_type B
+                            ON A.type_code = B.code
+        WHERE B.code = #{typeCode}
+          AND A.is_used = 1
+        ORDER BY A.sort_order ASC
+    </select>
+
+    <resultMap id="CommonCodeTypeManageResultMap"
+               type="com.werp.sero.code.query.dto.CommonCodeTypeManageDTO">
+        <result property="code" column="code"/>
+        <result property="name" column="name"/>
+        <result property="description" column="description"/>
+    </resultMap>
+
+    <resultMap id="CommonCodeDetailManageResultMap"
+               type="com.werp.sero.code.query.dto.CommonCodeDetailManageDTO">
+        <result property="code" column="code"/>
+        <result property="name" column="name"/>
+        <result property="codeNameEng" column="code_name_eng"/>
+        <result property="ref1" column="ref1"/>
+        <result property="sortOrder" column="sort_order"/>
+        <result property="isUsed" column="is_used"/>
+    </resultMap>
+
+    <select id="findAllCodeTypes" resultMap="CommonCodeTypeManageResultMap">
+        SELECT
+            A.code,
+            A.name,
+            A.description
+        FROM common_code_type A
+        ORDER BY A.code ASC
+    </select>
+
+    <select id="findDetailsByType" resultMap="CommonCodeDetailManageResultMap">
+        SELECT
+            A.code,
+            A.name,
+            A.description AS code_name_eng,
+            A.parent_code AS ref1,
+            A.sort_order,
+            CASE WHEN A.is_used = 1 THEN 'Y' ELSE 'N' END AS is_used
+        FROM common_code A
+        WHERE A.type_code = #{typeCode}
+        ORDER BY A.sort_order ASC
+    </select>
+
+</mapper>

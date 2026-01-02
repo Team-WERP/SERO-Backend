@@ -3,16 +3,22 @@ package com.werp.sero.shipping.command.application.service;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.notification.command.domain.aggregate.enums.NotificationType;
 import com.werp.sero.notification.command.infrastructure.event.NotificationEvent;
+import com.werp.sero.order.command.application.service.SOStateService;
 import com.werp.sero.order.command.domain.aggregate.SalesOrder;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItem;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItemHistory;
 import com.werp.sero.order.command.domain.repository.SalesOrderItemHistoryRepository;
 import com.werp.sero.order.command.domain.repository.SORepository;
+import com.werp.sero.order.query.dto.SOItemsHistoryResponseDTO;
+import com.werp.sero.order.query.service.SOQueryService;
 import com.werp.sero.shipping.command.domain.aggregate.Delivery;
+import com.werp.sero.shipping.command.domain.aggregate.GoodsIssue;
 import com.werp.sero.shipping.command.domain.aggregate.GoodsIssueItem;
 import com.werp.sero.shipping.command.domain.repository.DeliveryRepository;
+import com.werp.sero.shipping.command.domain.repository.GIRepository;
 import com.werp.sero.shipping.command.domain.repository.GoodsIssueItemRepository;
 import com.werp.sero.shipping.exception.DeliveryNotFoundException;
+import com.werp.sero.shipping.exception.GoodsIssueNotFoundException;
 import com.werp.sero.shipping.exception.InvalidDeliveryStatusTransitionException;
 import com.werp.sero.shipping.exception.UnauthorizedDeliveryUpdateException;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +40,11 @@ public class DeliveryCommandServiceImpl implements DeliveryCommandService {
     private final GoodsIssueItemRepository goodsIssueItemRepository;
     private final SalesOrderItemHistoryRepository salesOrderItemHistoryRepository;
     private final SORepository soRepository;
+    private final GIRepository giRepository;
     private final ApplicationEventPublisher eventPublisher;
+
+    private final SOStateService orderStateService;
+
 
     @Override
     public void startDelivery(String giCode, Employee driver) {
@@ -64,7 +74,7 @@ public class DeliveryCommandServiceImpl implements DeliveryCommandService {
                 "배송 출발",
                 "출고지시 " + giCode + "의 배송이 출발했습니다. (기사: " + driver.getName() + ")",
                 delivery.getGoodsIssue().getManager().getId(),
-                "/warehouse/goods-issues/" + giCode
+                "/warehouse/goods-issues/" + delivery.getGoodsIssue().getId()
             ));
         }
     }
@@ -112,8 +122,10 @@ public class DeliveryCommandServiceImpl implements DeliveryCommandService {
 
         salesOrderItemHistoryRepository.saveAll(histories);
 
-        // 6. 주문 완료 여부 확인 및 상태 업데이트
-        checkAndCompleteOrder(delivery.getGoodsIssue().getSalesOrder());
+        GoodsIssue gi = giRepository.findByGiCode(giCode).orElseThrow(GoodsIssueNotFoundException::new);
+
+        // 6. 주문 상태 업데이트
+        orderStateService.updateOrderStateByHistory(gi.getSalesOrder().getId());
 
         // 7. 출고지시 담당자에게 알림 발송
         if (delivery.getGoodsIssue().getManager() != null) {
@@ -124,42 +136,6 @@ public class DeliveryCommandServiceImpl implements DeliveryCommandService {
                 delivery.getGoodsIssue().getManager().getId(),
                 "/warehouse/goods-issues/" + giCode
             ));
-        }
-    }
-
-    /**
-     * 주문별 배송 완료 수량과 주문 수량을 비교하여 주문 완료 처리
-     */
-    private void checkAndCompleteOrder(SalesOrder salesOrder) {
-        // 1. 주문의 모든 품목별 이력 조회
-        List<SalesOrderItemHistory> allHistories = salesOrderItemHistoryRepository.findBySalesOrderId(salesOrder.getId());
-
-        // 2. 품목별로 그룹화하여 배송 완료 수량 집계
-        java.util.Map<Integer, Integer> completedQuantityByItem = new java.util.HashMap<>();
-
-        for (SalesOrderItemHistory history : allHistories) {
-            int soItemId = history.getSoItemId();
-            int completedQty = history.getCompletedQuantity();
-
-            completedQuantityByItem.put(soItemId,
-                completedQuantityByItem.getOrDefault(soItemId, 0) + completedQty);
-        }
-
-        // 3. 모든 품목의 주문 수량과 배송 완료 수량 비교
-        boolean allItemsCompleted = goodsIssueItemRepository.findByGoodsIssueSalesOrderId(salesOrder.getId())
-            .stream()
-            .allMatch(giItem -> {
-                SalesOrderItem soItem = giItem.getSalesOrderItem();
-                int orderedQuantity = soItem.getQuantity();
-                int completedQuantity = completedQuantityByItem.getOrDefault(soItem.getId(), 0);
-
-                return completedQuantity >= orderedQuantity;
-            });
-
-        // 4. 모든 품목이 배송 완료되었으면 주문 상태를 완료로 변경
-        if (allItemsCompleted) {
-            salesOrder.completeOrder();
-            soRepository.save(salesOrder);
         }
     }
 }

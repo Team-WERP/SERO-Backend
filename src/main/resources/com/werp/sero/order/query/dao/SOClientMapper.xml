@@ -133,11 +133,7 @@
                 </when>
 
                 <when test="status == 'CLI_SO_ING'">
-                    AND A.status IN ('ORD_RVW', 'ORD_APPR_PEND', 'ORD_APPR_DONE', 'ORD_WORK_REQ', 'ORD_PRO', 'ORD_SHIP_READY')
-                </when>
-
-                <when test="status == 'CLI_SO_SHIPPING'">
-                    AND A.status = 'ORD_SHIPPING'
+                    AND A.status IN ('ORD_RVW', 'ORD_APPR_PEND', 'ORD_APPR_DONE', 'ORD_PRO', 'ORD_SHIPPING', 'ORD_PARTIAL_ING')
                 </when>
 
                 <when test="status == 'CLI_SO_DONE'">

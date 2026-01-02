@@ -223,13 +223,11 @@ public class PRCommandServiceImpl implements PRCommandService {
 
         ProductionRequest pr = prRepository.findById(prId).orElseThrow();
 
-        if (hasProducing) {
+        if (allDone) {
+            pr.changeStatus("PR_DONE");
+        } else if (hasProducing) {
             pr.changeStatus("PR_PRODUCING");
-        } else if (allDone) {
-            pr.changeStatus("PR_COMPLETED");
-        } else if (hasTarget) {
-            pr.changeStatus("PR_PLANNING");
-        } else if (hasPlanned) {
+        } else if (hasPlanned || hasTarget) {
             pr.changeStatus("PR_PLANNED");
         }
     }
