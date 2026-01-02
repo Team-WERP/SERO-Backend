@@ -2,12 +2,12 @@ package com.werp.sero.production.query.service;
 
 import com.werp.sero.common.util.DateTimeUtils;
 import com.werp.sero.production.query.dao.ProductionDashboardMapper;
-import com.werp.sero.production.query.dto.dashboard.ProductionDashboardDefectAggDTO;
-import com.werp.sero.production.query.dto.dashboard.ProductionDashboardSummaryResponseDTO;
-import com.werp.sero.production.query.dto.dashboard.ProductionLineStatusResponseDTO;
+import com.werp.sero.production.query.dto.dashboard.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -76,6 +76,36 @@ public class ProductionDashboardQueryServiceImpl implements ProductionDashboardQ
                 stopped
         );
 
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductionLineCapaItemDTO> getLineCapa() {
+        String today = DateTimeUtils.nowDate();
+
+        List<ProductionLineCapaListDTO> raws =
+                productionDashboardMapper.selectLineCapaRaw(today);
+
+        List<ProductionLineCapaItemDTO> lines = raws.stream()
+                .map(raw -> {
+                    int capacity = raw.dailyCapacity();
+                    int load = raw.plannedLoad();
+
+                    int loadRate = capacity <= 0
+                            ? 0
+                            : (int) Math.round((double) load * 100 / capacity);
+
+                    return new ProductionLineCapaItemDTO(
+                            raw.lineId(),
+                            raw.lineName(),
+                            load,
+                            capacity,
+                            loadRate
+                    );
+                })
+                .toList();
+
+        return lines;
     }
 
     private int nvl(Integer value) {

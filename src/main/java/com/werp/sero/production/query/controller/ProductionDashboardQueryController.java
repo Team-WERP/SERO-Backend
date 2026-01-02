@@ -1,12 +1,15 @@
 package com.werp.sero.production.query.controller;
 
 import com.werp.sero.production.query.dto.dashboard.ProductionDashboardSummaryResponseDTO;
+import com.werp.sero.production.query.dto.dashboard.ProductionLineCapaItemDTO;
 import com.werp.sero.production.query.dto.dashboard.ProductionLineStatusResponseDTO;
 import com.werp.sero.production.query.service.ProductionDashboardQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -22,5 +25,10 @@ public class ProductionDashboardQueryController {
     @GetMapping("/line-status")
     public ProductionLineStatusResponseDTO lineStatus() {
         return productionDashboardQueryService.getLineStatus();
+    }
+
+    @GetMapping("/line-capa")
+    public List<ProductionLineCapaItemDTO> lineCapa() {
+        return productionDashboardQueryService.getLineCapa();
     }
 }

@@ -1,8 +1,11 @@
 package com.werp.sero.production.query.dao;
 
 import com.werp.sero.production.query.dto.dashboard.ProductionDashboardDefectAggDTO;
+import com.werp.sero.production.query.dto.dashboard.ProductionLineCapaListDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 @Mapper
 public interface ProductionDashboardMapper {
@@ -28,4 +31,6 @@ public interface ProductionDashboardMapper {
 
     Integer selectTotalProductionLine();
 
-}
+    List<ProductionLineCapaListDTO> selectLineCapaRaw(
+            @Param("today") String today
+    );}

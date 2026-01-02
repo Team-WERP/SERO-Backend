@@ -56,4 +56,36 @@
         FROM production_line
         WHERE status = 'PL_ACTIVE'
     </select>
+
+    <select id="selectLineCapaRaw"
+            parameterType="string"
+            resultType="com.werp.sero.production.query.dto.dashboard.ProductionLineCapaListDTO">
+
+        SELECT
+        pl.id             AS lineId,
+        pl.line_name      AS lineName,
+        pl.daily_capacity AS dailyCapacity,
+
+        IFNULL(SUM(
+                           pp.production_quantity
+                           / (
+                                   DATEDIFF(
+                                           STR_TO_DATE(pp.end_date, '%Y-%m-%d'),
+                                           STR_TO_DATE(pp.start_date, '%Y-%m-%d')
+                                       ) + 1
+                               )
+                   ), 0) AS plannedLoad
+
+        FROM production_line pl
+        LEFT JOIN production_plan pp
+        ON pp.production_line_id = pl.id
+        AND pp.status = 'PP_CONFIRMED'
+        AND pp.start_date &lt;= #{today}
+        AND pp.end_date   >= #{today}
+
+        WHERE pl.status = 'PL_ACTIVE'
+        GROUP BY pl.id, pl.line_name, pl.daily_capacity
+        ORDER BY pl.line_name
+    </select>
+
 </mapper>
