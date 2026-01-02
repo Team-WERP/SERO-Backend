@@ -34,11 +34,12 @@ public class NotificationEventListener {
                 .title(event.getTitle())
                 .content(event.getContent())
                 .receiverId(event.getReceiverId())
+                .clientEmployeeId(event.getClientEmployeeId())
                 .redirectUrl(event.getRedirectUrl())
                 .isRead(false)
                 .createdAt(now)
                 .build();
-        
+
         notificationRepository.save(notification);
 
         // SSE 실시간 전송
@@ -52,9 +53,17 @@ public class NotificationEventListener {
             data.put("isRead", notification.isRead());
             data.put("createdAt", notification.getCreatedAt());
 
-            sseCommandService.sendToUser(event.getReceiverId(), data);
+            // 본사 직원용 알림인 경우
+            if (event.getReceiverId() != null) {
+                sseCommandService.sendToUser(event.getReceiverId(), data);
+            }
+            // 고객사 직원용 알림인 경우
+            else if (event.getClientEmployeeId() != null) {
+                sseCommandService.sendToClient(event.getClientEmployeeId(), data);
+            }
         } catch (Exception e) {
-            log.error("SSE 전송 실패: receiverId={}", event.getReceiverId(), e);
+            log.error("SSE 전송 실패: receiverId={}, clientEmployeeId={}",
+                event.getReceiverId(), event.getClientEmployeeId(), e);
         }
     }
 }

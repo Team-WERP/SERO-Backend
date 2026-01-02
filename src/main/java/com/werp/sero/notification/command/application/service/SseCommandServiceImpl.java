@@ -53,8 +53,8 @@ public class SseCommandServiceImpl implements SseCommandService{
     public void sendToUser(int employeeId, Object data) {
         String employeeIdStr = String.valueOf(employeeId);
         Map<String, SseEmitter> emitters =emitterRepository.findAllByEmployeeId(employeeIdStr);
-    
-        emitters.forEach((emitterId, emitter) -> {  
+
+        emitters.forEach((emitterId, emitter) -> {
             try {
                 emitter.send(SseEmitter.event()
                         .name("notification")
@@ -66,5 +66,46 @@ public class SseCommandServiceImpl implements SseCommandService{
     });
 
     }
-    
+
+    // 고객사 직원용 메서드들
+    @Override
+    public SseEmitter createEmitterForClient(int clientEmployeeId) {
+        String emitterId = "client:" + clientEmployeeId + ":" + System.currentTimeMillis();
+        SseEmitter emitter = new SseEmitter(DEFAULT_TIMEOUT);
+
+        emitterRepository.save(emitterId, emitter);
+
+        // 연결 종료 시 삭제
+        emitter.onCompletion(() -> emitterRepository.deleteById(emitterId));
+        emitter.onTimeout(() -> emitterRepository.deleteById(emitterId));
+
+        // 연결 직후 더미 이벤트 전송 (503 에러 방지)
+        try {
+            emitter.send(SseEmitter.event()
+                    .name("connect")
+                    .data("Connected"));
+        } catch (IOException e) {
+            emitterRepository.deleteById(emitterId);
+        }
+
+        return emitter;
+    }
+
+    @Override
+    public void sendToClient(int clientEmployeeId, Object data) {
+        String clientEmployeeIdStr = "client:" + clientEmployeeId;
+        Map<String, SseEmitter> emitters = emitterRepository.findAllByEmployeeId(clientEmployeeIdStr);
+
+        emitters.forEach((emitterId, emitter) -> {
+            try {
+                emitter.send(SseEmitter.event()
+                        .name("notification")
+                        .data(data));
+            } catch (IOException e) {
+                emitterRepository.deleteById(emitterId);
+                log.warn("SSE 전송 실패 (고객사 직원, 연결 끊김): emitterId={}", emitterId);
+            }
+        });
+    }
+
 }
