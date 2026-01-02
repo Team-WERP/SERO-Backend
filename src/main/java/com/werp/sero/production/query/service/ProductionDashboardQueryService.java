@@ -14,4 +14,6 @@ public interface ProductionDashboardQueryService {
     List<MaterialShortageResponseDTO> getMaterialShortage();
 
     ProductionMonthlyTrendResponseDTO getMonthlyTrend();
+
+    List<PrRiskResponseDTO> getPrRiskList();
 }

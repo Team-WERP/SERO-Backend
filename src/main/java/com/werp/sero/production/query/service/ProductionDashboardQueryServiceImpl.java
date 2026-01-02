@@ -9,6 +9,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.groupingBy;
 
 @Service
 @RequiredArgsConstructor
@@ -136,6 +141,51 @@ public class ProductionDashboardQueryServiceImpl implements ProductionDashboardQ
         return new ProductionMonthlyTrendResponseDTO(labels, target, actual);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<PrRiskResponseDTO> getPrRiskList() {
+
+        // 생산요청 정보
+        List<PrRiskRawDTO> prs =
+                productionDashboardMapper.selectActivePrList();
+        List<PrRiskItemRawDTO> items =
+                productionDashboardMapper.selectPrItemRiskList();
+
+        // 기준 정보
+        Set<Integer> shortageMaterialIds = loadShortageMaterialIds();
+        Map<String, Integer> lineLoadRateMap = loadLineLoadRateMap();
+
+        Map<Integer, List<PrRiskItemRawDTO>> itemsByPr =
+                items.stream().collect(groupingBy(PrRiskItemRawDTO::prId));
+
+        List<PrRiskResponseDTO> result = new ArrayList<>();
+
+        // 생산요청(PR)별 리스크 계산
+        for (PrRiskRawDTO pr : prs) {
+
+            List<PrRiskItemDTO> itemDtos = new ArrayList<>();
+            int maxRisk = 0;
+
+            for (PrRiskItemRawDTO item
+                    : itemsByPr.getOrDefault(pr.prId(), List.of())) {
+
+                PrRiskItemDTO dto =
+                        calculateItemRisk(item, shortageMaterialIds, lineLoadRateMap);
+
+                itemDtos.add(dto);
+                maxRisk = Math.max(maxRisk, dto.riskScore());
+            }
+
+            result.add(buildPrResponse(pr, itemDtos, maxRisk));
+        }
+
+        return result;
+    }
+
+    /**
+     * 계산 헬퍼 메소드
+     */
+
     private int nvl(Integer value) {
         return value == null ? 0 : value;
     }
@@ -148,4 +198,104 @@ public class ProductionDashboardQueryServiceImpl implements ProductionDashboardQ
     private double round1(double value) {
         return Math.round(value * 10.0) / 10.0;
     }
+
+    /* 생산요청 지연 리스크 계산용 헬퍼 메소드
+    *  1. loadShortageMaterialIds : 자재 부족
+    *  2. loadLineLoadRateMap : 라인 CAPA
+    *  3. calculateItemRisk : Item 리스크 계산
+    *  4. expectedProgress : 기대 진척률
+    *  5. buildPrResponse : PR Response 조립
+    * */
+
+    private Set<Integer> loadShortageMaterialIds() {
+        return productionDashboardMapper.selectMaterialShortage()
+                .stream()
+                .map(MaterialShortageResponseDTO::materialId)
+                .collect(Collectors.toSet());
+    }
+
+    private Map<String, Integer> loadLineLoadRateMap() {
+        return getLineCapa().stream()
+                .collect(Collectors.toMap(
+                        ProductionLineCapaItemDTO::lineName,
+                        ProductionLineCapaItemDTO::loadRate
+                ));
+    }
+
+    private PrRiskItemDTO calculateItemRisk(
+            PrRiskItemRawDTO raw,
+            Set<Integer> shortageMaterialIds,
+            Map<String, Integer> lineLoadRateMap
+    ) {
+        int progressRate = raw.targetQty() == 0
+                ? 0
+                : (int) ((double) raw.producedQty() * 100 / raw.targetQty());
+
+        int score = 0;
+
+        // 생산 지연
+        int expected = expectedProgress(raw);
+        if (progressRate < expected - 30) {
+            score += 40;          // 심각
+        } else if (progressRate < expected - 15) {
+            score += 25;          // 경고
+        } else if (progressRate < expected) {
+            score += 15;          // 주의
+        }
+
+
+        // 자재 부족
+        boolean shortage = shortageMaterialIds.contains(raw.materialId());
+        if (shortage) score += 30;
+
+        // CAPA 초과
+        int loadRate = lineLoadRateMap.getOrDefault(raw.lineName(), 0);
+        boolean capaOver = loadRate > 100;
+        if (capaOver) score += 20;
+
+        return new PrRiskItemDTO(
+                raw.prItemId(),
+                raw.itemName(),
+                raw.lineName(),
+                raw.targetQty(),
+                raw.producedQty(),
+                progressRate,
+                shortage ? "SHORTAGE" : "NORMAL",
+                capaOver,
+                score
+        );
+    }
+
+    private int expectedProgress(PrRiskItemRawDTO raw) {
+
+        long total = raw.totalDays();
+        long elapsed = raw.elapsedDays();
+
+        if (total <= 0) return 0;
+
+        return (int) Math.min(100, elapsed * 100 / total) - 5;
+    }
+
+    private PrRiskResponseDTO buildPrResponse(
+            PrRiskRawDTO pr,
+            List<PrRiskItemDTO> items,
+            int maxRisk
+    ) {
+        int dDay = pr.dDay();
+        boolean delayExpected =
+                (dDay <= 7 && maxRisk >= 40) || (dDay <= 3 && maxRisk >= 30);
+
+        return new PrRiskResponseDTO(
+                pr.prId(),
+                pr.prCode(),
+                pr.clientName(),
+                pr.dueDate(),
+                dDay,
+                delayExpected,
+                items,
+                new PrRiskSummaryDTO(items.size(), maxRisk)
+        );
+    }
+
+
 }

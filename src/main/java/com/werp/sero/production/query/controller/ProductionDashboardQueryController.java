@@ -39,4 +39,10 @@ public class ProductionDashboardQueryController {
     public ProductionMonthlyTrendResponseDTO monthlyTrend() {
         return productionDashboardQueryService.getMonthlyTrend();
     }
+
+    @GetMapping("/pr-risk")
+    public List<PrRiskResponseDTO> prRisk() {
+        return productionDashboardQueryService.getPrRiskList();
+    }
+
 }

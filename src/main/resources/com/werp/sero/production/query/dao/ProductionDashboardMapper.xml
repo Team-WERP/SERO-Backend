@@ -156,4 +156,81 @@
         ORDER BY ym.month;
     </select>
 
+    <select id="selectActivePrList"
+            resultType="com.werp.sero.production.query.dto.dashboard.PrRiskRawDTO">
+
+        SELECT
+            pr.id        AS prId,
+            pr.pr_code   AS prCode,
+            so.client_name AS clientName,
+            pr.due_at    AS dueDate,
+
+            /* D-Day 계산 */
+            DATEDIFF(
+                    STR_TO_DATE(pr.due_at, '%Y-%m-%d'),
+                    CURDATE()
+                ) AS dDay
+
+        FROM production_request pr
+                 JOIN sales_order so
+                      ON so.id = pr.so_id
+
+        WHERE pr.status IN ('PR_APPR_DONE', 'PR_PLANNED', 'PR_PRODUCING')
+        ORDER BY pr.due_at ASC
+    </select>
+
+    <select id="selectPrItemRiskList"
+            resultType="com.werp.sero.production.query.dto.dashboard.PrRiskItemRawDTO">
+
+        SELECT
+            pri.id        AS prItemId,
+            pri.pr_id     AS prId,
+
+            soi.item_name AS itemName,
+
+            pri.quantity          AS targetQty,
+            pri.produced_quantity AS producedQty,
+
+            pl.line_name AS lineName,
+
+            m.id AS materialId,
+
+            /* 총 기간 (PR 생성일 ~ 납기일) */
+            DATEDIFF(
+                    STR_TO_DATE(pr.due_at, '%Y-%m-%d'),
+                    STR_TO_DATE(pr.created_at, '%Y-%m-%d')
+                ) + 1 AS totalDays,
+
+            /* 경과 일수 (PR 생성일 ~ 오늘) */
+            GREATEST(
+                        DATEDIFF(
+                                CURDATE(),
+                                STR_TO_DATE(pr.created_at, '%Y-%m-%d')
+                            ) + 1,
+                        0
+                ) AS elapsedDays
+
+        FROM production_request_item pri
+                 JOIN production_request pr
+                      ON pr.id = pri.pr_id
+
+                 JOIN sales_order_item soi
+                      ON soi.id = pri.so_item_id
+
+            /* 생산계획 → 라인 */
+                 LEFT JOIN production_plan pp
+                           ON pp.pr_item_id = pri.id
+                               AND pp.status = 'PP_CONFIRMED'
+
+                 LEFT JOIN production_line pl
+                           ON pl.id = pp.production_line_id
+
+            /* 자재 */
+                 JOIN material m
+                      ON m.id = pp.material_id
+
+        WHERE pr.status IN ('PR_APPR_DONE', 'PR_PLANNED', 'PR_PRODUCING')
+    </select>
+
+
 </mapper>
