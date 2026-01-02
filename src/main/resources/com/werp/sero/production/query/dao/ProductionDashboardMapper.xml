@@ -42,4 +42,18 @@
           AND status = 'WO_RUN'
     </select>
 
+    <!-- 상태별 작업지시 수 -->
+    <select id="countWorkOrderByStatus" resultType="int">
+        SELECT COUNT(DISTINCT wo.line_id)
+        FROM work_order wo
+        WHERE wo.work_date = #{workDate}
+          AND wo.status = #{status}
+    </select>
+
+    <!-- 전체 생산 라인 수 -->
+    <select id="selectTotalProductionLine" resultType="int">
+        SELECT COUNT(*)
+        FROM production_line
+        WHERE status = 'PL_ACTIVE'
+    </select>
 </mapper>

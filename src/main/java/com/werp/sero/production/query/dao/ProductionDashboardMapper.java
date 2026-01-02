@@ -20,4 +20,12 @@ public interface ProductionDashboardMapper {
 
     /** 금일 가동 중(WO_RUN) 작업지시 */
     Integer selectTodayWorkOrderRunning(@Param("workDate") String workDate);
+
+    Integer countWorkOrderByStatus(
+            @Param("workDate") String workDate,
+            @Param("status") String status
+    );
+
+    Integer selectTotalProductionLine();
+
 }

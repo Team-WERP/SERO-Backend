@@ -4,6 +4,7 @@ import com.werp.sero.common.util.DateTimeUtils;
 import com.werp.sero.production.query.dao.ProductionDashboardMapper;
 import com.werp.sero.production.query.dto.dashboard.ProductionDashboardDefectAggDTO;
 import com.werp.sero.production.query.dto.dashboard.ProductionDashboardSummaryResponseDTO;
+import com.werp.sero.production.query.dto.dashboard.ProductionLineStatusResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,6 +50,30 @@ public class ProductionDashboardQueryServiceImpl implements ProductionDashboardQ
                 targetQty,
                 round1(defectRate),
                 round1(lineUtilizationRate)
+        );
+
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ProductionLineStatusResponseDTO getLineStatus() {
+        String today = DateTimeUtils.nowDate();
+        int running =
+                nvl(productionDashboardMapper.countWorkOrderByStatus(today, "WO_RUN"));
+
+        int paused =
+                nvl(productionDashboardMapper.countWorkOrderByStatus(today, "WO_PAUSE"));
+
+        int totalLine =
+                nvl(productionDashboardMapper.selectTotalProductionLine());
+
+        int activeLine = running + paused;
+        int stopped = Math.max(totalLine - activeLine, 0);
+
+        return new ProductionLineStatusResponseDTO(
+                running,
+                paused,
+                stopped
         );
 
     }
