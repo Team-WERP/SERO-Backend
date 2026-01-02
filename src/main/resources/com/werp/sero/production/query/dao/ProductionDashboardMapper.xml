@@ -88,4 +88,22 @@
         ORDER BY pl.line_name
     </select>
 
+    <select id="selectMaterialShortage"
+            resultType="com.werp.sero.production.query.dto.dashboard.MaterialShortageResponseDTO">
+
+        SELECT
+        m.id              AS materialId,
+        m.material_code   AS materialCode,
+        m.name            AS materialName,
+        ws.current_stock  AS currentStock,
+        ws.safety_stock   AS safetyStock,
+        w.name            AS warehouseName
+        FROM warehouse_stock ws
+        JOIN material m
+        ON m.id = ws.material_id
+        JOIN warehouse w
+        ON w.id = ws.warehouse_id
+        WHERE ws.available_stock &lt; ws.safety_stock
+        ORDER BY (ws.safety_stock - ws.available_stock) DESC
+    </select>
 </mapper>

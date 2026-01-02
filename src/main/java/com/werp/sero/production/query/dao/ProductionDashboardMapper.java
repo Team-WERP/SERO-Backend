@@ -1,5 +1,6 @@
 package com.werp.sero.production.query.dao;
 
+import com.werp.sero.production.query.dto.dashboard.MaterialShortageResponseDTO;
 import com.werp.sero.production.query.dto.dashboard.ProductionDashboardDefectAggDTO;
 import com.werp.sero.production.query.dto.dashboard.ProductionLineCapaListDTO;
 import org.apache.ibatis.annotations.Mapper;
@@ -33,4 +34,7 @@ public interface ProductionDashboardMapper {
 
     List<ProductionLineCapaListDTO> selectLineCapaRaw(
             @Param("today") String today
-    );}
+    );
+
+    List<MaterialShortageResponseDTO> selectMaterialShortage();
+}

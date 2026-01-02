@@ -1,5 +1,6 @@
 package com.werp.sero.production.query.controller;
 
+import com.werp.sero.production.query.dto.dashboard.MaterialShortageResponseDTO;
 import com.werp.sero.production.query.dto.dashboard.ProductionDashboardSummaryResponseDTO;
 import com.werp.sero.production.query.dto.dashboard.ProductionLineCapaItemDTO;
 import com.werp.sero.production.query.dto.dashboard.ProductionLineStatusResponseDTO;
@@ -30,5 +31,10 @@ public class ProductionDashboardQueryController {
     @GetMapping("/line-capa")
     public List<ProductionLineCapaItemDTO> lineCapa() {
         return productionDashboardQueryService.getLineCapa();
+    }
+
+    @GetMapping("/material-shortage")
+    public List<MaterialShortageResponseDTO> materialShortage() {
+        return productionDashboardQueryService.getMaterialShortage();
     }
 }

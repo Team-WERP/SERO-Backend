@@ -108,6 +108,15 @@ public class ProductionDashboardQueryServiceImpl implements ProductionDashboardQ
         return lines;
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<MaterialShortageResponseDTO> getMaterialShortage() {
+        List<MaterialShortageResponseDTO> items =
+                productionDashboardMapper.selectMaterialShortage();
+
+        return items;
+    }
+
     private int nvl(Integer value) {
         return value == null ? 0 : value;
     }
