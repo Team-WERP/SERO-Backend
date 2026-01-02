@@ -5,6 +5,7 @@ import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.material.command.domain.aggregate.Material;
 import com.werp.sero.notification.command.domain.aggregate.enums.NotificationType;
 import com.werp.sero.notification.command.infrastructure.event.NotificationEvent;
+import com.werp.sero.order.command.application.service.SOStateService;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItemHistory;
 import com.werp.sero.order.command.domain.repository.SalesOrderItemHistoryRepository;
 import com.werp.sero.production.command.application.dto.*;
@@ -41,6 +42,7 @@ public class WOCommandServiceImpl implements WOCommandService {
     private final PRCommandService prCommandService;
     private final ApplicationEventPublisher eventPublisher;
     private final PRRepository prRepository;
+    private final SOStateService soStateService;
 
     @Override
     @Transactional
@@ -318,6 +320,7 @@ public class WOCommandServiceImpl implements WOCommandService {
 
             String beforeStatus = pr.getStatus();
             prCommandService.updatePRStatusIfNeeded(prId);
+            soStateService.updateOrderStateByHistory(pr.getSalesOrder().getId());
 
             // PR 완료 시 알림
             if (!"PR_DONE".equals(beforeStatus) && "PR_DONE".equals(pr.getStatus())) {
