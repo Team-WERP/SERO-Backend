@@ -1,9 +1,6 @@
 package com.werp.sero.production.query.controller;
 
-import com.werp.sero.production.query.dto.dashboard.MaterialShortageResponseDTO;
-import com.werp.sero.production.query.dto.dashboard.ProductionDashboardSummaryResponseDTO;
-import com.werp.sero.production.query.dto.dashboard.ProductionLineCapaItemDTO;
-import com.werp.sero.production.query.dto.dashboard.ProductionLineStatusResponseDTO;
+import com.werp.sero.production.query.dto.dashboard.*;
 import com.werp.sero.production.query.service.ProductionDashboardQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,5 +33,10 @@ public class ProductionDashboardQueryController {
     @GetMapping("/material-shortage")
     public List<MaterialShortageResponseDTO> materialShortage() {
         return productionDashboardQueryService.getMaterialShortage();
+    }
+
+    @GetMapping("/monthly-trend")
+    public ProductionMonthlyTrendResponseDTO monthlyTrend() {
+        return productionDashboardQueryService.getMonthlyTrend();
     }
 }

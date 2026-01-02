@@ -106,4 +106,54 @@
         WHERE ws.available_stock &lt; ws.safety_stock
         ORDER BY (ws.safety_stock - ws.available_stock) DESC
     </select>
+
+    <select id="selectMonthlyProductionTrend"
+            resultType="com.werp.sero.production.query.dto.dashboard.ProductionMonthlyTrendRawDTO">
+
+        SELECT
+            ym.month                               AS month,
+        IFNULL(tp.target_quantity, 0)          AS targetQuantity,
+        IFNULL(ap.actual_quantity, 0)          AS actualQuantity
+        FROM
+            (
+            /* 최근 12개월 생성 */
+            SELECT DATE_FORMAT(
+            DATE_SUB(CURDATE(), INTERVAL n MONTH),
+            '%Y-%m'
+            ) AS month
+            FROM (
+            SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3
+            UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6
+            UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9
+            UNION ALL SELECT 10 UNION ALL SELECT 11
+            ) t
+            ) ym
+            LEFT JOIN
+            (
+            /* 월별 목표 생산량 */
+            SELECT
+            DATE_FORMAT(
+            STR_TO_DATE(pp.start_date, '%Y-%m-%d'),
+            '%Y-%m'
+            ) AS month,
+            SUM(pp.production_quantity) AS target_quantity
+            FROM production_plan pp
+            WHERE pp.status = 'PP_CONFIRMED'
+            GROUP BY month
+            ) tp ON tp.month = ym.month
+            LEFT JOIN
+            (
+            /* 월별 실제 생산량 */
+            SELECT
+            DATE_FORMAT(
+            STR_TO_DATE(wr.start_time, '%Y-%m-%d'),
+            '%Y-%m'
+            ) AS month,
+            SUM(wr.good_quantity) AS actual_quantity
+            FROM work_order_result wr
+            GROUP BY month
+            ) ap ON ap.month = ym.month
+        ORDER BY ym.month;
+    </select>
+
 </mapper>

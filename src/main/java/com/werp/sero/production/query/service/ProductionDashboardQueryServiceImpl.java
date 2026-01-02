@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -115,6 +116,24 @@ public class ProductionDashboardQueryServiceImpl implements ProductionDashboardQ
                 productionDashboardMapper.selectMaterialShortage();
 
         return items;
+    }
+
+    @Override
+    public ProductionMonthlyTrendResponseDTO getMonthlyTrend() {
+        List<ProductionMonthlyTrendRawDTO> raws =
+                productionDashboardMapper.selectMonthlyProductionTrend();
+
+        List<String> labels = new ArrayList<>();
+        List<Integer> target = new ArrayList<>();
+        List<Integer> actual = new ArrayList<>();
+
+        for (ProductionMonthlyTrendRawDTO raw : raws) {
+            labels.add(raw.month());
+            target.add(raw.targetQuantity());
+            actual.add(raw.actualQuantity());
+        }
+
+        return new ProductionMonthlyTrendResponseDTO(labels, target, actual);
     }
 
     private int nvl(Integer value) {

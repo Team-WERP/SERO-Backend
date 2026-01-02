@@ -3,6 +3,7 @@ package com.werp.sero.production.query.dao;
 import com.werp.sero.production.query.dto.dashboard.MaterialShortageResponseDTO;
 import com.werp.sero.production.query.dto.dashboard.ProductionDashboardDefectAggDTO;
 import com.werp.sero.production.query.dto.dashboard.ProductionLineCapaListDTO;
+import com.werp.sero.production.query.dto.dashboard.ProductionMonthlyTrendRawDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -37,4 +38,6 @@ public interface ProductionDashboardMapper {
     );
 
     List<MaterialShortageResponseDTO> selectMaterialShortage();
+
+    List<ProductionMonthlyTrendRawDTO> selectMonthlyProductionTrend();
 }

@@ -1,9 +1,6 @@
 package com.werp.sero.production.query.service;
 
-import com.werp.sero.production.query.dto.dashboard.MaterialShortageResponseDTO;
-import com.werp.sero.production.query.dto.dashboard.ProductionDashboardSummaryResponseDTO;
-import com.werp.sero.production.query.dto.dashboard.ProductionLineCapaItemDTO;
-import com.werp.sero.production.query.dto.dashboard.ProductionLineStatusResponseDTO;
+import com.werp.sero.production.query.dto.dashboard.*;
 
 import java.util.List;
 
@@ -15,4 +12,6 @@ public interface ProductionDashboardQueryService {
     List<ProductionLineCapaItemDTO> getLineCapa();
 
     List<MaterialShortageResponseDTO> getMaterialShortage();
+
+    ProductionMonthlyTrendResponseDTO getMonthlyTrend();
 }
