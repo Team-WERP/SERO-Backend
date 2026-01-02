@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.werp.sero.production.query.dao.ProductionDashboardMapper">
+
+    <select id="selectTodayTargetQty" resultType="int">
+        SELECT IFNULL(SUM(daily_capacity), 0)
+        FROM production_line
+        WHERE status = 'PL_ACTIVE'
+    </select>
+
+    <select id="selectTodayGoodQty" parameterType="string" resultType="int">
+        SELECT IFNULL(SUM(wor.good_quantity), 0)
+        FROM work_order wo
+                 JOIN work_order_result wor ON wor.wo_id = wo.id
+        WHERE wo.work_date = #{workDate}
+    </select>
+
+    <select id="selectTodayDefectAgg"
+            parameterType="string"
+            resultType="com.werp.sero.production.query.dto.dashboard.ProductionDashboardDefectAggDTO">
+        SELECT
+            IFNULL(SUM(wor.good_quantity), 0) AS goodQty,
+            IFNULL(SUM(wor.defective_quantity), 0) AS defectiveQty
+        FROM work_order wo
+                 JOIN work_order_result wor ON wor.wo_id = wo.id
+        WHERE wo.work_date = #{workDate}
+    </select>
+
+    <select id="selectTodayWorkOrderTotal" parameterType="string" resultType="int">
+        SELECT COUNT(*)
+        FROM work_order
+        WHERE work_date = #{workDate}
+    </select>
+
+    <select id="selectTodayWorkOrderRunning" parameterType="string" resultType="int">
+        SELECT COUNT(*)
+        FROM work_order
+        WHERE work_date = #{workDate}
+          AND status = 'WO_RUN'
+    </select>
+
+</mapper>
