@@ -14,6 +14,7 @@ import com.werp.sero.order.command.domain.repository.SORepository;
 import com.werp.sero.shipping.command.application.dto.GIAssignManagerResponseDTO;
 import com.werp.sero.shipping.command.application.dto.GICompleteResponseDTO;
 import com.werp.sero.shipping.command.application.dto.GICreateRequestDTO;
+import com.werp.sero.shipping.command.application.dto.GICreateResponseDTO;
 import com.werp.sero.shipping.command.domain.aggregate.Delivery;
 import com.werp.sero.shipping.command.domain.aggregate.DeliveryOrder;
 import com.werp.sero.shipping.command.domain.aggregate.DeliveryOrderItem;
@@ -70,7 +71,7 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
 
     @Override
     @Transactional
-    public String createGoodsIssue(GICreateRequestDTO requestDTO, Employee drafter) {
+    public GICreateResponseDTO createGoodsIssue(GICreateRequestDTO requestDTO, Employee drafter) {
         // 1. 중복 검증 - 이미 출고지시가 생성된 납품서인지 확인
         if (goodsIssueRepository.existsByDoCode(requestDTO.getDoCode())) {
             throw new GoodsIssueAlreadyExistsException();
@@ -172,24 +173,23 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
         List<SalesOrderItemHistory> histories = new ArrayList<>();
 
         for (DeliveryOrderItem doItem : deliveryOrderItems) {
-            // 이전 이력 조회
-            SalesOrderItemHistory previousHistory = salesOrderItemHistoryRepository
-                    .findLatestBySoItemId(doItem.getSalesOrderItem().getId())
-                    .orElse(null);
-
             SalesOrderItemHistory history = SalesOrderItemHistory.createForGoodsIssue(
                     doItem.getSalesOrderItem().getId(),
                     doItem.getDoQuantity(),
                     drafter.getId(),
                     createdAt,
-                    previousHistory
+                    null  // 더 이상 previousHistory 필요 없음 (각 이벤트는 독립적으로 저장)
             );
             histories.add(history);
         }
 
         salesOrderItemHistoryRepository.saveAll(histories);
 
-        return giCode;
+        return GICreateResponseDTO.builder()
+                .message("출고지시가 작성되었습니다.")
+                .id(goodsIssue.getId())
+                .giCode(giCode)
+                .build();
     }
 
     @Override
@@ -246,17 +246,12 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
             historiesToSave.add(history);
 
             // 주문 품목별 이력 기록 (출고 완료 수량)
-            // 이전 이력 조회
-            SalesOrderItemHistory previousHistory = salesOrderItemHistoryRepository
-                    .findLatestBySoItemId(giItem.getSalesOrderItem().getId())
-                    .orElse(null);
-
             SalesOrderItemHistory salesHistory = SalesOrderItemHistory.createForShipped(
                     giItem.getSalesOrderItem().getId(),
                     quantity,
                     goodsIssue.getManager().getId(),
                     createdAt,
-                    previousHistory
+                    null  // 더 이상 previousHistory 필요 없음 (각 이벤트는 독립적으로 저장)
             );
             salesHistoriesToSave.add(salesHistory);
 

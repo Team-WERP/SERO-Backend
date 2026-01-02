@@ -5,6 +5,7 @@ import com.werp.sero.security.annotation.CurrentUser;
 import com.werp.sero.shipping.command.application.dto.GIAssignManagerResponseDTO;
 import com.werp.sero.shipping.command.application.dto.GICompleteResponseDTO;
 import com.werp.sero.shipping.command.application.dto.GICreateRequestDTO;
+import com.werp.sero.shipping.command.application.dto.GICreateResponseDTO;
 import com.werp.sero.shipping.command.application.dto.GIManagerRequestDTO;
 import com.werp.sero.shipping.command.application.service.GoodsIssueCommandService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,9 +20,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Tag(
         name = "출고지시 - Command",
@@ -126,10 +124,11 @@ public class GoodsIssueCommandController {
                     description = "출고지시 작성 성공",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = Map.class),
+                            schema = @Schema(implementation = GICreateResponseDTO.class),
                             examples = @ExampleObject(value = """
                                     {
                                         "message": "출고지시가 작성되었습니다.",
+                                        "id": 1,
                                         "giCode": "GI-20251220-001"
                                     }
                                     """)
@@ -184,16 +183,11 @@ public class GoodsIssueCommandController {
             )
     })
     @PostMapping
-    public ResponseEntity<Map<String, String>> createGoodsIssue(
+    public ResponseEntity<GICreateResponseDTO> createGoodsIssue(
             @Valid @RequestBody GICreateRequestDTO requestDTO,
             @CurrentUser Employee currentEmployee
     ) {
-        String giCode = goodsIssueCommandService.createGoodsIssue(requestDTO, currentEmployee);
-
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "출고지시가 작성되었습니다.");
-        response.put("giCode", giCode);
-
+        GICreateResponseDTO response = goodsIssueCommandService.createGoodsIssue(requestDTO, currentEmployee);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

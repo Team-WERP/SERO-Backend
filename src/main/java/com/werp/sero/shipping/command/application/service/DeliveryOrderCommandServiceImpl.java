@@ -3,6 +3,7 @@ package com.werp.sero.shipping.command.application.service;
 import com.werp.sero.common.file.S3Uploader;
 import com.werp.sero.common.util.PdfGenerator;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
+import com.werp.sero.order.command.application.service.SOStateService;
 import com.werp.sero.order.command.domain.aggregate.SalesOrder;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItem;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItemHistory;
@@ -43,6 +44,7 @@ public class DeliveryOrderCommandServiceImpl implements DeliveryOrderCommandServ
     private final PdfGenerator pdfGenerator;
     private final ShippingPdfService shippingPdfService;
     private final S3Uploader s3Uploader;
+    private final SOStateService soStateService;
 
     @Override
     @Transactional
@@ -143,6 +145,9 @@ public class DeliveryOrderCommandServiceImpl implements DeliveryOrderCommandServ
         }
 
         salesOrderItemHistoryRepository.saveAll(histories);
+
+        // 8. 이력 기반으로 주문 상태 업데이트
+        soStateService.updateOrderStateByHistory(requestDTO.getSoId());
 
         return doCode;
     }

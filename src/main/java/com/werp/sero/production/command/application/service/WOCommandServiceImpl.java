@@ -265,19 +265,12 @@ public class WOCommandServiceImpl implements WOCommandService {
             // 4) SalesOrderItemHistory 추가
             int soItemId = prItem.getSalesOrderItem().getId();
 
-            SalesOrderItemHistory prev =
-                    soItemHistoryRepository
-                            .findTopBySoItemIdOrderByIdDesc(soItemId)
-                            .orElse(null);
-            int newPiQty =
-                    (prev != null ? prev.getPiQuantity() : 0) + qty;
-
             SalesOrderItemHistory history =
                     SalesOrderItemHistory.createForProductionIn(
                             soItemId,
-                            newPiQty,
+                            qty,  // 이번 생산입고 수량만 저장 (증가분)
                             currentEmployee.getId(),
-                            prev
+                            null  // 더 이상 previousHistory 필요 없음 (각 이벤트는 독립적으로 저장)
                     );
 
             soItemHistoryRepository.save(history);
