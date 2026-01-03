@@ -22,6 +22,7 @@ public class SOClientDashboardQueryServiceImpl implements SOClientDashboardQuery
         SOClientDashboardResponseDTO.SOClientStatDTO stats = dashboardMapper.selectClientDashboardStats(clientId);
         List<SOClientDashboardResponseDTO.SOClientNoticeDTO> notices = dashboardMapper.selectClientNotices();
         List<SOClientDashboardResponseDTO.SOClientDashboardListDTO> orderList = dashboardMapper.selectRecentOrders(clientId);
+        List<SOClientDashboardResponseDTO.SOClientUrgentOrderDTO> urgentOrders = dashboardMapper.getClientUrgentOrders(clientId);
 
         List<SOClientDashboardResponseDTO.SOClientDashboardListDTO> convertedOrders = orderList.stream()
                 .map(order -> SOClientDashboardResponseDTO.SOClientDashboardListDTO.builder()
@@ -35,10 +36,22 @@ public class SOClientDashboardQueryServiceImpl implements SOClientDashboardQuery
                         .build())
                 .toList();
 
+        List<SOClientDashboardResponseDTO.SOClientUrgentOrderDTO> convertedUrgentOrders = urgentOrders.stream()
+                .map(order -> SOClientDashboardResponseDTO.SOClientUrgentOrderDTO.builder()
+                        .orderId(order.getOrderId())
+                        .orderCode(order.getOrderCode())
+                        .poCode(order.getPoCode())
+                        .shippedAt(order.getShippedAt())
+                        .dDay(order.getDDay())
+                        .status(SOClientListResponseDTO.convertStatus(order.getStatus()))
+                        .build())
+                .toList();
+
         return SOClientDashboardResponseDTO.builder()
                 .stats(stats)
                 .notices(notices)
                 .orderList(convertedOrders)
+                .urgentOrders(convertedUrgentOrders)
                 .build();
     }
 }

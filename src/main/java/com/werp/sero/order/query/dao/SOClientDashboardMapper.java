@@ -12,4 +12,6 @@ public interface SOClientDashboardMapper {
     List<SOClientDashboardResponseDTO.SOClientNoticeDTO> selectClientNotices();
 
     List<SOClientDashboardResponseDTO.SOClientDashboardListDTO> selectRecentOrders(final int clientId);
+
+    List<SOClientDashboardResponseDTO.SOClientUrgentOrderDTO> getClientUrgentOrders(final int clientId);
 }

@@ -5,8 +5,8 @@
 
     <select id="selectClientDashboardStats" resultType="com.werp.sero.order.query.dto.SOClientDashboardResponseDTO$SOClientStatDTO">
         SELECT
-            /* 납기 임박: 7일 이내 + 완료/취소 제외 */
-            COUNT(CASE WHEN DATEDIFF(A.shipped_at, NOW()) BETWEEN 0 AND 7
+            /* 납기 임박(7일 이내) 및 지연 */
+            COUNT(CASE WHEN DATEDIFF(A.shipped_at, NOW()) &lt;= 7
                 AND A.status NOT IN ('ORD_DONE', 'ORD_CANCEL') THEN 1 END) as nearDeadlineCount,
 
             /* 접수 대기 */
@@ -48,6 +48,29 @@
         GROUP BY A.id
         ORDER BY A.ordered_at DESC
         LIMIT 7
+    </select>
+
+    <!-- 납기 요청일 7일 이하 및 지연된 주문 조회 -->
+    <select id="getClientUrgentOrders" resultType="com.werp.sero.order.query.dto.SOClientDashboardResponseDTO$SOClientUrgentOrderDTO">
+        SELECT
+            A.id as orderId,
+            A.so_code as orderCode,
+            A.total_quantity as totalQuantity,
+            A.po_code as poCode,
+            A.shipped_at as shippedAt,
+            A.status,
+
+            CASE
+                WHEN DATEDIFF(A.shipped_at, CURDATE()) = 0 THEN 'D-Day'
+                WHEN DATEDIFF(A.shipped_at, CURDATE()) > 0 THEN CONCAT('D-', DATEDIFF(A.shipped_at, CURDATE()))
+                ELSE CONCAT('D+', ABS(DATEDIFF(A.shipped_at, CURDATE())))
+                END as dDay
+        FROM sales_order A
+        WHERE
+            A.status NOT IN ('ORD_DONE', 'ORD_CANCEL')
+          AND DATEDIFF(A.shipped_at, CURDATE()) &lt;= 7
+          AND A.client_id = #{clientId}
+        ORDER BY A.shipped_at ASC
     </select>
 
 </mapper>

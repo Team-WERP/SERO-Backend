@@ -1,6 +1,5 @@
 package com.werp.sero.order.query.dto;
 
-import io.netty.handler.ssl.OpenSslSessionContext;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,6 +22,9 @@ public class SOClientDashboardResponseDTO {
 
     @Schema(description = "최근 주문 목록")
     private List<SOClientDashboardListDTO> orderList;
+
+    @Schema(description = "납기 7일 이내 주문 목록")
+    private List<SOClientUrgentOrderDTO> urgentOrders;
 
     @Getter
     @Builder
@@ -87,4 +89,31 @@ public class SOClientDashboardResponseDTO {
         @Schema(description = "진행 상태")
         private String status;
     }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SOClientUrgentOrderDTO {
+
+        @Schema(description = "주문 id")
+        private int orderId;
+
+        @Schema(description = "주문 번호")
+        private String orderCode;
+
+        @Schema(description = "PO 번호")
+        private String poCode;
+
+        @Schema(description = "납기일")
+        private String shippedAt;
+
+        @Schema(description = "D-Day 정보")
+        private String dDay;
+
+        @Schema(description = "주문 상태")
+        private String status;
+
+    }
+
 }
