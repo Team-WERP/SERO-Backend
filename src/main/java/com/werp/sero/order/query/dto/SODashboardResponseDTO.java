@@ -73,6 +73,9 @@ public class SODashboardResponseDTO {
     @AllArgsConstructor
     public static class SOGoalDTO {
 
+        @Schema(description = "목표 id")
+        private int id;
+
         @Schema(description = "년도")
         private int goalYear;
 
