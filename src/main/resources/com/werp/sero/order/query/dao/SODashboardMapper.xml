@@ -120,7 +120,7 @@
             B.id,
             YEAR(A.reference_date) AS goalYear,
             MONTH(A.reference_date) AS goalMonth,
-            IFNULL(g.goal_amount, 0) AS goalAmount,
+            IFNULL(B.goal_amount, 0) AS goalAmount,
             (SELECT IFNULL(SUM(total_price), 0)
             FROM sales_order
             WHERE YEAR(ordered_at) = YEAR(A.reference_date)
