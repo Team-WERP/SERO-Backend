@@ -1,5 +1,6 @@
 package com.werp.sero.order.query.dto;
 
+import com.werp.sero.order.command.domain.aggregate.SalesOrderGoal;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,7 +19,7 @@ public class SODashboardResponseDTO {
     private SummaryStats stats;
 
     @Schema(description = "월별 수주 실적 및 목표 비교 데이터")
-    private List<MonthlyPerformance> monthlyPerformance;
+    private List<SOGoalDTO> monthlyGoal;
 
     @Schema(description = "거래처별 데이터")
     private List<ClientTopStats> topClients;
@@ -26,10 +27,11 @@ public class SODashboardResponseDTO {
     @Schema(description = "납기 임박 데이터")
     private List<SOUrgentOrderDTO> urgentOrders;
 
-    @Schema(description = "납기 캘린더 데이터")
-    private List<SOCalendarDTO> calendarEvents;
 
-
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class SummaryStats {
         @Schema(description = "이번달 총 주문 건수")
         private long totalOrderCount;
@@ -53,23 +55,36 @@ public class SODashboardResponseDTO {
         private int pendingOrderCount;
     }
 
-    public static class MonthlyPerformance {
-        @Schema(description = "월")
-        private int month;
-
-        @Schema(description = "수주 금액")
-        private long actualAmount;
-
-        @Schema(description = "목표 금액")
-        private long goalAmount;
-    }
-
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class ClientTopStats {
         @Schema(description = "고객사 이름")
         private String clientName;
 
         @Schema(description = "총 금액")
         private long totalAmount;
+    }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SOGoalDTO {
+
+        @Schema(description = "년도")
+        private int goalYear;
+
+        @Schema(description = "월")
+        private int goalMonth;
+
+        @Schema(description = "목표 금액")
+        private long goalAmount;
+
+        @Schema(description = "실제 수주액")
+        private long actualAmount;
+
     }
 
 }

@@ -22,6 +22,10 @@ public class SOCalendarDTO {
     @Schema(description = "주문 목록")
     private List<CalendarDetail> dailyOrders;
 
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class CalendarDetail {
         @Schema(description = "주문 id")
         private int orderId;

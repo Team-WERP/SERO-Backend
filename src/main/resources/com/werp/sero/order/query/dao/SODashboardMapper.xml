@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.werp.sero.order.query.dao.SODashboardMapper">
+    <!-- 대시보드 상단 -->
+    <select id="getSummaryStats" resultType="com.werp.sero.order.query.dto.SODashboardResponseDTO$SummaryStats">
+        WITH CurrMonth AS (
+            SELECT
+                COUNT(*) as cnt,
+                IFNULL(SUM(total_price), 0) as amt
+            FROM sales_order
+            WHERE YEAR(ordered_at) = #{year} AND MONTH(ordered_at) = #{month}
+            AND status != 'ORD_CANCEL'
+            ),
+            LastMonth AS (
+        SELECT
+            COUNT(*) as cnt,
+            IFNULL(SUM(total_price), 0) as amt
+        FROM sales_order
+        WHERE YEAR(ordered_at) = #{lastYear} AND MONTH(ordered_at) = #{lastMonth}
+          AND status != 'ORD_CANCEL'
+            )
+        SELECT
+            -- 1. 이번달 총 주문 건수
+            curr.cnt as totalOrderCount,
+
+            -- 2. 전월 대비 주문 건 증감 수 (이번달 건수 - 지난달 건수)
+            (curr.cnt - last.cnt) as orderCountDiff,
+
+            -- 3. 이번달 신규 주문 금액
+            curr.amt as newOrderAmount,
+
+            -- 4. 전월 대비 금액 증감률 (%)
+            CASE
+                WHEN last.amt = 0 THEN 0
+                ELSE ROUND(((curr.amt - last.amt) / last.amt) * 100, 1)
+                END as amountDiffRate,
+
+            -- 5. 이번달 목표 달성률 (%)
+            IFNULL((
+                       SELECT ROUND((curr.amt / goal_amount) * 100, 1)
+                       FROM sales_order_goal
+                       WHERE goal_year = #{year} AND goal_month = #{month}
+                   ), 0) as goalAchieveRate,
+
+            -- 6. 이번달 출고 실적 금액 (상태가 ORD_DONE인 것들의 합계)
+            (SELECT IFNULL(SUM(total_price), 0)
+             FROM sales_order
+             WHERE status = 'ORD_DONE'
+                       AND YEAR(shipped_at) = #{year}
+            AND MONTH(shipped_at) = #{month}) as shipmentPerformance,
+
+            -- 7. 미확인 주문 건수 (상태가 ORD_RED인 전체 미확인 건수)
+            (SELECT COUNT(*) FROM sales_order WHERE status = 'ORD_RED') as pendingOrderCount
+
+        FROM CurrMonth curr, LastMonth last
+    </select>
+
+    <!--이달의 TOP5 거래처 -->
+    <select id="getTopClients" resultType="com.werp.sero.order.query.dto.SODashboardResponseDTO$ClientTopStats">
+        WITH MonthlyTotal AS (
+            /* 이번 달 전체 매출 합계 (비중 계산용) */
+            SELECT IFNULL(SUM(total_price), 0) as total_amt
+            FROM sales_order
+            WHERE YEAR(ordered_at) = #{year} AND MONTH(ordered_at) = #{month}
+            )
+        SELECT
+            client_name as clientName,
+            SUM(total_price) as totalAmount,
+            CASE
+                WHEN (SELECT total_amt FROM MonthlyTotal) = 0 THEN 0
+                ELSE ROUND((SUM(total_price) / (SELECT total_amt FROM MonthlyTotal)) * 100, 1)
+                END as ratio
+        FROM sales_order
+        WHERE YEAR(ordered_at) = #{year} AND MONTH(ordered_at) = #{month}
+        GROUP BY client_name
+        ORDER BY totalAmount DESC
+            LIMIT 5
+    </select>
+
+    <!-- 납기일이 이번달인 주문 조회 -->
+    <resultMap id="calendarMap" type="com.werp.sero.order.query.dto.SOCalendarDTO">
+        <result property="date" column="date"/>
+        <result property="count" column="count"/>
+        <collection property="dailyOrders" ofType="com.werp.sero.order.query.dto.SOCalendarDTO$CalendarDetail">
+            <result property="orderId" column="orderId"/>
+            <result property="orderCode" column="orderCode"/>
+            <result property="clientName" column="clientName"/>
+            <result property="status" column="status"/>
+            <result property="shippedTime" column="shippedTime"/>
+        </collection>
+    </resultMap>
+
+    <select id="getCalendarEvents" resultMap="calendarMap">
+        SELECT
+            DATE(shipped_at) as date,                         -- 시간 제외한 날짜만 추출
+            COUNT(*) OVER(PARTITION BY DATE(shipped_at)) as count, -- 날짜별 총 건수 재계산
+            id as orderId,
+            so_code as orderCode,
+            client_name as clientName,
+            status,
+            DATE_FORMAT(shipped_at, '%H:%i') as shippedTime  -- 상세 리스트에 표시할 시간
+        FROM sales_order
+        WHERE YEAR(shipped_at) = #{year}
+          AND MONTH(shipped_at) = #{month}
+          AND status NOT IN ('ORD_DONE', 'ORD_CANCEL')
+        ORDER BY date ASC, shippedTime ASC                   -- 날짜 순, 시간 순 정렬
+    </select>
+
+    <select id="getMonthlyGoal" resultType="com.werp.sero.order.query.dto.SODashboardResponseDTO$SOGoalDTO">
+        WITH RECURSIVE MonthSeries AS (
+            /* 1. 최근 12개월 날짜 시리즈 생성 (현재 월부터 거꾸로 11번) */
+            SELECT
+                /* CONCAT 내부의 ? 자리에 파라미터 이름을 명확히 지정합니다 */
+                STR_TO_DATE(CONCAT(#{year}, '-', #{month}, '-01'), '%Y-%m-%d') AS reference_date,
+                0 AS n
+            UNION ALL
+            SELECT DATE_SUB(reference_date, INTERVAL 1 MONTH), n + 1
+            FROM MonthSeries
+            WHERE n &lt; 11
+        )
+        SELECT
+            YEAR(ms.reference_date) AS goalYear,
+            MONTH(ms.reference_date) AS goalMonth,
+            /* 2. 해당 월의 목표액 가져오기 */
+            IFNULL(g.goal_amount, 0) AS goalAmount,
+            /* 3. 해당 월의 실제 수주액 합산 (취소 건 제외) */
+            (SELECT IFNULL(SUM(total_price), 0)
+            FROM sales_order
+            WHERE YEAR(ordered_at) = YEAR(ms.reference_date)
+            AND MONTH(ordered_at) = MONTH(ms.reference_date)
+            AND status != 'ORD_CANCEL') AS actualAmount
+        FROM MonthSeries ms
+            LEFT JOIN sales_order_goal g
+        ON g.goal_year = YEAR(ms.reference_date)
+            AND g.goal_month = MONTH(ms.reference_date)
+        ORDER BY ms.reference_date ASC
+    </select>
+
+    <!-- 납기일 7일 이하 및 지연된 주문 조회 -->
+    <select id="getUrgentOrders" resultType="com.werp.sero.order.query.dto.SOUrgentOrderDTO">
+        SELECT
+            id as orderId,
+            so_code as orderCode,
+            main_item_name as mainItemName,
+            total_quantity as totalQuantity,
+            client_name as clientName,
+            shipped_at as shippedAt,
+            status,
+
+            CASE
+                WHEN DATEDIFF(shipped_at, CURDATE()) = 0 THEN 'D-Day'
+                WHEN DATEDIFF(shipped_at, CURDATE()) > 0 THEN CONCAT('D-', DATEDIFF(shipped_at, CURDATE()))
+                ELSE CONCAT('D+', ABS(DATEDIFF(shipped_at, CURDATE())))
+                END as dDay
+        FROM sales_order
+        WHERE
+            status NOT IN ('ORD_DONE', 'ORD_CANCEL')
+          AND DATEDIFF(shipped_at, CURDATE()) &lt;= 7
+        ORDER BY shipped_at ASC
+    </select>
+
+
+</mapper>
