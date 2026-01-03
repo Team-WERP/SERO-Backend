@@ -18,6 +18,7 @@ public class CorsConfig {
             "http://localhost:5173",
             "http://sero-f-alb-2092902385.ap-northeast-2.elb.amazonaws.com"
         ));
+        
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
