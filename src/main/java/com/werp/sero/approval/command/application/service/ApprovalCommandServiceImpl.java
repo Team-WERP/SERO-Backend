@@ -4,20 +4,25 @@ import com.werp.sero.approval.command.application.dto.*;
 import com.werp.sero.approval.command.domain.aggregate.Approval;
 import com.werp.sero.approval.command.domain.aggregate.ApprovalAttachment;
 import com.werp.sero.approval.command.domain.aggregate.ApprovalLine;
+import com.werp.sero.approval.command.domain.aggregate.enums.ApprovalNotificationType;
 import com.werp.sero.approval.command.domain.repository.ApprovalAttachmentRepository;
 import com.werp.sero.approval.command.domain.repository.ApprovalLineRepository;
 import com.werp.sero.approval.command.domain.repository.ApprovalRepository;
 import com.werp.sero.approval.exception.*;
+import com.werp.sero.common.file.S3Uploader;
 import com.werp.sero.common.util.DateTimeUtils;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.employee.command.domain.repository.EmployeeRepository;
 import com.werp.sero.employee.exception.EmployeeNotFoundException;
+import com.werp.sero.notification.command.domain.aggregate.enums.NotificationType;
+import com.werp.sero.notification.command.infrastructure.event.NotificationEvent;
 import com.werp.sero.order.command.domain.aggregate.SalesOrder;
 import com.werp.sero.order.command.domain.repository.SORepository;
 import com.werp.sero.production.command.domain.aggregate.ProductionRequest;
 import com.werp.sero.shipping.command.domain.aggregate.GoodsIssue;
 import com.werp.sero.system.command.application.service.DocumentSequenceCommandService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,6 +46,8 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
     private final List<ApprovalRefCodeValidator> approvalRefCodeValidators;
     private final SORepository soRepository;
 
+    private final S3Uploader s3Uploader;
+    private final ApplicationEventPublisher applicationEventPublisher;
     private final DocumentSequenceCommandService documentSequenceCommandService;
 
     @Transactional
@@ -86,6 +93,8 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
                 .collect(Collectors.toList());
 
         updateRefCode(requestDTO.getApprovalTargetType(), approvalCode, ref);
+        sendApprovalNotification(approval, ApprovalNotificationType.REQUEST,
+                approvalLineResponseDTOs.get(0).getApproverId());
 
         return ApprovalResponseDTO.of(approval, approvalAttachmentResponseDTOs, approvalLineResponseDTOs, refLines, rcptLines);
     }
@@ -116,6 +125,8 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
         updateRefDocumentStatus("AS_APPR", documentPrefix, ref);
 
         approval.updateApprovalStatus("AS_APPR", now);
+
+        sendApprovalNotification(approval, ApprovalNotificationType.APPROVED, approval.getEmployee().getId());
     }
 
     @Transactional
@@ -138,6 +149,8 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
         approvalLine.updateApprovalLine("ALS_RJCT", requestDTO.getNote(), now);
 
         approval.updateApprovalStatus("AS_RJCT", now);
+
+        sendApprovalNotification(approval, ApprovalNotificationType.REJECTED, approval.getEmployee().getId());
     }
 
     private void validateApprovable(final Approval approval, final ApprovalLine approvalLine) {
@@ -160,6 +173,8 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
                         .orElseThrow();
 
         approvalLine.updateStatus("ALS_RVW");
+
+        sendApprovalNotification(approval, ApprovalNotificationType.REQUEST, approvalLine.getEmployee().getId());
     }
 
     private void updateRefDocumentStatus(final String approvalStatus, String documentPrefix, final Object object) {
@@ -217,6 +232,17 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
             }
             default -> throw new InvalidDocumentTypeException();
         }
+    }
+
+    private void sendApprovalNotification(final Approval approval, final ApprovalNotificationType type,
+                                          final int approverId) {
+        applicationEventPublisher.publishEvent(new NotificationEvent(
+                NotificationType.APPROVAL,
+                type.getTitle(approval),
+                type.getContent(approval),
+                approverId,
+                "/approval/" + approval.getId()
+        ));
     }
 
     private ApprovalLine findApprovalLineByApprovalAndEmployee(final Approval approval, final Employee employee) {
@@ -279,8 +305,7 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
     private List<ApprovalAttachment> saveApprovalAttachments(final Approval approval, final List<MultipartFile> files) {
         final List<ApprovalAttachment> approvalAttachments = files.stream()
                 .map(file -> {
-                    // TODO 파일 S3에 업로드
-                    final String s3Url = "https://placehold.co/600x400";
+                    final String s3Url = s3Uploader.upload("sero/documents/", file);
 
                     return new ApprovalAttachment(file.getOriginalFilename(), s3Url, approval);
                 })
