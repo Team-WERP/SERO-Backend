@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.werp.sero.production.query.dao.ProductionDashboardMapper">
+
+    <!-- =========================================================
+         금일 전체 목표 생산량
+         - 활성 상태 생산라인의 일일 생산능력 합계
+    ========================================================== -->
+    <select id="selectTodayTargetQty" resultType="int">
+        SELECT IFNULL(SUM(A.daily_capacity), 0)
+        FROM production_line A
+        WHERE A.status = 'PL_ACTIVE'
+    </select>
+
+    <!-- =========================================================
+         금일 양품 생산 수량
+         - 작업지시 + 작업실적 기준
+    ========================================================== -->
+    <select id="selectTodayGoodQty" parameterType="string" resultType="int">
+        SELECT IFNULL(SUM(B.good_quantity), 0)
+        FROM work_order A
+                 JOIN work_order_result B
+                      ON B.wo_id = A.id
+        WHERE A.work_date = #{workDate}
+    </select>
+
+    <!-- =========================================================
+         금일 양품 / 불량 수량 집계
+    ========================================================== -->
+    <select id="selectTodayDefectAgg"
+            parameterType="string"
+            resultType="com.werp.sero.production.query.dto.dashboard.ProductionDashboardDefectAggDTO">
+        SELECT
+            IFNULL(SUM(B.good_quantity), 0)      AS goodQty,
+            IFNULL(SUM(B.defective_quantity), 0) AS defectiveQty
+        FROM work_order A
+                 JOIN work_order_result B
+                      ON B.wo_id = A.id
+        WHERE A.work_date = #{workDate}
+    </select>
+
+    <!-- =========================================================
+         금일 전체 작업지시 수
+    ========================================================== -->
+    <select id="selectTodayWorkOrderTotal" parameterType="string" resultType="int">
+        SELECT COUNT(*)
+        FROM work_order A
+        WHERE A.work_date = #{workDate}
+    </select>
+
+    <!-- =========================================================
+         금일 가동 중인 작업지시 수
+    ========================================================== -->
+    <select id="selectTodayWorkOrderRunning" parameterType="string" resultType="int">
+        SELECT COUNT(*)
+        FROM work_order A
+        WHERE A.work_date = #{workDate}
+          AND A.status = 'WO_RUN'
+    </select>
+
+    <!-- =========================================================
+         상태별 작업지시 라인 수
+         - 라인 단위 중복 제거
+    ========================================================== -->
+    <select id="countWorkOrderByStatus" resultType="int">
+        SELECT COUNT(DISTINCT A.line_id)
+        FROM work_order A
+        WHERE A.work_date = #{workDate}
+          AND A.status = #{status}
+    </select>
+
+    <!-- =========================================================
+         전체 활성 생산라인 수
+    ========================================================== -->
+    <select id="selectTotalProductionLine" resultType="int">
+        SELECT COUNT(*)
+        FROM production_line A
+        WHERE A.status = 'PL_ACTIVE'
+    </select>
+
+    <!-- =========================================================
+         생산라인별 일일 생산능력 대비 계획 점유량
+         - 오늘 기준 확정 생산계획(PP_CONFIRMED)
+         - 생산기간으로 일할 계산
+    ========================================================== -->
+    <select id="selectLineCapaRaw"
+            parameterType="string"
+            resultType="com.werp.sero.production.query.dto.dashboard.ProductionLineCapaListDTO">
+
+        SELECT
+        A.id             AS lineId,
+        A.line_name      AS lineName,
+        A.daily_capacity AS dailyCapacity,
+
+        IFNULL(SUM(
+        B.production_quantity /
+        (
+        DATEDIFF(
+        STR_TO_DATE(B.end_date, '%Y-%m-%d'),
+        STR_TO_DATE(B.start_date, '%Y-%m-%d')
+        ) + 1
+        )
+        ), 0) AS plannedLoad
+
+        FROM production_line A
+        LEFT JOIN production_plan B
+        ON B.production_line_id = A.id
+        AND B.status = 'PP_CONFIRMED'
+        AND B.start_date &lt;= #{today}
+        AND B.end_date   >= #{today}
+
+        WHERE A.status = 'PL_ACTIVE'
+        GROUP BY A.id, A.line_name, A.daily_capacity
+        ORDER BY A.line_name
+    </select>
+
+    <!-- =========================================================
+         자재 부족 현황
+         - 가용 재고 < 안전 재고
+         - 부족 수량 기준 내림차순
+    ========================================================== -->
+    <select id="selectMaterialShortage"
+            resultType="com.werp.sero.production.query.dto.dashboard.MaterialShortageResponseDTO">
+
+        SELECT
+        B.id             AS materialId,
+        B.material_code  AS materialCode,
+        B.name           AS materialName,
+        A.current_stock  AS currentStock,
+        A.safety_stock   AS safetyStock,
+        C.name           AS warehouseName
+        FROM warehouse_stock A
+        JOIN material B
+        ON B.id = A.material_id
+        JOIN warehouse C
+        ON C.id = A.warehouse_id
+        WHERE A.available_stock &lt; A.safety_stock
+                                  ORDER BY (A.safety_stock - A.available_stock) DESC
+    </select>
+
+    <!-- =========================================================
+         최근 12개월 생산 추이
+         - 목표 생산량 : 확정 생산계획 기준
+         - 실적 생산량 : 작업실적 기준
+    ========================================================== -->
+    <select id="selectMonthlyProductionTrend"
+            resultType="com.werp.sero.production.query.dto.dashboard.ProductionMonthlyTrendRawDTO">
+
+        SELECT
+            A.month                      AS month,
+            IFNULL(B.target_quantity, 0) AS targetQuantity,
+            IFNULL(C.actual_quantity, 0) AS actualQuantity
+        FROM
+            (
+            /* 최근 12개월 월 생성 */
+            SELECT DATE_FORMAT(
+            DATE_SUB(CURDATE(), INTERVAL n MONTH),
+            '%Y-%m'
+            ) AS month
+            FROM (
+            SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3
+            UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6
+            UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9
+            UNION ALL SELECT 10 UNION ALL SELECT 11
+            ) T
+            ) A
+            LEFT JOIN
+            (
+            /* 월별 목표 생산량 */
+            SELECT
+            DATE_FORMAT(
+            STR_TO_DATE(A.start_date, '%Y-%m-%d'),
+            '%Y-%m'
+            ) AS month,
+            SUM(A.production_quantity) AS target_quantity
+            FROM production_plan A
+            WHERE A.status = 'PP_CONFIRMED'
+            GROUP BY month
+            ) B ON B.month = A.month
+            LEFT JOIN
+            (
+            /* 월별 실제 생산량 */
+            SELECT
+            DATE_FORMAT(
+            STR_TO_DATE(A.start_time, '%Y-%m-%d'),
+            '%Y-%m'
+            ) AS month,
+            SUM(A.good_quantity) AS actual_quantity
+            FROM work_order_result A
+            GROUP BY month
+            ) C ON C.month = A.month
+        ORDER BY A.month
+    </select>
+
+    <!-- =========================================================
+         진행 중 생산요청(PR) 목록
+         - 납기일 기준 D-Day 계산
+    ========================================================== -->
+    <select id="selectActivePrList"
+            resultType="com.werp.sero.production.query.dto.dashboard.PrRiskRawDTO">
+
+        SELECT
+            A.id        AS prId,
+            A.pr_code   AS prCode,
+            B.client_name AS clientName,
+            A.due_at    AS dueDate,
+
+            DATEDIFF(
+                    STR_TO_DATE(A.due_at, '%Y-%m-%d'),
+                    CURDATE()
+                ) AS dDay
+
+        FROM production_request A
+                 JOIN sales_order B
+                      ON B.id = A.so_id
+        WHERE A.status IN ('PR_APPR_DONE', 'PR_PLANNED', 'PR_PRODUCING')
+        ORDER BY A.due_at ASC
+    </select>
+
+    <!-- =========================================================
+         생산요청 품목 단위 리스크 데이터
+         - 목표 대비 실적
+         - 총 기간 / 경과 기간 계산
+    ========================================================== -->
+    <select id="selectPrItemRiskList"
+            resultType="com.werp.sero.production.query.dto.dashboard.PrRiskItemRawDTO">
+
+        SELECT
+            A.id        AS prItemId,
+            A.pr_id     AS prId,
+            C.item_name AS itemName,
+
+            A.quantity          AS targetQty,
+            A.produced_quantity AS producedQty,
+
+            E.line_name AS lineName,
+            F.id        AS materialId,
+
+            /* 총 생산 가능 기간 */
+            DATEDIFF(
+                    STR_TO_DATE(B.due_at, '%Y-%m-%d'),
+                    STR_TO_DATE(B.created_at, '%Y-%m-%d')
+                ) + 1 AS totalDays,
+
+            /* 경과 일수 */
+            GREATEST(
+                        DATEDIFF(
+                                CURDATE(),
+                                STR_TO_DATE(B.created_at, '%Y-%m-%d')
+                            ) + 1,
+                        0
+                ) AS elapsedDays
+
+        FROM production_request_item A
+                 JOIN production_request B
+                      ON B.id = A.pr_id
+                 JOIN sales_order_item C
+                      ON C.id = A.so_item_id
+                 LEFT JOIN production_plan D
+                           ON D.pr_item_id = A.id
+                               AND D.status = 'PP_CONFIRMED'
+                 LEFT JOIN production_line E
+                           ON E.id = D.production_line_id
+                 JOIN material F
+                      ON F.id = D.material_id
+        WHERE B.status IN ('PR_APPR_DONE', 'PR_PLANNED', 'PR_PRODUCING')
+    </select>
+
+</mapper>
