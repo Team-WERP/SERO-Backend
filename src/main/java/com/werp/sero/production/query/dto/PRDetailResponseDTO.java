@@ -38,6 +38,7 @@ public class PRDetailResponseDTO {
         private String drafterDepartment;
         private String drafterPosition;
         private String drafterRank;
+        private String prUrl;
     }
 
     @Getter
