@@ -3,6 +3,7 @@ package com.werp.sero.shipping.command.application.service;
 import com.werp.sero.common.file.S3Uploader;
 import com.werp.sero.common.util.PdfGenerator;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
+import com.werp.sero.order.command.application.service.SOStateService;
 import com.werp.sero.order.command.domain.aggregate.SalesOrder;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItem;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItemHistory;
@@ -43,6 +44,7 @@ public class DeliveryOrderCommandServiceImpl implements DeliveryOrderCommandServ
     private final PdfGenerator pdfGenerator;
     private final ShippingPdfService shippingPdfService;
     private final S3Uploader s3Uploader;
+    private final SOStateService soStateService;
 
     @Override
     @Transactional
@@ -127,7 +129,7 @@ public class DeliveryOrderCommandServiceImpl implements DeliveryOrderCommandServ
             System.err.println("납품서 PDF 생성 실패: " + e.getMessage());
         }
 
-        // 7. 주문 품목 이력 생성 (기납품 수량)
+        // 7. 주문 품목 이력 생성 (이번 납품 수량만 기록, SUM으로 누적 계산됨)
         String createdAt = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
         List<SalesOrderItemHistory> histories = new ArrayList<>();
 
@@ -136,12 +138,16 @@ public class DeliveryOrderCommandServiceImpl implements DeliveryOrderCommandServ
                     doItem.getSalesOrderItem().getId(),
                     doItem.getDoQuantity(),
                     manager.getId(),
-                    createdAt
+                    createdAt,
+                    null  // 더 이상 previousHistory 필요 없음 (각 이벤트는 독립적으로 저장)
             );
             histories.add(history);
         }
 
         salesOrderItemHistoryRepository.saveAll(histories);
+
+        // 8. 이력 기반으로 주문 상태 업데이트
+        soStateService.updateOrderStateByHistory(requestDTO.getSoId());
 
         return doCode;
     }

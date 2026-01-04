@@ -111,8 +111,7 @@ public class SalesOrder {
         this.soUrl = pdfUrl;
     }
 
-    public void completeOrder() {
-        final String COMPLETE_STATUS = "ORD_DONE";
-        this.status = COMPLETE_STATUS;
+    public void changeState(final String newState) {
+        this.status = newState;
     }
 }
