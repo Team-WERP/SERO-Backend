@@ -264,6 +264,7 @@
             <result property="drafterDepartment" column="drafter_department"/>
             <result property="drafterPosition" column="drafter_position"/>
             <result property="drafterRank" column="drafter_rank"/>
+            <result property="prUrl" column="pr_url"/>
         </association>
 
         <collection property="items"
@@ -313,6 +314,7 @@
         A.due_at         AS due_at,
         A.total_quantity AS total_quantity,
         A.reason         AS reason,
+        A.pr_url         AS pr_url,
 
         A.manager_id     AS manager_id,
         C.name           AS drafter_name,

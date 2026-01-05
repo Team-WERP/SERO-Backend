@@ -36,6 +36,7 @@ public class JwtTokenProvider {
     public static final String ID_KEY = "id";
     public static final String DEPARTMENT_KEY = "dept";
     public static final String RANK_KEY = "rank";
+    public static final String CLIENT_ID_KEY = "client";
     private static final String CLIENT_PERMISSION = "AC_CLI";
 
     @Value("${jwt.secret-key}")
@@ -68,6 +69,7 @@ public class JwtTokenProvider {
         final String accessToken = Jwts.builder()
                 .subject(customUserDetails.getUsername())
                 .claim(AUTHORITIES_KEY, authorities)
+                .claim(CLIENT_ID_KEY, customUserDetails.getClientId())
                 .expiration(new Date(System.currentTimeMillis() + accessTokenExpirationTime))
                 .claim(POSITION_KEY, customUserDetails.getPosition())
                 .claim(RANK_KEY, customUserDetails.getRank())

@@ -2,6 +2,7 @@ package com.werp.sero.order.command.application.service;
 
 import com.werp.sero.order.command.application.dto.SOCancelRequestDTO;
 import com.werp.sero.order.command.application.dto.SODetailResponseDTO;
+import com.werp.sero.order.command.application.dto.SOGoalResponseDTO;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 

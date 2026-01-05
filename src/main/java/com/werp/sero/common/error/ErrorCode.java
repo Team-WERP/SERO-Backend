@@ -51,6 +51,7 @@ public enum ErrorCode {
     SALES_ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER002", "주문 정보를 찾을 수 없습니다."),
     ORDER_CANNOT_BE_CANCELED(HttpStatus.BAD_REQUEST, "ORDER003", "이미 취소 및 완료 되었거나 확정된 주문입니다."),
     INVALID_SALES_ORDER_ID(HttpStatus.BAD_REQUEST, "ORDER004", "해당 고객사의 주문이 아닙니다."),
+    SALES_ORDER_MONTHLY_GOAL_NOT_FOUND(HttpStatus.NOT_FOUND, "ORDER005", "이달의 주문을 찾을 수 없습니다."),
 
     /* EMPLOYEE */
     EMPLOYEE_NOT_FOUND(HttpStatus.NOT_FOUND, "EMPLOYEE001", "직원 정보를 찾을 수 없습니다."),
