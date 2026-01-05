@@ -38,6 +38,7 @@ public enum ErrorCode {
     COMMON_CODE_NOT_FOUND(HttpStatus.NOT_FOUND, "CODE003", "공통코드를 찾을 수 없습니다."),
     COMMON_CODE_ALREADY_EXISTS(HttpStatus.CONFLICT, "CODE004", "이미 존재하는 공통코드입니다."),
     COMMON_CODE_IN_USE(HttpStatus.CONFLICT, "CODE005", "사용 중인 공통코드는 삭제할 수 없습니다."),
+    COMMON_CODE_TYPE_HAS_CODES(HttpStatus.CONFLICT, "CODE006", "하위 공통코드가 존재하는 타입은 삭제할 수 없습니다."),
 
     /* WAREHOUSE */
     WAREHOUSE_STOCK_NOT_FOUND(HttpStatus.NOT_FOUND, "WAREHOUSE001", "창고 재고 정보를 찾을 수 없습니다."),

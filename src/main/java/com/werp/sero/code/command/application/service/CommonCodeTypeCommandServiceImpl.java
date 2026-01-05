@@ -4,8 +4,10 @@ import com.werp.sero.code.command.application.dto.CommonCodeTypeCreateRequestDTO
 import com.werp.sero.code.command.application.dto.CommonCodeTypeResponseDTO;
 import com.werp.sero.code.command.application.dto.CommonCodeTypeUpdateRequestDTO;
 import com.werp.sero.code.command.domain.aggregate.CommonCodeType;
+import com.werp.sero.code.command.domain.repository.CommonCodeRepository;
 import com.werp.sero.code.command.domain.repository.CommonCodeTypeRepository;
 import com.werp.sero.code.exception.CommonCodeTypeAlreadyExistsException;
+import com.werp.sero.code.exception.CommonCodeTypeHasCodesException;
 import com.werp.sero.code.exception.CommonCodeTypeNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CommonCodeTypeCommandServiceImpl implements CommonCodeTypeCommandService {
 
     private final CommonCodeTypeRepository commonCodeTypeRepository;
+    private final CommonCodeRepository commonCodeRepository;
 
     @Override
     @Transactional
@@ -51,6 +54,11 @@ public class CommonCodeTypeCommandServiceImpl implements CommonCodeTypeCommandSe
     public void deleteCodeType(String code) {
         CommonCodeType commonCodeType = commonCodeTypeRepository.findByCode(code)
                 .orElseThrow(CommonCodeTypeNotFoundException::new);
+
+        // 하위 공통코드가 존재하는지 확인
+        if (commonCodeRepository.existsByTypeCode(code)) {
+            throw new CommonCodeTypeHasCodesException();
+        }
 
         commonCodeTypeRepository.delete(commonCodeType);
     }

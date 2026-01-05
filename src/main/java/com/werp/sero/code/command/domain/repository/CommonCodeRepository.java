@@ -12,4 +12,6 @@ public interface CommonCodeRepository extends JpaRepository<CommonCode, Integer>
     Optional<CommonCode> findByCode(String code);
 
     boolean existsByCode(String code);
+
+    boolean existsByTypeCode(String typeCode);
 }
