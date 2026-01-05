@@ -7,12 +7,6 @@ echo "> [$(date)] 애플리케이션 헬스체크 시작" >> $REPOSITORY/deploy.
 
 # 최대 60초 동안 헬스체크 재시도 (Spring Boot 시작 시간 고려)
 for i in {1..60}; do
-  # 프로세스 실행 확인 (jar 파일 이름 무관하게 java 프로세스 확인)
-  if ! pgrep -f 'java.*\.jar' > /dev/null; then
-    echo "> [$(date)] ERROR: 애플리케이션 프로세스가 실행 중이 아닙니다." >> $REPOSITORY/deploy.log
-    exit 1
-  fi
-
   # HTTP 헬스체크 (Spring Boot Actuator가 있다면 /actuator/health, 없으면 루트 경로)
   HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$PORT/actuator/health 2>/dev/null)
 
