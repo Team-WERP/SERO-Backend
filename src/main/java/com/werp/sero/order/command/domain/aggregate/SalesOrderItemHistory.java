@@ -46,18 +46,20 @@ public class SalesOrderItemHistory {
     @Column(name = "creator_id", nullable = false)
     private int creatorId;
  /**
-     * 납품서 생성 시 기납품 수량 이력 생성 (최초 이력)
+     * 납품서 생성 시 기납품 수량 이력 생성
+     * 주의: doQuantity는 이번 납품서의 수량만 기록 (누적값 아님, SUM으로 조회 시 누적 계산됨)
      */
     public static SalesOrderItemHistory createForDeliveryOrder(
             int soItemId,
             int doQuantity,
             int creatorId,
-            String createdAt
+            String createdAt,
+            SalesOrderItemHistory previousHistory
     ) {
         return SalesOrderItemHistory.builder()
                 .soItemId(soItemId)
-                .doQuantity(doQuantity)
-                .prQuantity(0)
+                .doQuantity(doQuantity)  // 이번 납품 수량만 저장 (증가분)
+                .prQuantity(0)  // 이번 이벤트와 무관한 수량은 0
                 .piQuantity(0)
                 .giQuantity(0)
                 .shippedQuantity(0)
@@ -68,7 +70,8 @@ public class SalesOrderItemHistory {
     }
 
     /**
-     * 출고지시 작성 시 출고지시 수량 이력 생성 (이전 이력 기반)
+     * 출고지시 작성 시 출고지시 수량 이력 생성
+     * 주의: giQuantity는 이번 출고지시의 수량만 기록 (증가분)
      */
     public static SalesOrderItemHistory createForGoodsIssue(
             int soItemId,
@@ -79,19 +82,20 @@ public class SalesOrderItemHistory {
     ) {
         return SalesOrderItemHistory.builder()
                 .soItemId(soItemId)
-                .giQuantity(giQuantity)
-                .prQuantity(previousHistory != null ? previousHistory.getPrQuantity() : 0)
-                .piQuantity(previousHistory != null ? previousHistory.getPiQuantity() : 0)
-                .doQuantity(previousHistory != null ? previousHistory.getDoQuantity() : 0)
-                .shippedQuantity(previousHistory != null ? previousHistory.getShippedQuantity() : 0)
-                .completedQuantity(previousHistory != null ? previousHistory.getCompletedQuantity() : 0)
+                .giQuantity(giQuantity)  // 이번 출고지시 수량만 저장 (증가분)
+                .prQuantity(0)  // 이번 이벤트와 무관한 수량은 0
+                .piQuantity(0)
+                .doQuantity(0)
+                .shippedQuantity(0)
+                .completedQuantity(0)
                 .createdAt(createdAt)
                 .creatorId(creatorId)
                 .build();
     }
 
     /**
-     * 출고 완료 처리 시 출고 완료 수량 이력 생성 (이전 이력 기반)
+     * 출고 완료 처리 시 출고 완료 수량 이력 생성
+     * 주의: shippedQuantity는 이번 출고의 수량만 기록 (증가분)
      */
     public static SalesOrderItemHistory createForShipped(
             int soItemId,
@@ -102,19 +106,20 @@ public class SalesOrderItemHistory {
     ) {
         return SalesOrderItemHistory.builder()
                 .soItemId(soItemId)
-                .shippedQuantity(shippedQuantity)
-                .prQuantity(previousHistory != null ? previousHistory.getPrQuantity() : 0)
-                .piQuantity(previousHistory != null ? previousHistory.getPiQuantity() : 0)
-                .giQuantity(previousHistory != null ? previousHistory.getGiQuantity() : 0)
-                .doQuantity(previousHistory != null ? previousHistory.getDoQuantity() : 0)
-                .completedQuantity(previousHistory != null ? previousHistory.getCompletedQuantity() : 0)
+                .shippedQuantity(shippedQuantity)  // 이번 출고 수량만 저장 (증가분)
+                .prQuantity(0)  // 이번 이벤트와 무관한 수량은 0
+                .piQuantity(0)
+                .giQuantity(0)
+                .doQuantity(0)
+                .completedQuantity(0)
                 .createdAt(createdAt)
                 .creatorId(creatorId)
                 .build();
     }
 
     /**
-     * 배송 완료 처리 시 배송 완료 수량 이력 생성 (이전 이력 기반)
+     * 배송 완료 처리 시 배송 완료 수량 이력 생성
+     * 주의: completedQuantity는 이번 배송완료의 수량만 기록 (증가분)
      */
     public static SalesOrderItemHistory createForCompleted(
             int soItemId,
@@ -125,12 +130,12 @@ public class SalesOrderItemHistory {
     ) {
         return SalesOrderItemHistory.builder()
                 .soItemId(soItemId)
-                .completedQuantity(completedQuantity)
-                .prQuantity(previousHistory != null ? previousHistory.getPrQuantity() : 0)
-                .piQuantity(previousHistory != null ? previousHistory.getPiQuantity() : 0)
-                .giQuantity(previousHistory != null ? previousHistory.getGiQuantity() : 0)
-                .doQuantity(previousHistory != null ? previousHistory.getDoQuantity() : 0)
-                .shippedQuantity(previousHistory != null ? previousHistory.getShippedQuantity() : 0)
+                .completedQuantity(completedQuantity)  // 이번 배송완료 수량만 저장 (증가분)
+                .prQuantity(0)  // 이번 이벤트와 무관한 수량은 0
+                .piQuantity(0)
+                .giQuantity(0)
+                .doQuantity(0)
+                .shippedQuantity(0)
                 .createdAt(createdAt)
                 .creatorId(creatorId)
                 .build();
@@ -138,6 +143,7 @@ public class SalesOrderItemHistory {
 
     /**
      * 생산요청(PR) 등록 시 PR 수량 이력 생성
+     * 주의: prQuantity는 이번 생산요청의 수량만 기록 (증가분)
      */
     public static SalesOrderItemHistory createForProductionRequest(
             int soItemId,
@@ -147,12 +153,12 @@ public class SalesOrderItemHistory {
     ) {
         return SalesOrderItemHistory.builder()
                 .soItemId(soItemId)
-                .prQuantity(prQuantity)
-                .piQuantity(previousHistory != null ? previousHistory.getPiQuantity() : 0)
-                .giQuantity(previousHistory != null ? previousHistory.getGiQuantity() : 0)
-                .doQuantity(previousHistory != null ? previousHistory.getDoQuantity() : 0)
-                .shippedQuantity(previousHistory != null ? previousHistory.getShippedQuantity() : 0)
-                .completedQuantity(previousHistory != null ? previousHistory.getCompletedQuantity() : 0)
+                .prQuantity(prQuantity)  // 이번 생산요청 수량만 저장 (증가분)
+                .piQuantity(0)  // 이번 이벤트와 무관한 수량은 0
+                .giQuantity(0)
+                .doQuantity(0)
+                .shippedQuantity(0)
+                .completedQuantity(0)
                 .createdAt(DateTimeUtils.nowDateTime())
                 .creatorId(creatorId)
                 .build();
@@ -161,6 +167,7 @@ public class SalesOrderItemHistory {
 
     /**
      * 생산 실적 등록 시 생산입고(PI) 수량 이력 생성
+     * 주의: piQuantity는 이번 생산입고의 수량만 기록 (증가분)
      */
     public static SalesOrderItemHistory createForProductionIn(
             int soItemId,
@@ -170,12 +177,12 @@ public class SalesOrderItemHistory {
     ) {
         return SalesOrderItemHistory.builder()
                 .soItemId(soItemId)
-                .piQuantity(piQuantity)
-                .prQuantity(previousHistory != null ? previousHistory.getPrQuantity() : 0)
-                .giQuantity(previousHistory != null ? previousHistory.getGiQuantity() : 0)
-                .doQuantity(previousHistory != null ? previousHistory.getDoQuantity() : 0)
-                .shippedQuantity(previousHistory != null ? previousHistory.getShippedQuantity() : 0)
-                .completedQuantity(previousHistory != null ? previousHistory.getCompletedQuantity() : 0)
+                .piQuantity(piQuantity)  // 이번 생산입고 수량만 저장 (증가분)
+                .prQuantity(0)  // 이번 이벤트와 무관한 수량은 0
+                .giQuantity(0)
+                .doQuantity(0)
+                .shippedQuantity(0)
+                .completedQuantity(0)
                 .createdAt(DateTimeUtils.nowDateTime())
                 .creatorId(creatorId)
                 .build();
