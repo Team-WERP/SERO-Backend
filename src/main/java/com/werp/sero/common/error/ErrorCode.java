@@ -32,6 +32,13 @@ public enum ErrorCode {
     /* System */
     SYSTEM_COMMON_CODE_NOT_FOUND(HttpStatus.NOT_FOUND, "SYSTEM001", "공통코드를 찾을 수 없습니다."),
 
+    /* COMMON CODE */
+    COMMON_CODE_TYPE_NOT_FOUND(HttpStatus.NOT_FOUND, "CODE001", "공통코드 타입을 찾을 수 없습니다."),
+    COMMON_CODE_TYPE_ALREADY_EXISTS(HttpStatus.CONFLICT, "CODE002", "이미 존재하는 공통코드 타입입니다."),
+    COMMON_CODE_NOT_FOUND(HttpStatus.NOT_FOUND, "CODE003", "공통코드를 찾을 수 없습니다."),
+    COMMON_CODE_ALREADY_EXISTS(HttpStatus.CONFLICT, "CODE004", "이미 존재하는 공통코드입니다."),
+    COMMON_CODE_IN_USE(HttpStatus.CONFLICT, "CODE005", "사용 중인 공통코드는 삭제할 수 없습니다."),
+
     /* WAREHOUSE */
     WAREHOUSE_STOCK_NOT_FOUND(HttpStatus.NOT_FOUND, "WAREHOUSE001", "창고 재고 정보를 찾을 수 없습니다."),
     WAREHOUSE_NOT_FOUND(HttpStatus.NOT_FOUND, "WAREHOUSE002", "창고 정보를 찾을 수 없습니다."),
