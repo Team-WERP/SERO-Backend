@@ -32,7 +32,7 @@ jobs:
       - name: Install envsubst
         run: sudo apt-get install -y gettext
 
-      # 배포용 application.yml 파일을 환경 변수로 생성
+      # 배포용 application.yml 파일을 환경 변수로 생성!
       - name: Create application.yml.template
         run: |
           mkdir -p src/main/resources
