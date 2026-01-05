@@ -89,4 +89,8 @@ public class CustomUserDetails implements UserDetails {
     public String getRank() {
         return (this.type == Type.EMPLOYEE) ? this.employee.getRankCode() : null;
     }
+
+    public Integer getClientId() {
+        return (this.type == Type.CLIENT_EMPLOYEE) ? this.clientEmployee.getClient().getId() : null;
+    }
 }
