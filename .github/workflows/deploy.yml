@@ -1,4 +1,4 @@
-name: Deploy to Elastic Beanstalk
+name: Deploy to EC2 with CodeDeploy
 
 # GitHub 저장소 읽기 권한 설정
 permissions:
@@ -133,25 +133,45 @@ jobs:
         shell: bash
 
       ###############################################
-      - name: Generate deployment package
-        run: |
-          mkdir -p deploy
-          cp build/libs/application.jar deploy/application.jar
-          cp Procfile deploy/Procfile
-          cp -r .ebextensions deploy/.ebextensions
-          cp -r .platform deploy/.platform
-          cd deploy && zip -r deploy.zip .
+      # CodeDeploy 배포 단계
+      ###############################################
 
-      - name: Deploy to Elastic Beanstalk
-        uses: einaregilsson/beanstalk-deploy@v22
+      # 1. 배포 패키지 생성 (appspec.yml 포함)
+      - name: Make deployment package
+        run: |
+          echo "> 배포 패키지 생성 중..."
+          zip -r sero-deploy-${{steps.current-time.outputs.formattedTime}}.zip \
+            appspec.yml \
+            scripts/ \
+            build/libs/*.jar \
+            -x "*.git*" "build/libs/*plain*"
+
+          echo "> 생성된 파일 확인"
+          ls -lh sero-deploy-${{steps.current-time.outputs.formattedTime}}.zip
+
+      # 2. AWS 자격 증명 설정
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          application_name: sero-b
-          environment_name: Sero-b-env
-          version_label: github-action-${{steps.current-time.outputs.formattedTime}}
-          region: ap-northeast-2
-          deployment_package: deploy/deploy.zip
-          use_existing_version_if_available: false
-          wait_for_deployment: true
-          wait_for_environment_recovery: 300
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      # 3. S3에 배포 패키지 업로드
+      - name: Upload to S3
+        run: |
+          echo "> S3에 배포 패키지 업로드 중..."
+          aws s3 cp \
+            sero-deploy-${{steps.current-time.outputs.formattedTime}}.zip \
+            s3://elasticbeanstalk-ap-northeast-2-257394460879/codedeploy/
+
+      # 4. CodeDeploy 배포 생성
+      - name: Deploy with CodeDeploy
+        run: |
+          echo "> CodeDeploy 배포 시작..."
+          aws deploy create-deployment \
+            --application-name sero-backend-app \
+            --deployment-config-name CodeDeployDefault.AllAtOnce \
+            --deployment-group-name sero-backend-dg \
+            --s3-location bucket=elasticbeanstalk-ap-northeast-2-257394460879,key=codedeploy/sero-deploy-${{steps.current-time.outputs.formattedTime}}.zip,bundleType=zip \
+            --description "GitHub Actions deployment at ${{steps.current-time.outputs.formattedTime}}"
