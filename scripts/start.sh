@@ -22,7 +22,6 @@ mkdir -p $REPOSITORY/logs
 echo "> [$(date)] 애플리케이션 시작..." >> $REPOSITORY/deploy.log
 
 nohup java -jar \
-  -Dspring.profiles.active=prod \
   -Dserver.port=5000 \
   $JAR_FILE \
   > $REPOSITORY/logs/application.log 2>&1 &
