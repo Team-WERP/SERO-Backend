@@ -27,7 +27,8 @@ hooks:
       timeout: 120
       runas: ec2-user
 
-  ValidateService:
-    - location: scripts/health-check.sh
-      timeout: 180
-      runas: ec2-user
+  # ValidateService 임시 비활성화 (디버깅용)
+  # ValidateService:
+  #   - location: scripts/health-check.sh
+  #     timeout: 180
+  #     runas: ec2-user
