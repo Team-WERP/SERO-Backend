@@ -267,6 +267,7 @@
             A.start_date          AS startDate,
             A.end_date            AS endDate,
             A.production_quantity AS productionQuantity,
+            A.created_at          AS createdAt,
 
             C.id                  AS prId,
             C.pr_code             AS prCode,
@@ -281,13 +282,17 @@
 
             E.id                  AS productionLineId,
             E.line_name           AS productionLineName,
-            E.daily_capacity      AS dailyCapacity
+            E.daily_capacity      AS dailyCapacity,
+
+            F.id                  AS managerId,
+            F.name                AS managerName
 
         FROM production_plan A
                  JOIN production_request_item B ON A.pr_item_id = B.id
                  JOIN production_request C ON B.pr_id = C.id
                  JOIN sales_order_item D ON B.so_item_id = D.id
                  JOIN production_line E ON A.production_line_id = E.id
+                 JOIN employee F ON F.id = A.manager_id
 
         WHERE A.id = #{ppId}
     </select>
