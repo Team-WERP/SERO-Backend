@@ -13,6 +13,7 @@
         <result property="spec" column="spec"/>
         <result property="baseUnit" column="base_unit"/>
         <result property="unitPrice" column="unit_price"/>
+        <result property="imageUrl" column="image_url"/>
         <result property="safetyStock" column="safety_stock"/>
         <result property="cycleTime" column="cycle_time"/>
         <result property="rawMaterialCount" column="raw_material_count"/>
