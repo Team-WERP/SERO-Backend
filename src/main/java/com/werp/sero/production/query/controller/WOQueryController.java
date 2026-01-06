@@ -91,4 +91,15 @@ public class WOQueryController {
         );
     }
 
+    @Operation(summary = "작업지시 실적 상세 통합 조회")
+    @GetMapping("/{woId}/detail")
+    public ResponseEntity<WorkOrderDetailResponseDTO> getDetail(
+            @PathVariable int woId
+    ) {
+        return ResponseEntity.ok(
+                woQueryService.getWorkOrderDetail(woId)
+        );
+    }
+
+
 }

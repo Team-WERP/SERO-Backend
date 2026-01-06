@@ -209,5 +209,99 @@
         ORDER BY WOR.end_time DESC
     </select>
 
+    <select id="selectWorkOrderBaseDetail"
+            parameterType="int"
+            resultType="com.werp.sero.production.query.dto.WorkOrderBaseDetailDTO">
+
+        SELECT
+            WO.id                  AS woId,
+            WO.wo_code             AS woCode,
+            WO.status              AS status,
+
+            PL.id                  AS lineId,
+            PL.line_name           AS lineName,
+
+            EMP.name               AS managerName,
+
+            WO.quantity            AS plannedQuantity,
+            WOR.good_quantity      AS goodQuantity,
+            WOR.defective_quantity AS defectiveQuantity,
+            WOR.work_time          AS workTime,
+            WOR.start_time         AS startTime,
+            WOR.end_time           AS endTime
+
+        FROM work_order WO
+                 JOIN production_line PL ON PL.id = WO.line_id
+                 LEFT JOIN work_order_result WOR ON WOR.wo_id = WO.id
+                 LEFT JOIN employee EMP ON EMP.id = WO.manager_id
+
+        WHERE WO.id = #{woId}
+    </select>
+
+
+    <select id="selectWorkOrderItemDetails"
+            parameterType="int"
+            resultType="com.werp.sero.production.query.dto.WorkOrderItemDetailDTO">
+
+        SELECT
+            WOI.id               AS woItemId,
+            WOI.status           AS status,
+
+            /* Production Request */
+            PR.id                AS prId,
+            PR.pr_code           AS prCode,
+
+            /* Production Plan (nullable) */
+            PP.id                AS ppId,
+            PP.pp_code           AS ppCode,
+
+            /* Sales Order Item */
+            SOI.id               AS soItemId,
+            SOI.item_code        AS itemCode,
+            SOI.item_name        AS itemName,
+            SOI.unit             AS unit,
+
+            /* Quantities */
+            WOI.planned_quantity AS plannedQuantity,
+            WOI.produced_quantity AS producedQuantity
+
+        FROM work_order_item WOI
+
+                 JOIN production_request_item PRI
+                      ON PRI.id = WOI.pr_item_id
+
+                 JOIN production_request PR
+                      ON PR.id = PRI.pr_id
+
+                 JOIN sales_order_item SOI
+                      ON SOI.id = PRI.so_item_id
+
+                 LEFT JOIN production_plan PP
+                           ON PP.id = WOI.pp_id
+
+        WHERE WOI.work_order_id = #{woId}
+
+        ORDER BY WOI.id ASC
+    </select>
+
+
+    <select id="selectWorkOrderMaterialDetails"
+            parameterType="int"
+            resultType="com.werp.sero.production.query.dto.WorkOrderMaterialDetailDTO">
+
+        SELECT
+            M.id                 AS materialId,
+            M.name               AS materialName,
+            WOM.planned_quantity AS plannedQuantity,
+            WOM.actual_quantity  AS actualQuantity,
+            WOM.status           AS status
+
+        FROM work_order_material WOM
+                 JOIN material M ON M.id = WOM.raw_material_id
+
+        WHERE WOM.work_order_id = #{woId}
+    </select>
+
+
 
 </mapper>

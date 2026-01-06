@@ -114,6 +114,39 @@ public class WOQueryServiceImpl implements WOQueryService{
         );
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public WorkOrderDetailResponseDTO getWorkOrderDetail(int woId) {
 
+        WorkOrderBaseDetailDTO base =
+                woQueryMapper.selectWorkOrderBaseDetail(woId);
+
+        List<WorkOrderItemDetailDTO> items =
+                woQueryMapper.selectWorkOrderItemDetails(woId);
+
+        List<WorkOrderMaterialDetailDTO> materials =
+                woQueryMapper.selectWorkOrderMaterialDetails(woId);
+
+        List<WorkOrderHistoryResponse> histories =
+                getHistory(woId);
+
+        return new WorkOrderDetailResponseDTO(
+                base.getWoId(),
+                base.getWoCode(),
+                base.getStatus(),
+                base.getLineId(),
+                base.getLineName(),
+                base.getManagerName(),
+                base.getPlannedQuantity(),
+                base.getGoodQuantity(),
+                base.getDefectiveQuantity(),
+                base.getWorkTime(),
+                base.getStartTime(),
+                base.getEndTime(),
+                items,
+                materials,
+                histories
+        );
+    }
 
 }
