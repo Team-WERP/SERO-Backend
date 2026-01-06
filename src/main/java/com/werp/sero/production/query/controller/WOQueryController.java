@@ -46,4 +46,17 @@ public class WOQueryController {
                 woQueryService.getResult(woId)
         );
     }
+
+    @Operation(
+            summary = "일자 기준 작업지시 조회",
+            description = "선택한 날짜에 라인별로 생성된 작업지시 목록과 아이템을 조회한다."
+    )
+    @GetMapping("/daily")
+    public ResponseEntity<List<WorkOrderDailyResponseDTO>> getDaily(
+            @RequestParam String date
+    ) {
+        return ResponseEntity.ok(
+                woQueryService.getDailyWorkOrders(date)
+        );
+    }
 }

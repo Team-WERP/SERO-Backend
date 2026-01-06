@@ -44,4 +44,60 @@
             A.wo_code ASC
     </select>
 
+    <select id="selectDailyWorkOrders"
+            parameterType="string"
+            resultType="com.werp.sero.production.query.dto.WorkOrderDailyFlatDTO">
+
+        SELECT
+            /* Line */
+            A.id               AS lineId,
+            A.line_name        AS lineName,
+            A.daily_capacity   AS dailyCapacity,
+
+            /* WorkOrder */
+            B.id               AS workOrderId,
+            B.wo_code          AS workOrderCode,
+            B.status           AS workOrderStatus,
+            B.created_at       AS workOrderCreatedAt,
+
+            /* WorkOrderItem */
+            C.id               AS workOrderItemId,
+            C.planned_quantity AS plannedQuantity,
+
+            /* ProductionPlan (nullable) */
+            D.id               AS ppId,
+            D.pp_code          AS ppCode,
+
+            /* PR Item */
+            E.id               AS prItemId,
+
+            /* Item */
+            F.item_code        AS itemCode,
+            F.item_name        AS itemName,
+            F.unit             AS unit
+
+        FROM production_line A
+                 JOIN work_order B
+                      ON B.line_id = A.id
+                          AND B.work_date = #{date}
+
+                 LEFT JOIN work_order_item C
+                           ON C.work_order_id = B.id
+
+                 LEFT JOIN production_plan D
+                           ON C.pp_id = D.id
+
+                 JOIN production_request_item E
+                      ON C.pr_item_id = E.id
+
+                 JOIN sales_order_item F
+                      ON E.so_item_id = F.id
+
+        ORDER BY
+            A.id,
+            B.created_at,
+            C.id
+    </select>
+
+
 </mapper>

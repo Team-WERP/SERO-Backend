@@ -11,4 +11,6 @@ public interface WOQueryService {
     List<WorkOrderHistoryResponse> getHistory(int woId);
 
     WorkOrderResultResponse getResult(int woId);
+
+    List<WorkOrderDailyResponseDTO> getDailyWorkOrders(String date);
 }

@@ -12,7 +12,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -57,6 +60,35 @@ public class WOQueryServiceImpl implements WOQueryService{
                 result.getWorkTime(),
                 result.getNote()
         );
+    }
+
+    @Override
+    public List<WorkOrderDailyResponseDTO> getDailyWorkOrders(String date) {
+        List<WorkOrderDailyFlatDTO> rows =
+                woQueryMapper.selectDailyWorkOrders(date);
+
+        Map<Integer, WorkOrderDailyResponseDTO> lineMap = new LinkedHashMap<>();
+
+        for (WorkOrderDailyFlatDTO row : rows) {
+
+            // Line
+            WorkOrderDailyResponseDTO lineDto =
+                    lineMap.computeIfAbsent(
+                            row.getLineId(),
+                            k -> WorkOrderDailyResponseDTO.from(row)
+                    );
+
+            // WorkOrder
+            WorkOrderSummaryDTO woDto =
+                    lineDto.getOrCreateWorkOrder(row);
+
+            // WorkOrderItem
+            if (row.getWorkOrderItemId() != null) {
+                woDto.addItem(WorkOrderItemDTO.from(row));
+            }
+        }
+
+        return new ArrayList<>(lineMap.values());
     }
 
 
