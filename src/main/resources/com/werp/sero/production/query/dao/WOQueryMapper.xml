@@ -43,6 +43,10 @@
             B.line_name ASC,
             A.wo_code ASC
     </select>
+
+    <!-- ===================================================== -->
+    <!--  일자 기준 작업지시 + 품목 Flat 조회 (Daily View)        -->
+    <!-- ===================================================== -->
     <select id="selectDailyWorkOrders"
             parameterType="string"
             resultType="com.werp.sero.production.query.dto.WorkOrderDailyFlatDTO">
@@ -102,204 +106,220 @@
             C.id
     </select>
 
+    <!-- ===================================================== -->
+    <!--  라인 기준 긴급 생산 대상 PR Item 조회                 -->
+    <!-- ===================================================== -->
     <select id="selectEmergencyTargetsByLine"
             parameterType="int"
             resultType="com.werp.sero.production.query.dto.WOEmergencyPRItemResponseDTO">
 
         SELECT
-            PRI.id                    AS prItemId,
-            PR.id                     AS prId,
-            PR.pr_code                AS prCode,
+            E.id                     AS prItemId,
+            F.id                     AS prId,
+            F.pr_code                AS prCode,
 
-            SOI.item_code             AS itemCode,
-            SOI.item_name             AS itemName,
-            SOI.unit                  AS unit,
+            D.item_code              AS itemCode,
+            D.item_name              AS itemName,
+            D.unit                   AS unit,
 
-            (PRI.quantity - PRI.produced_quantity) AS remainingQuantity,
-            PR.due_at                 AS dueAt
+            (E.quantity - E.produced_quantity) AS remainingQuantity,
+            F.due_at                 AS dueAt
 
-        FROM production_line PL
-                 JOIN line_material LM
-                      ON LM.line_id = PL.id
+        FROM production_line A
+                 JOIN line_material B
+                      ON B.line_id = A.id
 
-                 JOIN material M
-                      ON M.id = LM.material_id
-                          AND M.type = 'MAT_FG'
+                 JOIN material C
+                      ON C.id = B.material_id
+                          AND C.type = 'MAT_FG'
 
-                 JOIN sales_order_item SOI
-                      ON SOI.item_code = M.material_code
+                 JOIN sales_order_item D
+                      ON D.item_code = C.material_code
 
-                 JOIN production_request_item PRI
-                      ON PRI.so_item_id = SOI.id
+                 JOIN production_request_item E
+                      ON E.so_item_id = D.id
 
-                 JOIN production_request PR
-                      ON PR.id = PRI.pr_id
+                 JOIN production_request F
+                      ON F.id = E.pr_id
 
-        WHERE PL.id = #{lineId}
-          AND PRI.status IN ('PIS_TARGET', 'PIS_PRODUCING')
-          AND (PRI.quantity - PRI.produced_quantity) > 0
+        WHERE A.id = #{lineId}
+          AND E.status IN ('PIS_TARGET', 'PIS_PRODUCING')
+          AND (E.quantity - E.produced_quantity) > 0
 
-        ORDER BY PR.due_at ASC, PRI.id ASC
+        ORDER BY
+            F.due_at ASC,
+            E.id ASC
     </select>
 
+    <!-- ===================================================== -->
+    <!--  작업지시 실적 목록 조회                                -->
+    <!-- ===================================================== -->
     <select id="selectWorkOrderResultList"
             resultType="com.werp.sero.production.query.dto.WorkOrderResultListResponseDTO">
 
         SELECT
-        WO.id            AS woId,
-        WO.wo_code       AS woCode,
+        A.id                 AS woId,
+        A.wo_code            AS woCode,
 
-        PL.id            AS lineId,
-        PL.line_name     AS lineName,
+        C.id                 AS lineId,
+        C.line_name          AS lineName,
 
-        ITEM.item_name   AS itemName,
+        I.item_name          AS itemName,
 
-        WO.quantity      AS plannedQuantity,
-        WOR.good_quantity      AS producedQuantity,
-        WOR.defective_quantity AS defectiveQuantity,
+        A.quantity           AS plannedQuantity,
+        B.good_quantity      AS producedQuantity,
+        B.defective_quantity AS defectiveQuantity,
 
-        WOR.start_time   AS startTime,
-        WOR.end_time     AS endTime,
-        WOR.work_time   AS workMinutes,
+        B.start_time         AS startTime,
+        B.end_time           AS endTime,
+        B.work_time          AS workMinutes,
 
-        EMP.name         AS workerName
+        D.name               AS workerName
 
-        FROM work_order WO
-        JOIN work_order_result WOR
-        ON WOR.wo_id = WO.id
-
-        JOIN production_line PL
-        ON PL.id = WO.line_id
-
-        JOIN employee EMP
-        ON EMP.id = WO.manager_id
-
-        /* 대표 품목 1개 */
+        FROM work_order A
+        JOIN work_order_result B
+        ON B.wo_id = A.id
+        JOIN production_line C
+        ON C.id = A.line_id
+        JOIN employee D
+        ON D.id = A.manager_id
         JOIN (
         SELECT
-        WOI.work_order_id,
-        MIN(SOI.item_name) AS item_name
-        FROM work_order_item WOI
-        JOIN production_request_item PRI
-        ON PRI.id = WOI.pr_item_id
-        JOIN sales_order_item SOI
-        ON SOI.id = PRI.so_item_id
-        GROUP BY WOI.work_order_id
-        ) ITEM
-        ON ITEM.work_order_id = WO.id
+        E.work_order_id,
+        MIN(G.item_name) AS item_name
+        FROM work_order_item E
 
-        where 1=1
+        JOIN production_request_item F
+        ON F.id = E.pr_item_id
+
+        JOIN sales_order_item G
+        ON G.id = F.so_item_id
+
+        GROUP BY E.work_order_id
+        ) I
+        ON I.work_order_id = A.id
+
+        WHERE 1 = 1
 
         <if test="startDate != null and endDate != null">
-            AND WO.work_date BETWEEN #{startDate} AND #{endDate}
+            AND A.work_date BETWEEN #{startDate} AND #{endDate}
         </if>
 
-
         <if test="lineId != null">
-            AND PL.id = #{lineId}
+            AND C.id = #{lineId}
         </if>
 
         <if test="keyword != null and keyword != ''">
             AND (
-            WO.wo_code LIKE CONCAT('%', #{keyword}, '%')
-            OR ITEM.item_name LIKE CONCAT('%', #{keyword}, '%')
+            A.wo_code LIKE CONCAT('%', #{keyword}, '%')
+            OR I.item_name LIKE CONCAT('%', #{keyword}, '%')
             )
         </if>
 
-        ORDER BY WOR.end_time DESC
+        ORDER BY
+        B.end_time DESC
     </select>
 
+    <!-- ===================================================== -->
+    <!--  작업지시 기본 정보                                       -->
+    <!-- ===================================================== -->
     <select id="selectWorkOrderBaseDetail"
             parameterType="int"
             resultType="com.werp.sero.production.query.dto.WorkOrderBaseDetailDTO">
 
         SELECT
-            WO.id                  AS woId,
-            WO.wo_code             AS woCode,
-            WO.status              AS status,
+            A.id                    AS woId,
+            A.wo_code               AS woCode,
+            A.status                AS status,
 
-            PL.id                  AS lineId,
-            PL.line_name           AS lineName,
+            B.id                    AS lineId,
+            B.line_name             AS lineName,
 
-            EMP.name               AS managerName,
+            D.name                  AS managerName,
 
-            WO.quantity            AS plannedQuantity,
-            WOR.good_quantity      AS goodQuantity,
-            WOR.defective_quantity AS defectiveQuantity,
-            WOR.work_time          AS workTime,
-            WOR.start_time         AS startTime,
-            WOR.end_time           AS endTime
+            A.quantity              AS plannedQuantity,
+            C.good_quantity         AS goodQuantity,
+            C.defective_quantity    AS defectiveQuantity,
+            C.work_time             AS workTime,
+            C.start_time            AS startTime,
+            C.end_time              AS endTime
 
-        FROM work_order WO
-                 JOIN production_line PL ON PL.id = WO.line_id
-                 LEFT JOIN work_order_result WOR ON WOR.wo_id = WO.id
-                 LEFT JOIN employee EMP ON EMP.id = WO.manager_id
+        FROM work_order A
+                 JOIN production_line B
+                      ON B.id = A.line_id
 
-        WHERE WO.id = #{woId}
+                 LEFT JOIN work_order_result C
+                           ON C.wo_id = A.id
+
+                 LEFT JOIN employee D
+                           ON D.id = A.manager_id
+
+        WHERE A.id = #{woId}
+
     </select>
 
-
+    <!-- ===================================================== -->
+    <!--  작업지시 품목 상세                                        -->
+    <!-- ===================================================== -->
     <select id="selectWorkOrderItemDetails"
             parameterType="int"
             resultType="com.werp.sero.production.query.dto.WorkOrderItemDetailDTO">
 
         SELECT
-            WOI.id               AS woItemId,
-            WOI.status           AS status,
+            A.id                    AS woItemId,
+            A.status                AS status,
 
-            /* Production Request */
-            PR.id                AS prId,
-            PR.pr_code           AS prCode,
+            /* 연결된 생산요청 (PR) */
+            C.id                    AS prId,
+            C.pr_code               AS prCode,
 
-            /* Production Plan (nullable) */
-            PP.id                AS ppId,
-            PP.pp_code           AS ppCode,
+            /* 연결된 생산계획 (PP, 선택) */
+            F.id                    AS ppId,
+            F.pp_code               AS ppCode,
 
-            /* Sales Order Item */
-            SOI.id               AS soItemId,
-            SOI.item_code        AS itemCode,
-            SOI.item_name        AS itemName,
-            SOI.unit             AS unit,
+            /* 주문 품목 정보 (Sales Order Item) */
+            E.id                    AS soItemId,
+            E.item_code             AS itemCode,
+            E.item_name             AS itemName,
+            E.unit                  AS unit,
 
-            /* Quantities */
-            WOI.planned_quantity AS plannedQuantity,
-            WOI.produced_quantity AS producedQuantity
+            /* 수량 정보 */
+            A.planned_quantity      AS plannedQuantity,
+            A.produced_quantity     AS producedQuantity
 
-        FROM work_order_item WOI
+            FROM work_order_item A
+                 JOIN production_request_item B
+                      ON B.id = A.pr_item_id
+                 JOIN production_request C
+                      ON C.id = B.pr_id
+                 JOIN sales_order_item E
+                      ON E.id = B.so_item_id
+                 LEFT JOIN production_plan F
+                           ON F.id = A.pp_id
 
-                 JOIN production_request_item PRI
-                      ON PRI.id = WOI.pr_item_id
+        WHERE A.work_order_id = #{woId}
 
-                 JOIN production_request PR
-                      ON PR.id = PRI.pr_id
-
-                 JOIN sales_order_item SOI
-                      ON SOI.id = PRI.so_item_id
-
-                 LEFT JOIN production_plan PP
-                           ON PP.id = WOI.pp_id
-
-        WHERE WOI.work_order_id = #{woId}
-
-        ORDER BY WOI.id ASC
+        ORDER BY A.id ASC
     </select>
 
-
+    <!-- ===================================================== -->
+    <!-- 작업지시 자재 상세                                         -->
+    <!-- ===================================================== -->
     <select id="selectWorkOrderMaterialDetails"
             parameterType="int"
             resultType="com.werp.sero.production.query.dto.WorkOrderMaterialDetailDTO">
 
         SELECT
-            M.id                 AS materialId,
-            M.name               AS materialName,
-            WOM.planned_quantity AS plannedQuantity,
-            WOM.actual_quantity  AS actualQuantity,
-            WOM.status           AS status
+            B.id                 AS materialId,
+            B.name               AS materialName,
+            A.planned_quantity   AS plannedQuantity,
+            A.actual_quantity    AS actualQuantity,
+            A.status             AS status
 
-        FROM work_order_material WOM
-                 JOIN material M ON M.id = WOM.raw_material_id
+        FROM work_order_material A
+                 JOIN material B ON B.id = A.raw_material_id
 
-        WHERE WOM.work_order_id = #{woId}
+        WHERE A.work_order_id = #{woId}
     </select>
 
 
