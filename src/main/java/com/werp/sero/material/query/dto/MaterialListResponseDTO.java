@@ -26,6 +26,5 @@ public class MaterialListResponseDTO {
     private int safetyStock;
     private Integer cycleTime;
     private Integer rawMaterialCount;
-    private String imageUrl;
     private String createdAt;
 }
