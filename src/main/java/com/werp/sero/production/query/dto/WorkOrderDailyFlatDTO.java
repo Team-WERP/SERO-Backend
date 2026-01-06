@@ -28,6 +28,8 @@ public class WorkOrderDailyFlatDTO {
 
     // PR Item
     private int prItemId;
+    private Integer prId;
+    private String prCode;
 
     // Item
     private String itemCode;

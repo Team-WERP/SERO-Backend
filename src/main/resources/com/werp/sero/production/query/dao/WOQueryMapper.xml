@@ -43,7 +43,6 @@
             B.line_name ASC,
             A.wo_code ASC
     </select>
-
     <select id="selectDailyWorkOrders"
             parameterType="string"
             resultType="com.werp.sero.production.query.dto.WorkOrderDailyFlatDTO">
@@ -71,6 +70,10 @@
             /* PR Item */
             E.id               AS prItemId,
 
+            /* PR */
+            G.id               AS prId,
+            G.pr_code          AS prCode,
+
             /* Item */
             F.item_code        AS itemCode,
             F.item_name        AS itemName,
@@ -86,12 +89,12 @@
 
                  LEFT JOIN production_plan D
                            ON C.pp_id = D.id
-
-                 JOIN production_request_item E
-                      ON C.pr_item_id = E.id
-
-                 JOIN sales_order_item F
-                      ON E.so_item_id = F.id
+                 LEFT JOIN production_request_item E
+                           ON C.pr_item_id = E.id
+                 LEFT JOIN production_request G
+                           ON E.pr_id = G.id
+                 LEFT JOIN sales_order_item F
+                           ON E.so_item_id = F.id
 
         ORDER BY
             A.id,
