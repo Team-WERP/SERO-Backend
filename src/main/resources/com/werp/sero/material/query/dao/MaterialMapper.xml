@@ -13,7 +13,7 @@
         <result property="spec" column="spec"/>
         <result property="baseUnit" column="base_unit"/>
         <result property="unitPrice" column="unit_price"/>
-        <result property="imageUrl" column="image_url"/>
+        <result property="imageUrl" column="imageUrl"/>
         <result property="safetyStock" column="safety_stock"/>
         <result property="cycleTime" column="cycle_time"/>
         <result property="rawMaterialCount" column="raw_material_count"/>
@@ -33,7 +33,7 @@
         <result property="moq" column="moq"/>
         <result property="cycleTime" column="cycle_time"/>
         <result property="unitPrice" column="unit_price"/>
-        <result property="imageUrl" column="image_url"/>
+        <result property="imageUrl" column="imageUrl"/>
         <result property="conversionRate" column="conversion_rate"/>
         <result property="safetyStock" column="safety_stock"/>
         <result property="rawMaterialCount" column="raw_material_count"/>
