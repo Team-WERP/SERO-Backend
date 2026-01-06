@@ -75,7 +75,6 @@ public class WOCommandServiceImpl implements WOCommandService {
                         documentSequenceCommandService.generateDocumentCode("DOC_WO"),
                         request.getWorkDate(),
                         line,
-                        currentEmployee,
                         currentEmployee
                 )
         );
@@ -177,11 +176,11 @@ public class WOCommandServiceImpl implements WOCommandService {
 
     @Override
     @Transactional
-    public void start(int woId, String note) {
+    public void start(int woId, String note, Employee worker) {
         WorkOrder wo = woRepository.findByIdForUpdate(woId)
                 .orElseThrow(WorkOrderNotFoundException::new);
 
-        wo.start();
+        wo.start(worker);
         WorkOrderHistory woHistory = new WorkOrderHistory(
                 wo,
                 Action.START,

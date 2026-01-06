@@ -39,7 +39,7 @@ public class WorkOrder {
     private String status;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "manager_id", nullable = false)
+    @JoinColumn(name = "manager_id")
     private Employee manager;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -50,13 +50,11 @@ public class WorkOrder {
             String woCode,
             String workDate,
             ProductionLine productionLine,
-            Employee manager,
             Employee creator
     ) {
         this.woCode = woCode;
         this.workDate = workDate;
         this.productionLine = productionLine;
-        this.manager = manager;
         this.creator = creator;
         this.status = "WO_READY";
         this.createdAt = DateTimeUtils.nowDateTime();
@@ -66,11 +64,12 @@ public class WorkOrder {
         this.quantity = totalQuantity;
     }
 
-    public void start() {
+    public void start(Employee worker) {
         if (!"WO_READY".equals(this.status)) {
             throw new InvalidWorkOrderStatusException(this.status, "WO_READY");
         }
         this.status = "WO_RUN";
+        this.manager = worker;
     }
 
     public void pause() {

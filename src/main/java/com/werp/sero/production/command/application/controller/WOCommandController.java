@@ -43,9 +43,10 @@ public class WOCommandController {
     @PostMapping("/{woId}/start")
     public ResponseEntity<Void> start(
             @PathVariable int woId,
-            @RequestParam(required = false) String note
+            @RequestParam(required = false) String note,
+            @CurrentUser Employee employee
     ) {
-        woCommandService.start(woId, note);
+        woCommandService.start(woId, note, employee);
         return ResponseEntity.ok().build();
     }
 
