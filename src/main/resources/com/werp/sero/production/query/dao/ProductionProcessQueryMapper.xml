@@ -24,5 +24,24 @@
 
     </select>
 
+    <select id="selectProcessByLineMaterial"
+            parameterType="int"
+            resultType="com.werp.sero.production.query.dto.ProductionProcessResponseDTO">
+
+        SELECT
+            A.id               AS processId,
+            A.process_order    AS processOrder,
+            A.process_name     AS processName,
+            C.line_name        AS lineName,
+            A.standard_time    AS standardTime,
+            A.headcount        AS headCount,
+            A.note             AS note
+        FROM production_process A
+                 JOIN line_material B ON B.id = A.line_material_id
+                 JOIN production_line C ON C.id = B.line_id
+        WHERE A.line_material_id = #{lineMaterialId}
+        ORDER BY A.process_order ASC
+
+    </select>
 
 </mapper>
