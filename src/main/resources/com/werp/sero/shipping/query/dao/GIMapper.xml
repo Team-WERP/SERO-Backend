@@ -53,12 +53,14 @@
         <result property="managerPosition" column="manager_position"/>
         <result property="managerRank" column="manager_rank"/>
 
-        <!-- 배송 정보 -->
-        <result property="trackingNumber" column="tracking_number"/>
-        <result property="driverName" column="driver_name"/>
-        <result property="driverContact" column="driver_contact"/>
-        <result property="departedAt" column="departed_at"/>
-        <result property="arrivedAt" column="arrived_at"/>
+        <!-- 배송 정보 (Association) -->
+        <association property="delivery" javaType="com.werp.sero.shipping.query.dto.GIDetailResponseDTO$DeliveryInfoDTO">
+            <result property="trackingNumber" column="tracking_number"/>
+            <result property="driverName" column="driver_name"/>
+            <result property="driverContact" column="driver_contact"/>
+            <result property="departedAt" column="departed_at"/>
+            <result property="arrivedAt" column="arrived_at"/>
+        </association>
 
         <!-- 출고지시 품목 목록 (Collection) -->
         <collection property="items" ofType="com.werp.sero.shipping.query.dto.GIDetailResponseDTO$GIDetailItemDTO">

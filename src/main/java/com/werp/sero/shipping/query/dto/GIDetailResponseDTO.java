@@ -125,20 +125,31 @@ public class GIDetailResponseDTO {
     private List<GIApprovalLineDTO> approvalLines;
 
     // 8. 배송 정보
-    @Schema(description = "운송장 번호", example = "SERO-20260102-001")
-    private String trackingNumber;
+    @Schema(description = "배송 정보")
+    private DeliveryInfoDTO delivery;
 
-    @Schema(description = "배송 기사명", example = "이동중")
-    private String driverName;
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    @Schema(description = "배송 정보")
+    public static class DeliveryInfoDTO {
 
-    @Schema(description = "배송 기사 연락처", example = "010-2222-2222")
-    private String driverContact;
+        @Schema(description = "운송장 번호", example = "SERO-20260102-001")
+        private String trackingNumber;
 
-    @Schema(description = "배송 출발 시간", example = "2026-01-02 17:27")
-    private String departedAt;
+        @Schema(description = "배송 기사명", example = "이동중")
+        private String driverName;
 
-    @Schema(description = "배송 도착 시간", example = "2026-01-16 17:00")
-    private String arrivedAt;
+        @Schema(description = "배송 기사 연락처", example = "010-2222-2222")
+        private String driverContact;
+
+        @Schema(description = "배송 출발 시간", example = "2026-01-02 17:27")
+        private String departedAt;
+
+        @Schema(description = "배송 도착 시간", example = "2026-01-16 17:00")
+        private String arrivedAt;
+    }
 
     @Getter
     @NoArgsConstructor
