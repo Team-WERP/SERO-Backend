@@ -47,7 +47,9 @@ public class MaterialQueryServiceImpl implements MaterialQueryService {
         }
 
         // 3. 자재 목록 조회
+        System.out.println("===== DEBUG: Before MyBatis query =====");
         List<MaterialListResponseDTO> results = materialMapper.findByCondition(type, status, keyword);
+        System.out.println("===== DEBUG: After MyBatis query =====");
 
         // DEBUG: imageUrl 확인
         if (!results.isEmpty()) {
@@ -55,6 +57,8 @@ public class MaterialQueryServiceImpl implements MaterialQueryService {
             System.out.println("First material ID: " + results.get(0).getId());
             System.out.println("First material name: " + results.get(0).getName());
             System.out.println("First material imageUrl: " + results.get(0).getImageUrl());
+            System.out.println("First material spec: " + results.get(0).getSpec());
+            System.out.println("First material baseUnit: " + results.get(0).getBaseUnit());
             System.out.println("==========================================");
         }
 
