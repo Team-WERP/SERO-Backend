@@ -49,6 +49,7 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
     private final S3Uploader s3Uploader;
     private final ApplicationEventPublisher applicationEventPublisher;
     private final DocumentSequenceCommandService documentSequenceCommandService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     @Override
@@ -193,6 +194,16 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
                 }
 
                 so.updateApprovalInfo(so.getApprovalCode(), (isRejected ? "ORD_APPR_RJCT" : "ORD_APPR_DONE"));
+
+                if(!isRejected){
+                    eventPublisher.publishEvent(NotificationEvent.forClient(
+                            NotificationType.ORDER,
+                            "주문 상태 변경",
+                            "주문번호 " + so.getSoCode() + "의 상태가 진행중으로 변경되었습니다.",
+                            so.getClientEmployee().getId(),
+                            "client-portal/order/management" + so.getId()
+                    ));
+                }
             }
             case "GI" -> {
                 final GoodsIssue gi = (GoodsIssue) object;
@@ -391,4 +402,5 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
             }
         }
     }
+
 }
