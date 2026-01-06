@@ -43,5 +43,104 @@
             B.line_name ASC,
             A.wo_code ASC
     </select>
+    <select id="selectDailyWorkOrders"
+            parameterType="string"
+            resultType="com.werp.sero.production.query.dto.WorkOrderDailyFlatDTO">
+
+        SELECT
+            /* Line */
+            A.id               AS lineId,
+            A.line_name        AS lineName,
+            A.daily_capacity   AS dailyCapacity,
+
+            /* WorkOrder */
+            B.id               AS workOrderId,
+            B.wo_code          AS workOrderCode,
+            B.status           AS workOrderStatus,
+            B.created_at       AS workOrderCreatedAt,
+
+            /* WorkOrderItem */
+            C.id               AS workOrderItemId,
+            C.planned_quantity AS plannedQuantity,
+
+            /* ProductionPlan (nullable) */
+            D.id               AS ppId,
+            D.pp_code          AS ppCode,
+
+            /* PR Item */
+            E.id               AS prItemId,
+
+            /* PR */
+            G.id               AS prId,
+            G.pr_code          AS prCode,
+
+            /* Item */
+            F.item_code        AS itemCode,
+            F.item_name        AS itemName,
+            F.unit             AS unit
+
+        FROM production_line A
+                 JOIN work_order B
+                      ON B.line_id = A.id
+                          AND B.work_date = #{date}
+
+                 LEFT JOIN work_order_item C
+                           ON C.work_order_id = B.id
+
+                 LEFT JOIN production_plan D
+                           ON C.pp_id = D.id
+                 LEFT JOIN production_request_item E
+                           ON C.pr_item_id = E.id
+                 LEFT JOIN production_request G
+                           ON E.pr_id = G.id
+                 LEFT JOIN sales_order_item F
+                           ON E.so_item_id = F.id
+
+        ORDER BY
+            A.id,
+            B.created_at,
+            C.id
+    </select>
+
+    <select id="selectEmergencyTargetsByLine"
+            parameterType="int"
+            resultType="com.werp.sero.production.query.dto.WOEmergencyPRItemResponseDTO">
+
+        SELECT
+            PRI.id                    AS prItemId,
+            PR.id                     AS prId,
+            PR.pr_code                AS prCode,
+
+            SOI.item_code             AS itemCode,
+            SOI.item_name             AS itemName,
+            SOI.unit                  AS unit,
+
+            (PRI.quantity - PRI.produced_quantity) AS remainingQuantity,
+            PR.due_at                 AS dueAt
+
+        FROM production_line PL
+                 JOIN line_material LM
+                      ON LM.line_id = PL.id
+
+                 JOIN material M
+                      ON M.id = LM.material_id
+                          AND M.type = 'MAT_FG'
+
+                 JOIN sales_order_item SOI
+                      ON SOI.item_code = M.material_code
+
+                 JOIN production_request_item PRI
+                      ON PRI.so_item_id = SOI.id
+
+                 JOIN production_request PR
+                      ON PR.id = PRI.pr_id
+
+        WHERE PL.id = #{lineId}
+          AND PRI.status IN ('PIS_TARGET', 'PIS_PRODUCING')
+          AND (PRI.quantity - PRI.produced_quantity) > 0
+
+        ORDER BY PR.due_at ASC, PRI.id ASC
+    </select>
+
 
 </mapper>

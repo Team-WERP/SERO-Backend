@@ -14,6 +14,7 @@ public class PPDetailResponseDTO {
     private String startDate;
     private String endDate;
     private int productionQuantity;
+    private String createdAt;
 
     // PR
     private int prId;
@@ -32,5 +33,9 @@ public class PPDetailResponseDTO {
     private int productionLineId;
     private String productionLineName;
     private int dailyCapacity;
+
+    // Manager
+    private int managerId;
+    private String managerName;
 }
 

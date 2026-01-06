@@ -194,63 +194,68 @@
             resultType="com.werp.sero.production.query.dto.PPDailyPreviewResponseDTO">
 
         SELECT
-            A.id            AS ppId,
-            A.pp_code       AS ppCode,
+        -- Line (A)
+        A.id               AS lineId,
+        A.line_name        AS lineName,
+        A.daily_capacity   AS dailyCapacity,
 
-            F.id            AS lineId,
-            F.line_name     AS lineName,
-            F.daily_capacity AS dailyCapacity,
+        -- PP (B)
+        B.id               AS ppId,
+        B.pp_code          AS ppCode,
 
-            E.id            AS materialId,
-            E.material_code AS materialCode,
-            E.name          AS materialName,
-            E.base_unit     AS baseUnit,
+        -- PR Item (C)
+        C.id               AS prItemId,
 
-            /* 오늘 기준 계획 수량 (고정) */
-            CEILING(
-                        A.production_quantity
-                        / (DATEDIFF(A.end_date, A.start_date) + 1)
-                ) AS dailyPlannedQuantity,
+        -- Item (D)
+        D.item_code        AS itemCode,
+        D.item_name        AS itemName,
+        D.unit             AS unit,
 
-            /* 오늘 작업지시로 확정된 수량 */
-            IFNULL(SUM(I.planned_quantity), 0) AS woPlannedQuantity,
+        -- Material (M)
+        M.id               AS materialId,
+        M.material_code    AS materialCode,
+        M.base_unit        AS baseUnit,
 
-            /* 오늘 해당 라인에 작업지시 존재 여부 */
-            COUNT(DISTINCT G.id) > 0 AS hasWorkOrder
+        -- 오늘 계획 수량
+        CEILING(
+        B.production_quantity / (DATEDIFF(B.end_date, B.start_date) + 1)
+        ) AS dailyPlannedQuantity,
 
-        FROM production_plan A
-                 JOIN production_request_item B
-                      ON A.pr_item_id = B.id
-                 JOIN sales_order_item D
-                      ON B.so_item_id = D.id
-                 JOIN material E
-                      ON E.material_code = D.item_code
-                          AND E.type = 'MAT_FG'
-                 JOIN production_line F
-                      ON A.production_line_id = F.id
+        -- 오늘 작업지시 배정 수량
+        IFNULL(E.assignedQty, 0) AS assignedWoQuantity
 
-                 LEFT JOIN work_order G
-                           ON G.line_id = F.id
-                               AND G.work_date = #{date}
+        FROM production_line A
+        LEFT JOIN production_plan B
+        ON A.id = B.production_line_id
+        AND B.status = 'PP_CONFIRMED'
+        AND B.start_date &lt;= #{date}
+        AND B.end_date   &gt;= #{date}
 
-                 LEFT JOIN work_order_item I
-                           ON I.work_order_id = G.id
-                               AND I.pp_id = A.id
+        LEFT JOIN production_request_item C
+        ON C.id = B.pr_item_id
 
-        WHERE A.status = 'PP_CONFIRMED'
-          AND A.start_date &lt;= #{date}
-          AND A.end_date   &gt;= #{date}
+        LEFT JOIN sales_order_item D
+        ON D.id = C.so_item_id
 
-        GROUP BY
-            A.id, A.pp_code,
-            F.id, F.line_name, F.daily_capacity,
-            E.id, E.material_code, E.name, E.base_unit,
-            A.production_quantity,
-            A.start_date, A.end_date
+        LEFT JOIN material M
+        ON M.material_code = D.item_code
+        AND M.type = 'MAT_FG'
+
+        LEFT JOIN (
+        SELECT
+        SUB_WI.pp_id AS ppId,
+        SUM(SUB_WI.planned_quantity) AS assignedQty
+        FROM work_order SUB_W
+        JOIN work_order_item SUB_WI
+        ON SUB_WI.work_order_id = SUB_W.id
+        WHERE SUB_W.work_date = #{date}
+        AND SUB_WI.pp_id IS NOT NULL
+        GROUP BY SUB_WI.pp_id
+        ) E ON E.ppId = B.id
 
         ORDER BY
-            F.line_name ASC,
-            A.pp_code ASC
+        A.id ASC,
+        B.pp_code ASC
     </select>
 
     <!-- ===================================================== -->
@@ -267,6 +272,7 @@
             A.start_date          AS startDate,
             A.end_date            AS endDate,
             A.production_quantity AS productionQuantity,
+            A.created_at          AS createdAt,
 
             C.id                  AS prId,
             C.pr_code             AS prCode,
@@ -281,13 +287,17 @@
 
             E.id                  AS productionLineId,
             E.line_name           AS productionLineName,
-            E.daily_capacity      AS dailyCapacity
+            E.daily_capacity      AS dailyCapacity,
+
+            F.id                  AS managerId,
+            F.name                AS managerName
 
         FROM production_plan A
                  JOIN production_request_item B ON A.pr_item_id = B.id
                  JOIN production_request C ON B.pr_id = C.id
                  JOIN sales_order_item D ON B.so_item_id = D.id
                  JOIN production_line E ON A.production_line_id = E.id
+                 JOIN employee F ON F.id = A.manager_id
 
         WHERE A.id = #{ppId}
     </select>

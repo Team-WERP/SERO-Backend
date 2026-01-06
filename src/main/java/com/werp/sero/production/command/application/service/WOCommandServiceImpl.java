@@ -2,7 +2,11 @@ package com.werp.sero.production.command.application.service;
 
 import com.werp.sero.common.util.DateTimeUtils;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
+import com.werp.sero.material.command.domain.aggregate.Bom;
 import com.werp.sero.material.command.domain.aggregate.Material;
+import com.werp.sero.material.command.domain.repository.BomRepository;
+import com.werp.sero.material.command.domain.repository.MaterialRepository;
+import com.werp.sero.material.exception.MaterialNotFoundException;
 import com.werp.sero.notification.command.domain.aggregate.enums.NotificationType;
 import com.werp.sero.notification.command.infrastructure.event.NotificationEvent;
 import com.werp.sero.order.command.application.service.SOStateService;
@@ -43,6 +47,11 @@ public class WOCommandServiceImpl implements WOCommandService {
     private final ApplicationEventPublisher eventPublisher;
     private final PRRepository prRepository;
     private final SOStateService soStateService;
+    private final ProductionLineRepository productionLineRepository;
+    private final PRItemRepository prItemRepository;
+    private final MaterialRepository materialRepository;
+    private final BomRepository bomRepository;
+    private final WorkOrderMaterialRepository workOrderMaterialRepository;
 
     @Override
     @Transactional
@@ -54,83 +63,111 @@ public class WOCommandServiceImpl implements WOCommandService {
             throw new InvalidWorkOrderRequestException();
         }
 
-        // 기준 PP 확보
-        ProductionPlan firstPP = ppRepository.findById(request.getItems().get(0).getPpId())
-                .orElseThrow(ProductionPlanNotFoundException::new);
-
-        if (!"PP_CONFIRMED".equals(firstPP.getStatus())) {
-            throw new InvalidProductionPlanStatusException();
-        }
-
-        ProductionLine line = firstPP.getProductionLine();
-        if (line == null || line.getId() != request.getLineId()) {
-            throw new ProductionLineMismatchException();
-        }
+        // 라인 확정
+        ProductionLine line = productionLineRepository.findById(request.getLineId())
+                .orElseThrow(ProductionLineNotFoundException::new);
 
         LocalDate workDate = DateTimeUtils.parse(request.getWorkDate());
 
-        // WorkOrder 생성 or 조회 (라인 + 날짜 기준)
-        WorkOrder wo = woRepository
-                .findByProductionLine_IdAndWorkDate(line.getId(), request.getWorkDate())
-                .orElseGet(() -> woRepository.save(
-                        new WorkOrder(
-                                documentSequenceCommandService.generateDocumentCode("DOC_WO"),
-                                request.getWorkDate(),
-                                line,
-                                currentEmployee,
-                                currentEmployee
-                        )
-                ));
+        // WorkOrder 신규 생성 (라인 + 날짜 기준)
+        WorkOrder wo = woRepository.save(
+                new WorkOrder(
+                        documentSequenceCommandService.generateDocumentCode("DOC_WO"),
+                        request.getWorkDate(),
+                        line,
+                        currentEmployee,
+                        currentEmployee
+                )
+        );
 
-        // PP 단위 처리
+        // 아이템 처리
         for (WorkOrderCreateRequestDTO.Item itemReq : request.getItems()) {
-
-            ProductionPlan pp = ppRepository.findById(itemReq.getPpId())
-                    .orElseThrow(ProductionPlanNotFoundException::new);
-
-            // PP 검증
-            if (!"PP_CONFIRMED".equals(pp.getStatus())) {
-                throw new InvalidProductionPlanStatusException();
-            }
-
-            if (pp.getProductionLine().getId() != line.getId()) {
-                throw new ProductionLineMismatchException();
-            }
-
-            LocalDate start = DateTimeUtils.parse(pp.getStartDate());
-            LocalDate end = DateTimeUtils.parse(pp.getEndDate());
-            if (workDate.isBefore(start) || workDate.isAfter(end)) {
-                throw new WorkOrderInvalidPeriodException();
-            }
-
-            if (woItemRepository.existsByWorkOrder_IdAndProductionPlan_Id(wo.getId(), pp.getId())) {
-                throw new WorkOrderItemAlreadyExistsException();
-            }
 
             if (itemReq.getQuantity() <= 0) {
                 throw new WorkOrderInvalidQuantityException();
             }
 
-            // WorkOrderItem 생성
-            WorkOrderItem woItem = new WorkOrderItem(
-                    wo,
-                    pp,
-                    pp.getProductionRequestItem(),
-                    itemReq.getQuantity()
-            );
+            Integer ppId = itemReq.getPpId();
+            Integer prItemId = itemReq.getPrItemId();
+
+            // (ppId, prItemId) XOR 검증
+            if ((ppId == null && prItemId == null) || (ppId != null && prItemId != null)) {
+                throw new InvalidWorkOrderRequestException();
+            }
+
+            ProductionPlan pp = null;
+            ProductionRequestItem prItem;
+
+            if(ppId != null) {
+                // --- PP(생산계힉) 기반 ---
+                pp = ppRepository.findById(ppId)
+                        .orElseThrow(ProductionPlanNotFoundException::new);
+
+                if (!"PP_CONFIRMED".equals(pp.getStatus())) throw new InvalidProductionPlanStatusException();
+                if (pp.getProductionLine().getId() != line.getId()) throw new ProductionLineMismatchException();
+
+                LocalDate start = DateTimeUtils.parse(pp.getStartDate());
+                LocalDate end = DateTimeUtils.parse(pp.getEndDate());
+                if (workDate.isBefore(start) || workDate.isAfter(end)) throw new WorkOrderInvalidPeriodException();
+
+                // 같은 WO 내 동일 PP 중복 방지(정책)
+                if (woItemRepository.existsByWorkOrder_IdAndProductionPlan_Id(wo.getId(), pp.getId())) {
+                    throw new WorkOrderItemAlreadyExistsException();
+                }
+
+                prItem = pp.getProductionRequestItem();
+
+            } else {
+                // --- PR 기반(계획 외/긴급) ---
+                prItem = prItemRepository.findById(prItemId)
+                        .orElseThrow(ProductionRequestItemNotFoundException::new);
+
+                if (woItemRepository.existsByWorkOrder_IdAndProductionRequestItem_IdAndProductionPlanIsNull(wo.getId(), prItem.getId())) {
+                    throw new WorkOrderItemAlreadyExistsException();
+                }
+            }
+
+            WorkOrderItem woItem = new WorkOrderItem(wo, pp, prItem, itemReq.getQuantity());
             woItemRepository.save(woItem);
 
-            // PR_ITEM 상태 변경
-            ProductionRequestItem prItem = pp.getProductionRequestItem();
-            if (!"PIS_PRODUCING".equals(prItem.getStatus())) {
-                prItem.changeStatus("PIS_PRODUCING");
+            Material fgMaterial;
+
+            if (pp != null) {
+                fgMaterial = pp.getMaterial();
+            } else {
+                String materialCode =
+                        prItem.getSalesOrderItem().getItemCode();
+
+                fgMaterial = materialRepository
+                        .findByMaterialCode(materialCode)
+                        .orElseThrow(MaterialNotFoundException::new);
             }
 
-            // PR 상태 변경 (같은 PR은 여러 번 와도 idempotent)
-            ProductionRequest pr = prItem.getProductionRequest();
-            if (!"PR_PRODUCING".equals(pr.getStatus())) {
-                pr.changeStatus("PR_PRODUCING");
+            List<Bom> bomList =
+                    bomRepository.findByMaterial_Id(fgMaterial.getId());
+            String now = DateTimeUtils.nowDateTime();
+
+            for (Bom bom : bomList) {
+                int addQty = woItem.getPlannedQuantity() * bom.getRequirement();
+                if (addQty <= 0) continue;
+
+                int rmId = bom.getRawMaterial().getId();
+
+                WorkOrderMaterial wom = workOrderMaterialRepository
+                        .findByWorkOrder_IdAndRawMaterial_Id(wo.getId(), rmId)
+                        .orElseGet(() -> WorkOrderMaterial.create(wo, bom.getRawMaterial(), 0, now));
+
+                wom.addPlannedQuantity(addQty); // planned_qty 누적
+                wom.touch(now);                 // updated_at 갱신 같은 것
+
+                workOrderMaterialRepository.save(wom);
             }
+
+
+
+            if (!"PIS_PRODUCING".equals(prItem.getStatus())) prItem.changeStatus("PIS_PRODUCING");
+            ProductionRequest pr = prItem.getProductionRequest();
+            if (!"PR_PRODUCING".equals(pr.getStatus())) pr.changeStatus("PR_PRODUCING");
         }
 
         int totalQuantity =
@@ -255,7 +292,15 @@ public class WOCommandServiceImpl implements WOCommandService {
             }
 
             // 3) WarehouseStock 증가 (material 기준)
-            Material material = woi.getProductionPlan().getMaterial();
+            Material material;
+
+            if (woi.getProductionPlan() != null) {
+                material = woi.getProductionPlan().getMaterial();
+            } else {
+                String itemCode = woi.getProductionRequestItem().getSalesOrderItem().getItemCode();
+                material = materialRepository.findByMaterialCode(itemCode)
+                        .orElseThrow(MaterialNotFoundException::new);
+            }
 
             WarehouseStock stock =
                     warehouseStockRepository.findByWarehouseIdAndMaterialId(1, material.getId())

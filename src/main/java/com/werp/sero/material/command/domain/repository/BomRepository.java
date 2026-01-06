@@ -30,4 +30,6 @@ public interface BomRepository extends JpaRepository<Bom, Integer> {
     @Modifying
     @Query("DELETE FROM Bom b WHERE b.material.id = :materialId")
     void deleteByMaterialId(int materialId);
+
+    List<Bom> findByMaterial_Id(int materialId);
 }
