@@ -91,5 +91,10 @@ public class WOQueryServiceImpl implements WOQueryService{
         return new ArrayList<>(lineMap.values());
     }
 
+    @Override
+    public List<WOEmergencyPRItemResponseDTO> getEmergencyTargets(int lineId) {
+        return woQueryMapper.selectEmergencyTargetsByLine(lineId);
+    }
+
 
 }

@@ -59,4 +59,14 @@ public class WOQueryController {
                 woQueryService.getDailyWorkOrders(date)
         );
     }
+
+    @Operation(summary = "라인 기준 긴급 작업 가능 PR Item 조회")
+    @GetMapping("/emergency-targets")
+    public ResponseEntity<List<WOEmergencyPRItemResponseDTO>> getEmergencyTargets(
+            @RequestParam int lineId
+    ) {
+        return ResponseEntity.ok(
+                woQueryService.getEmergencyTargets(lineId)
+        );
+    }
 }

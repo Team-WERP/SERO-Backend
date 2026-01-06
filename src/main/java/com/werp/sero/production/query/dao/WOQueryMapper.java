@@ -1,9 +1,6 @@
 package com.werp.sero.production.query.dao;
 
-import com.werp.sero.production.query.dto.WOByDateResponseDTO;
-import com.werp.sero.production.query.dto.WOByPRResponseDTO;
-import com.werp.sero.production.query.dto.WOByPPResponseDTO;
-import com.werp.sero.production.query.dto.WorkOrderDailyFlatDTO;
+import com.werp.sero.production.query.dto.*;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -18,4 +15,5 @@ public interface WOQueryMapper {
             @Param("date") String date
     );
 
+    List<WOEmergencyPRItemResponseDTO> selectEmergencyTargetsByLine(int lineId);
 }

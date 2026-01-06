@@ -13,4 +13,6 @@ public interface WOQueryService {
     WorkOrderResultResponse getResult(int woId);
 
     List<WorkOrderDailyResponseDTO> getDailyWorkOrders(String date);
+
+    List<WOEmergencyPRItemResponseDTO> getEmergencyTargets(int lineId);
 }
