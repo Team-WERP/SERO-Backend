@@ -220,11 +220,12 @@
             IFNULL(E.assignedQty, 0) AS assignedWoQuantity
 
         FROM production_line A
-                 JOIN production_plan B           ON A.id = B.production_line_id
-                 JOIN production_request_item C   ON C.id = B.pr_item_id
-                 JOIN sales_order_item D          ON D.id = C.so_item_id
-
-            -- 오늘치 작업지시 배정량 집계 (E)
+                 LEFT JOIN production_plan B ON A.id = B.production_line_id
+            AND B.status = 'PP_CONFIRMED'
+            AND B.start_date &lt;= #{date}
+            AND B.end_date   &gt;= #{date}
+                 LEFT JOIN production_request_item C ON C.id = B.pr_item_id
+                 LEFT JOIN sales_order_item D ON D.id = C.so_item_id
                  LEFT JOIN (
             SELECT
                 SUB_WI.pp_id AS ppId,
@@ -235,10 +236,6 @@
               AND SUB_WI.pp_id IS NOT NULL
             GROUP BY SUB_WI.pp_id
         ) E ON E.ppId = B.id
-
-        WHERE B.status = 'PP_CONFIRMED'
-          AND B.start_date &lt;= #{date}
-          AND B.end_date   &gt;= #{date}
 
         ORDER BY
             A.id ASC,

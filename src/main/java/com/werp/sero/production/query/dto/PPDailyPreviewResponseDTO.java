@@ -13,16 +13,16 @@ public class PPDailyPreviewResponseDTO {
     private int dailyCapacity;
 
     // Production Plan
-    private int ppId;
+    private Integer ppId;
     private String ppCode;
 
     // Item (PR Item 기준)
-    private int prItemId;
+    private Integer prItemId;
     private String itemCode;
     private String itemName;
     private String unit;
 
     // Quantity
-    private int dailyPlannedQuantity;   // 오늘 계획 수량
-    private int assignedWoQuantity;     // 오늘 배정된 작업지시량
+    private Integer dailyPlannedQuantity;   // 오늘 계획 수량
+    private Integer assignedWoQuantity;     // 오늘 배정된 작업지시량
 }
