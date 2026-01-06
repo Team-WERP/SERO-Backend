@@ -10,4 +10,6 @@ import java.util.List;
 public interface NoticeCommandService {
     NoticeResponseDTO registerNotice(final Employee employee, final NoticeCreateRequestDTO requestDTO,
                                      final List<MultipartFile> files);
+
+    void deleteNotice(final Employee employee, final int noticeId);
 }

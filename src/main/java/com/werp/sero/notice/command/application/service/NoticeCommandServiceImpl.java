@@ -14,6 +14,9 @@ import com.werp.sero.notice.command.domain.aggregate.Notice;
 import com.werp.sero.notice.command.domain.aggregate.NoticeAttachment;
 import com.werp.sero.notice.command.domain.repository.NoticeAttachmentRepository;
 import com.werp.sero.notice.command.domain.repository.NoticeRepository;
+import com.werp.sero.notice.exception.NoticeAccessDeniedException;
+import com.werp.sero.notice.exception.NoticeNotFoundException;
+import com.werp.sero.permission.command.domain.repository.EmployeePermissionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +35,7 @@ public class NoticeCommandServiceImpl implements NoticeCommandService {
     private final NoticeAttachmentRepository noticeAttachmentRepository;
     private final S3Uploader s3Uploader;
     private final FileValidator fileValidator;
+    private final EmployeePermissionRepository employeePermissionRepository;
 
     private final CommonCodeManageQueryService commonCodeManageQueryService;
 
@@ -56,6 +60,35 @@ public class NoticeCommandServiceImpl implements NoticeCommandService {
         }
 
         return NoticeResponseDTO.of(notice, attachments);
+    }
+
+    @Transactional
+    @Override
+    public void deleteNotice(final Employee employee, final int noticeId) {
+        final Notice notice = findById(noticeId);
+
+        validateNoticeAccess(employee, notice);
+
+        noticeAttachmentRepository.findByNoticeId(noticeId).forEach(
+                attachment -> s3Uploader.delete(attachment.getUrl())
+        );
+
+        noticeAttachmentRepository.deleteByNoticeId(noticeId);
+
+        noticeRepository.delete(notice);
+    }
+
+    private void validateNoticeAccess(final Employee employee, final Notice notice) {
+        final List<String> permissions = employeePermissionRepository.findPermissionCodeByEmployee(employee);
+
+        if (!permissions.contains("AC_SYS") && notice.getEmployee().getId() != employee.getId()) {
+            throw new NoticeAccessDeniedException();
+        }
+    }
+
+    private Notice findById(final int noticeId) {
+        return noticeRepository.findById(noticeId)
+                .orElseThrow(NoticeNotFoundException::new);
     }
 
     private void validateCategory(final String category) {

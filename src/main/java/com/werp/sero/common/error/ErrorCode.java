@@ -118,6 +118,7 @@ public enum ErrorCode {
     S3_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "FILE003", "S3 파일 업로드에 실패했습니다."),
     PDF_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "FILE004", "PDF 생성에 실패했습니다."),
     S3_URL_INVALID(HttpStatus.BAD_REQUEST, "FILE005", "유효하지 않은 S3 URL입니다."),
+    S3_DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "FILE006", "S3 파일 삭제에 실패했습니다."),
 
     /* PRODUCTION PLAN */
     PP_ALREADY_EXISTS(HttpStatus.CONFLICT, "PRODUCTION101", "이미 해당 생산요청 품목에 대한 생산계획이 존재합니다."),
@@ -152,7 +153,8 @@ public enum ErrorCode {
     WO_EXCEED_PLANNED_QUANTITY(HttpStatus.BAD_REQUEST,"PRODUCTION216", "아이템 생산 수량이 계획 수량을 초과할 수 없습니다."),
 
     /* NOTICE */
-    NOTICE_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTICE001", "공지사항을 찾을 수 없습니다.");
+    NOTICE_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTICE001", "공지사항을 찾을 수 없습니다."),
+    NOTICE_ACCESS_DENIED(HttpStatus.BAD_REQUEST, "NOTICE002", "공지사항 수정/삭제 권한이 없습니다.");
 
 
     private final HttpStatus status;
