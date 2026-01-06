@@ -5,14 +5,10 @@ import com.werp.sero.notification.command.domain.aggregate.enums.NotificationTyp
 import com.werp.sero.notification.command.infrastructure.event.NotificationEvent;
 import com.werp.sero.order.command.application.service.SOStateService;
 import com.werp.sero.order.command.domain.aggregate.SalesOrder;
-import com.werp.sero.order.command.domain.aggregate.SalesOrderItem;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItemHistory;
-import com.werp.sero.order.command.domain.aggregate.enums.SalesOrderNotificationType;
 import com.werp.sero.order.command.domain.repository.SalesOrderItemHistoryRepository;
 import com.werp.sero.order.command.domain.repository.SORepository;
 import com.werp.sero.order.exception.SalesOrderNotFoundException;
-import com.werp.sero.order.query.dto.SOItemsHistoryResponseDTO;
-import com.werp.sero.order.query.service.SOQueryService;
 import com.werp.sero.shipping.command.domain.aggregate.Delivery;
 import com.werp.sero.shipping.command.domain.aggregate.GoodsIssue;
 import com.werp.sero.shipping.command.domain.aggregate.GoodsIssueItem;

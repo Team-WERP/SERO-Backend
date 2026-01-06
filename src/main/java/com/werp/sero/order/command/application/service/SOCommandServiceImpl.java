@@ -7,22 +7,14 @@ import com.werp.sero.notification.command.domain.aggregate.enums.NotificationTyp
 import com.werp.sero.notification.command.infrastructure.event.NotificationEvent;
 import com.werp.sero.order.command.application.dto.SOCancelRequestDTO;
 import com.werp.sero.order.command.application.dto.SODetailResponseDTO;
-import com.werp.sero.order.command.application.dto.SOGoalResponseDTO;
 import com.werp.sero.order.command.domain.aggregate.SalesOrder;
-import com.werp.sero.order.command.domain.aggregate.SalesOrderGoal;
-import com.werp.sero.order.command.domain.aggregate.enums.SalesOrderNotificationType;
-import com.werp.sero.order.command.domain.repository.SOGoalRepository;
 import com.werp.sero.order.command.domain.repository.SORepository;
 import com.werp.sero.order.exception.OrderCannotBeCanceledException;
-import com.werp.sero.order.exception.SalesOrderMonthlyGoalNotFoundException;
 import com.werp.sero.order.exception.SalesOrderNotFoundException;
-import jakarta.persistence.criteria.Order;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @RequiredArgsConstructor
 @Service
