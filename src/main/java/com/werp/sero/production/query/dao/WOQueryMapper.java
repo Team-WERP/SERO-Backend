@@ -16,4 +16,18 @@ public interface WOQueryMapper {
     );
 
     List<WOEmergencyPRItemResponseDTO> selectEmergencyTargetsByLine(int lineId);
+
+    List<WorkOrderResultListResponseDTO> selectWorkOrderResultList(
+            @Param("startDate") String startDate,
+            @Param("endDate") String endDate,
+            @Param("lineId") Integer lineId,
+            @Param("keyword") String keyword
+    );
+
+    WorkOrderBaseDetailDTO selectWorkOrderBaseDetail(@Param("woId") int woId);
+
+    List<WorkOrderItemDetailDTO> selectWorkOrderItemDetails(@Param("woId") int woId);
+
+    List<WorkOrderMaterialDetailDTO> selectWorkOrderMaterialDetails(@Param("woId") int woId);
+
 }
