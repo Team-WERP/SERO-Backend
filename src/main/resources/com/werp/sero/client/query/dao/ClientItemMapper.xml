@@ -7,10 +7,12 @@
     <!-- ResultMap 정의 -->
     <resultMap id="clientItemResultMap" type="com.werp.sero.client.query.dto.ClientItemResponseDTO">
         <id property="id" column="id"/>
+        <result property="itemId" column="item_id"/>
         <result property="itemCode" column="item_code"/>
         <result property="itemName" column="item_name"/>
         <result property="spec" column="spec"/>
         <result property="unit" column="unit"/>
+        <result property="unitPrice" column="unit_price"/>
         <result property="contractPrice" column="contract_price"/>
         <result property="moq" column="moq"/>
         <result property="status" column="status"/>
@@ -20,10 +22,12 @@
     <sql id="selectClientItemColumns">
         SELECT
             A.id,
+            A.item_id,
             B.material_code AS item_code,
             B.name AS item_name,
             B.spec,
             B.base_unit AS unit,
+            B.unit_price,
             A.contract_price,
             B.moq,
             A.status
