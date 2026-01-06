@@ -29,6 +29,7 @@ import java.util.List;
 public class SOCommandServiceImpl implements SOCommandService{
     private final SORepository orderRepository;
     private final EmployeeRepository employeeRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     @Override
@@ -42,6 +43,14 @@ public class SOCommandServiceImpl implements SOCommandService{
             throw new OrderCannotBeCanceledException();
         }
         salesOrder.cancel(request.getRejectionReason());
+
+        eventPublisher.publishEvent(NotificationEvent.forClient(
+                NotificationType.ORDER,
+                "주문 취소",
+                "주문번호 " + salesOrder.getSoCode() + "가 취소되었습니다. 사유를 확인해주세요",
+                salesOrder.getClientEmployee().getId(),
+                "client-portal/order/management" + salesOrder.getId()
+        ));
 
         return SODetailResponseDTO.of(salesOrder);
     }
