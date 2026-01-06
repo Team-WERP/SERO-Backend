@@ -51,11 +51,11 @@ public class MaterialQueryServiceImpl implements MaterialQueryService {
 
         // DEBUG: imageUrl 확인
         if (!results.isEmpty()) {
-            log.info("===== DEBUG: Material imageUrl check =====");
-            log.info("First material ID: {}", results.get(0).getId());
-            log.info("First material name: {}", results.get(0).getName());
-            log.info("First material imageUrl: {}", results.get(0).getImageUrl());
-            log.info("==========================================");
+            System.out.println("===== DEBUG: Material imageUrl check =====");
+            System.out.println("First material ID: " + results.get(0).getId());
+            System.out.println("First material name: " + results.get(0).getName());
+            System.out.println("First material imageUrl: " + results.get(0).getImageUrl());
+            System.out.println("==========================================");
         }
 
         return results;
