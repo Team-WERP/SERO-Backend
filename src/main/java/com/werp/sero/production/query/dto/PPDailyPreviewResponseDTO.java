@@ -22,6 +22,11 @@ public class PPDailyPreviewResponseDTO {
     private String itemName;
     private String unit;
 
+    // Material
+    private Integer materialId;
+    private String materialCode;
+    private String baseUnit;
+
     // Quantity
     private Integer dailyPlannedQuantity;   // 오늘 계획 수량
     private Integer assignedWoQuantity;     // 오늘 배정된 작업지시량

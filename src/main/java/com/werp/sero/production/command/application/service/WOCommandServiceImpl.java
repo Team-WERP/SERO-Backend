@@ -2,7 +2,9 @@ package com.werp.sero.production.command.application.service;
 
 import com.werp.sero.common.util.DateTimeUtils;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
+import com.werp.sero.material.command.domain.aggregate.Bom;
 import com.werp.sero.material.command.domain.aggregate.Material;
+import com.werp.sero.material.command.domain.repository.BomRepository;
 import com.werp.sero.material.command.domain.repository.MaterialRepository;
 import com.werp.sero.material.exception.MaterialNotFoundException;
 import com.werp.sero.notification.command.domain.aggregate.enums.NotificationType;
@@ -48,6 +50,8 @@ public class WOCommandServiceImpl implements WOCommandService {
     private final ProductionLineRepository productionLineRepository;
     private final PRItemRepository prItemRepository;
     private final MaterialRepository materialRepository;
+    private final BomRepository bomRepository;
+    private final WorkOrderMaterialRepository workOrderMaterialRepository;
 
     @Override
     @Transactional
@@ -125,6 +129,41 @@ public class WOCommandServiceImpl implements WOCommandService {
 
             WorkOrderItem woItem = new WorkOrderItem(wo, pp, prItem, itemReq.getQuantity());
             woItemRepository.save(woItem);
+
+            Material fgMaterial;
+
+            if (pp != null) {
+                fgMaterial = pp.getMaterial();
+            } else {
+                String materialCode =
+                        prItem.getSalesOrderItem().getItemCode();
+
+                fgMaterial = materialRepository
+                        .findByMaterialCode(materialCode)
+                        .orElseThrow(MaterialNotFoundException::new);
+            }
+
+            List<Bom> bomList =
+                    bomRepository.findByMaterial_Id(fgMaterial.getId());
+            String now = DateTimeUtils.nowDateTime();
+
+            for (Bom bom : bomList) {
+                int addQty = woItem.getPlannedQuantity() * bom.getRequirement();
+                if (addQty <= 0) continue;
+
+                int rmId = bom.getRawMaterial().getId();
+
+                WorkOrderMaterial wom = workOrderMaterialRepository
+                        .findByWorkOrder_IdAndRawMaterial_Id(wo.getId(), rmId)
+                        .orElseGet(() -> WorkOrderMaterial.create(wo, bom.getRawMaterial(), 0, now));
+
+                wom.addPlannedQuantity(addQty); // planned_qty 누적
+                wom.touch(now);                 // updated_at 갱신 같은 것
+
+                workOrderMaterialRepository.save(wom);
+            }
+
+
 
             if (!"PIS_PRODUCING".equals(prItem.getStatus())) prItem.changeStatus("PIS_PRODUCING");
             ProductionRequest pr = prItem.getProductionRequest();

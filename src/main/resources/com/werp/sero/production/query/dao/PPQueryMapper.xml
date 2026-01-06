@@ -194,52 +194,68 @@
             resultType="com.werp.sero.production.query.dto.PPDailyPreviewResponseDTO">
 
         SELECT
-            -- Line (A)
-            A.id               AS lineId,
-            A.line_name        AS lineName,
-            A.daily_capacity   AS dailyCapacity,
+        -- Line (A)
+        A.id               AS lineId,
+        A.line_name        AS lineName,
+        A.daily_capacity   AS dailyCapacity,
 
-            -- PP (B)
-            B.id               AS ppId,
-            B.pp_code          AS ppCode,
+        -- PP (B)
+        B.id               AS ppId,
+        B.pp_code          AS ppCode,
 
-            -- PR Item (C)
-            C.id               AS prItemId,
+        -- PR Item (C)
+        C.id               AS prItemId,
 
-            -- Item (D)
-            D.item_code      AS itemCode,
-            D.item_name      AS itemName,
-            D.unit           AS unit,
+        -- Item (D)
+        D.item_code        AS itemCode,
+        D.item_name        AS itemName,
+        D.unit             AS unit,
 
-            -- 오늘 계획 수량
-            CEILING(
-                    B.production_quantity / (DATEDIFF(B.end_date, B.start_date) + 1)
-                ) AS dailyPlannedQuantity,
+        -- Material (M)
+        M.id               AS materialId,
+        M.material_code    AS materialCode,
+        M.base_unit        AS baseUnit,
 
-            -- 오늘 작업지시 배정 수량
-            IFNULL(E.assignedQty, 0) AS assignedWoQuantity
+        -- 오늘 계획 수량
+        CEILING(
+        B.production_quantity / (DATEDIFF(B.end_date, B.start_date) + 1)
+        ) AS dailyPlannedQuantity,
+
+        -- 오늘 작업지시 배정 수량
+        IFNULL(E.assignedQty, 0) AS assignedWoQuantity
 
         FROM production_line A
-                 LEFT JOIN production_plan B ON A.id = B.production_line_id
-            AND B.status = 'PP_CONFIRMED'
-            AND B.start_date &lt;= #{date}
-            AND B.end_date   &gt;= #{date}
-                 LEFT JOIN production_request_item C ON C.id = B.pr_item_id
-                 LEFT JOIN sales_order_item D ON D.id = C.so_item_id
-                 LEFT JOIN (
-            SELECT
-                SUB_WI.pp_id AS ppId,
-                SUM(SUB_WI.planned_quantity) AS assignedQty
-            FROM work_order SUB_W
-                     JOIN work_order_item SUB_WI ON SUB_WI.work_order_id = SUB_W.id
-            WHERE SUB_W.work_date = #{date}
-              AND SUB_WI.pp_id IS NOT NULL
-            GROUP BY SUB_WI.pp_id
+        LEFT JOIN production_plan B
+        ON A.id = B.production_line_id
+        AND B.status = 'PP_CONFIRMED'
+        AND B.start_date &lt;= #{date}
+        AND B.end_date   &gt;= #{date}
+
+        LEFT JOIN production_request_item C
+        ON C.id = B.pr_item_id
+
+        LEFT JOIN sales_order_item D
+        ON D.id = C.so_item_id
+
+        LEFT JOIN material M
+        ON M.material_code = D.item_code
+        AND M.type = 'MAT_FG'
+
+        LEFT JOIN (
+        SELECT
+        SUB_WI.pp_id AS ppId,
+        SUM(SUB_WI.planned_quantity) AS assignedQty
+        FROM work_order SUB_W
+        JOIN work_order_item SUB_WI
+        ON SUB_WI.work_order_id = SUB_W.id
+        WHERE SUB_W.work_date = #{date}
+        AND SUB_WI.pp_id IS NOT NULL
+        GROUP BY SUB_WI.pp_id
         ) E ON E.ppId = B.id
 
         ORDER BY
-            A.id ASC,
-            B.pp_code ASC
+        A.id ASC,
+        B.pp_code ASC
     </select>
 
     <!-- ===================================================== -->
