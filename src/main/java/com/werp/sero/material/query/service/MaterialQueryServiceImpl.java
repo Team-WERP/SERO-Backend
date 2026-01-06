@@ -8,6 +8,7 @@ import com.werp.sero.material.query.dto.MaterialDetailResponseDTO;
 import com.werp.sero.material.query.dto.MaterialListResponseDTO;
 import com.werp.sero.material.query.dto.MaterialWithBomResponseDTO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +18,7 @@ import java.util.List;
 /**
  * 자재 Query Service 구현체 (조회 전용)
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -45,7 +47,18 @@ public class MaterialQueryServiceImpl implements MaterialQueryService {
         }
 
         // 3. 자재 목록 조회
-        return materialMapper.findByCondition(type, status, keyword);
+        List<MaterialListResponseDTO> results = materialMapper.findByCondition(type, status, keyword);
+
+        // DEBUG: imageUrl 확인
+        if (!results.isEmpty()) {
+            log.info("===== DEBUG: Material imageUrl check =====");
+            log.info("First material ID: {}", results.get(0).getId());
+            log.info("First material name: {}", results.get(0).getName());
+            log.info("First material imageUrl: {}", results.get(0).getImageUrl());
+            log.info("==========================================");
+        }
+
+        return results;
     }
 
     @Override
