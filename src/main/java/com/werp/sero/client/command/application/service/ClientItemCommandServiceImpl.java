@@ -2,10 +2,13 @@ package com.werp.sero.client.command.application.service;
 
 import com.werp.sero.client.command.application.dto.ClientItemCreateRequest;
 import com.werp.sero.client.command.application.dto.ClientItemCreateResponse;
+import com.werp.sero.client.command.application.dto.ClientItemUpdateRequest;
+import com.werp.sero.client.command.application.dto.ClientItemUpdateResponse;
 import com.werp.sero.client.command.domain.aggregate.Client;
 import com.werp.sero.client.command.domain.aggregate.ClientItem;
 import com.werp.sero.client.command.domain.repository.ClientItemRepository;
 import com.werp.sero.client.command.domain.repository.ClientRepository;
+import com.werp.sero.client.query.dao.ClientItemMapper;
 import com.werp.sero.common.error.ErrorCode;
 import com.werp.sero.common.error.exception.BusinessException;
 import com.werp.sero.material.command.domain.aggregate.Material;
@@ -21,6 +24,7 @@ public class ClientItemCommandServiceImpl implements ClientItemCommandService {
     private final ClientItemRepository clientItemRepository;
     private final ClientRepository clientRepository;
     private final MaterialRepository materialRepository;
+    private final ClientItemMapper clientItemMapper;
 
     @Override
     @Transactional
@@ -53,5 +57,48 @@ public class ClientItemCommandServiceImpl implements ClientItemCommandService {
                 .contractPrice(savedItem.getContractPrice())
                 .status(savedItem.getStatus())
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public ClientItemUpdateResponse updateClientItem(Integer clientId, Integer itemId, ClientItemUpdateRequest request) {
+        // 거래 품목 존재 여부 및 고객사 소속 확인
+        ClientItem clientItem = clientItemRepository.findById(itemId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.CLIENT_ITEM_NOT_FOUND));
+
+        // 해당 품목이 요청한 고객사에 속하는지 검증
+        if (!clientItemMapper.existsByIdAndClientId(clientId, itemId)) {
+            throw new BusinessException(ErrorCode.CLIENT_ITEM_NOT_FOUND);
+        }
+
+        // 단가 수정
+        clientItem.updateContractPrice(request.getContractPrice());
+
+        // 응답 DTO 생성
+        return ClientItemUpdateResponse.builder()
+                .id(clientItem.getId())
+                .clientId(clientItem.getClient().getId())
+                .itemId(clientItem.getMaterial().getId())
+                .itemCode(clientItem.getMaterial().getMaterialCode())
+                .itemName(clientItem.getMaterial().getName())
+                .contractPrice(clientItem.getContractPrice())
+                .status(clientItem.getStatus())
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public void deleteClientItem(Integer clientId, Integer itemId) {
+        // 거래 품목 존재 여부 및 고객사 소속 확인
+        ClientItem clientItem = clientItemRepository.findById(itemId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.CLIENT_ITEM_NOT_FOUND));
+
+        // 해당 품목이 요청한 고객사에 속하는지 검증
+        if (!clientItemMapper.existsByIdAndClientId(clientId, itemId)) {
+            throw new BusinessException(ErrorCode.CLIENT_ITEM_NOT_FOUND);
+        }
+
+        // 삭제
+        clientItemRepository.delete(clientItem);
     }
 }
