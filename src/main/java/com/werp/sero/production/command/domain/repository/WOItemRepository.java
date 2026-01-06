@@ -24,4 +24,6 @@ public interface WOItemRepository extends JpaRepository<WorkOrderItem, Integer> 
     );
 
     List<WorkOrderItem> findByWorkOrderId(int woId);
+
+    boolean existsByWorkOrder_IdAndProductionRequestItem_IdAndProductionPlanIsNull(int woId, int prItemId);
 }

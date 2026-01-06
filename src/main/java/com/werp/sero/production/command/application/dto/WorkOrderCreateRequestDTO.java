@@ -13,7 +13,9 @@ public class WorkOrderCreateRequestDTO {
 
     @Getter
     public static class Item {
-        private int ppId;
+        private Integer ppId;      // nullable
+        private Integer prItemId;  // nullable
         private int quantity;
+        private Boolean emergency; // 표시용/정책용
     }
 }
