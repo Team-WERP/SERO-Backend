@@ -149,7 +149,10 @@ public enum ErrorCode {
     WO_INVALID_DISTRIBUTED_QUANTITY(HttpStatus.BAD_REQUEST,"PRODUCTION213", "아이템별 생산 수량 합계가 양품 수량과 일치하지 않습니다."),
     WO_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "PRODUCTION214", "작업지시 아이템을 찾을 수 없습니다."),
     WO_INVALID_PRODUCED_QUANTITY(HttpStatus.BAD_REQUEST,"PRODUCTION215", "생산 수량은 0 이상이어야 합니다."),
-    WO_EXCEED_PLANNED_QUANTITY(HttpStatus.BAD_REQUEST,"PRODUCTION216", "아이템 생산 수량이 계획 수량을 초과할 수 없습니다.");
+    WO_EXCEED_PLANNED_QUANTITY(HttpStatus.BAD_REQUEST,"PRODUCTION216", "아이템 생산 수량이 계획 수량을 초과할 수 없습니다."),
+
+    /* NOTICE */
+    NOTICE_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTICE001", "공지사항을 찾을 수 없습니다.");
 
 
     private final HttpStatus status;
