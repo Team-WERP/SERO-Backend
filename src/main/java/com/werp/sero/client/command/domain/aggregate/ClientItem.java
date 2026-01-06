@@ -3,8 +3,12 @@ package com.werp.sero.client.command.domain.aggregate;
 import com.werp.sero.material.command.domain.aggregate.Material;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Getter
 @Table(name = "client_item")
@@ -34,4 +38,18 @@ public class ClientItem {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "item_id", nullable = false)
     private Material material;
+
+    @Builder
+    public ClientItem(Client client, Material material, int contractPrice) {
+        this.client = client;
+        this.material = material;
+        this.contractPrice = contractPrice;
+        this.status = "TRADE_NORMAL";
+        this.createdAt = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+    }
+
+    public void updateContractPrice(int newPrice) {
+        this.contractPrice = newPrice;
+        this.updatedAt = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+    }
 }
