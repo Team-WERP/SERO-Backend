@@ -1,12 +1,10 @@
 package com.werp.sero.client.query.service;
 
+import com.werp.sero.client.command.domain.aggregate.Client;
 import com.werp.sero.client.query.dao.ClientAddressMapper;
 import com.werp.sero.client.query.dao.ClientItemMapper;
 import com.werp.sero.client.query.dao.ClientMapper;
-import com.werp.sero.client.query.dto.ClientAddressResponseDTO;
-import com.werp.sero.client.query.dto.ClientDetailResponseDTO;
-import com.werp.sero.client.query.dto.ClientItemResponseDTO;
-import com.werp.sero.client.query.dto.ClientListResponseDTO;
+import com.werp.sero.client.query.dto.*;
 import com.werp.sero.common.error.ErrorCode;
 import com.werp.sero.common.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
@@ -61,6 +59,31 @@ public class ClientQueryServiceImpl implements ClientQueryService {
                 .unpaidAmount(client.getUnpaidAmount())
                 .addresses(addresses)
                 .items(items)
+                .build();
+    }
+
+    @Override
+    public ClientPortalDetailResponseDTO getClientDetailForClient(final int id) {
+        ClientDetailResponseDTO detail = clientMapper.findClientById(id);
+
+        if (detail == null) {
+            throw new BusinessException(ErrorCode.CLIENT_NOT_FOUND);
+        }
+
+        return ClientPortalDetailResponseDTO.builder()
+                .id(detail.getId())
+                .companyName(detail.getCompanyName())
+                .businessNumber(detail.getBusinessNumber())
+                .businessType(detail.getBusinessType())
+                .businessItem(detail.getBusinessItem())
+                .ceoName(detail.getCeoName())
+                .phoneNumber(detail.getPhoneNumber())
+                .managerName(detail.getManagerName())
+                .managerContact(detail.getManagerContact())
+                .managerEmail(detail.getManagerEmail())
+                .creditLimit(detail.getCreditLimit())
+                .receivables(detail.getReceivables())
+                .unpaidAmount(detail.getUnpaidAmount())
                 .build();
     }
 }
