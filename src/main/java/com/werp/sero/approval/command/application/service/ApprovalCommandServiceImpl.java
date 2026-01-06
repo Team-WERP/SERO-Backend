@@ -16,7 +16,10 @@ import com.werp.sero.employee.command.domain.repository.EmployeeRepository;
 import com.werp.sero.employee.exception.EmployeeNotFoundException;
 import com.werp.sero.notification.command.domain.aggregate.enums.NotificationType;
 import com.werp.sero.notification.command.infrastructure.event.NotificationEvent;
+import com.werp.sero.order.command.application.dto.SODetailResponseDTO;
+import com.werp.sero.order.command.application.service.SOStateService;
 import com.werp.sero.order.command.domain.aggregate.SalesOrder;
+import com.werp.sero.order.command.domain.aggregate.enums.SalesOrderNotificationType;
 import com.werp.sero.order.command.domain.repository.SORepository;
 import com.werp.sero.production.command.domain.aggregate.ProductionRequest;
 import com.werp.sero.shipping.command.domain.aggregate.GoodsIssue;
@@ -193,6 +196,15 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
                 }
 
                 so.updateApprovalInfo(so.getApprovalCode(), (isRejected ? "ORD_APPR_RJCT" : "ORD_APPR_DONE"));
+
+                if(!isRejected){
+                    sendOrderNotification(
+                        so,
+                        SalesOrderNotificationType.INPROGRESS,
+                        so.getClientEmployee().getId(),
+                        "client-portal/order/management" + so.getId()
+                    );
+                }
             }
             case "GI" -> {
                 final GoodsIssue gi = (GoodsIssue) object;
@@ -390,5 +402,17 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
                 }
             }
         }
+    }
+
+
+    private void sendOrderNotification(final SalesOrder order, final SalesOrderNotificationType type,
+                                       final int clientEmployeeId, final String redirectUrl) {
+        applicationEventPublisher.publishEvent(NotificationEvent.forClient(
+                NotificationType.ORDER,
+                type.getTitle(order),
+                type.getContent(order),
+                clientEmployeeId,
+                redirectUrl
+        ));
     }
 }

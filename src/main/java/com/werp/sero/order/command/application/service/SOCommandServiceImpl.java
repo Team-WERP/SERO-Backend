@@ -3,11 +3,14 @@ package com.werp.sero.order.command.application.service;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
 import com.werp.sero.employee.command.domain.repository.EmployeeRepository;
 import com.werp.sero.employee.exception.EmployeeNotFoundException;
+import com.werp.sero.notification.command.domain.aggregate.enums.NotificationType;
+import com.werp.sero.notification.command.infrastructure.event.NotificationEvent;
 import com.werp.sero.order.command.application.dto.SOCancelRequestDTO;
 import com.werp.sero.order.command.application.dto.SODetailResponseDTO;
 import com.werp.sero.order.command.application.dto.SOGoalResponseDTO;
 import com.werp.sero.order.command.domain.aggregate.SalesOrder;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderGoal;
+import com.werp.sero.order.command.domain.aggregate.enums.SalesOrderNotificationType;
 import com.werp.sero.order.command.domain.repository.SOGoalRepository;
 import com.werp.sero.order.command.domain.repository.SORepository;
 import com.werp.sero.order.exception.OrderCannotBeCanceledException;
@@ -15,8 +18,11 @@ import com.werp.sero.order.exception.SalesOrderMonthlyGoalNotFoundException;
 import com.werp.sero.order.exception.SalesOrderNotFoundException;
 import jakarta.persistence.criteria.Order;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -47,7 +53,7 @@ public class SOCommandServiceImpl implements SOCommandService{
                 .orElseThrow(SalesOrderNotFoundException::new);
 
         Employee manager = employeeRepository.findById(empId)
-                .orElseThrow(EmployeeNotFoundException :: new);
+                .orElseThrow(EmployeeNotFoundException::new);
 
         salesOrder.updateManager(manager);
 

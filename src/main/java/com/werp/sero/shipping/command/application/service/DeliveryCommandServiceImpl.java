@@ -7,8 +7,10 @@ import com.werp.sero.order.command.application.service.SOStateService;
 import com.werp.sero.order.command.domain.aggregate.SalesOrder;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItem;
 import com.werp.sero.order.command.domain.aggregate.SalesOrderItemHistory;
+import com.werp.sero.order.command.domain.aggregate.enums.SalesOrderNotificationType;
 import com.werp.sero.order.command.domain.repository.SalesOrderItemHistoryRepository;
 import com.werp.sero.order.command.domain.repository.SORepository;
+import com.werp.sero.order.exception.SalesOrderNotFoundException;
 import com.werp.sero.order.query.dto.SOItemsHistoryResponseDTO;
 import com.werp.sero.order.query.service.SOQueryService;
 import com.werp.sero.shipping.command.domain.aggregate.Delivery;
@@ -67,7 +69,9 @@ public class DeliveryCommandServiceImpl implements DeliveryCommandService {
         delivery.startDelivery();
         // @Transactional이 자동으로 변경사항 저장 (dirty checking)
 
-        // 5. 출고지시 담당자에게 알림 발송
+        // 5. 출고지시 담당자 및 고객사 담당자에게 알림 발송
+        SalesOrder so = delivery.getGoodsIssue().getSalesOrder();
+
         if (delivery.getGoodsIssue().getManager() != null) {
             eventPublisher.publishEvent(new NotificationEvent(
                 NotificationType.SHIPPING,
@@ -75,6 +79,14 @@ public class DeliveryCommandServiceImpl implements DeliveryCommandService {
                 "출고지시 " + giCode + "의 배송이 출발했습니다. (기사: " + driver.getName() + ")",
                 delivery.getGoodsIssue().getManager().getId(),
                 "/warehouse/goods-issues/" + delivery.getGoodsIssue().getId()
+            ));
+
+            eventPublisher.publishEvent(NotificationEvent.forClient(
+                    NotificationType.SHIPPING,
+                    "배송 출발",
+                    "주문번호 " + so.getSoCode() + "의 배송이 출발했습니다. (기사: " + driver.getName() + ")",
+                    so.getClientEmployee().getId(),
+                    "client-portal/order/management" + so.getId()
             ));
         }
     }
@@ -118,11 +130,12 @@ public class DeliveryCommandServiceImpl implements DeliveryCommandService {
         salesOrderItemHistoryRepository.saveAll(histories);
 
         GoodsIssue gi = giRepository.findByGiCode(giCode).orElseThrow(GoodsIssueNotFoundException::new);
+        SalesOrder so = soRepository.findById(gi.getSalesOrder().getId()).orElseThrow(SalesOrderNotFoundException::new);
 
         // 6. 주문 상태 업데이트
         orderStateService.updateOrderStateByHistory(gi.getSalesOrder().getId());
 
-        // 7. 출고지시 담당자에게 알림 발송
+        // 7. 출고지시 담당자 및 고객사 담당자에게 알림 발송
         if (delivery.getGoodsIssue().getManager() != null) {
             eventPublisher.publishEvent(new NotificationEvent(
                 NotificationType.SHIPPING,
@@ -130,6 +143,14 @@ public class DeliveryCommandServiceImpl implements DeliveryCommandService {
                 "출고지시 " + giCode + "의 배송이 완료되었습니다. (기사: " + driver.getName() + ")",
                 delivery.getGoodsIssue().getManager().getId(),
                 "/warehouse/goods-issues/" + giCode
+            ));
+
+            eventPublisher.publishEvent(NotificationEvent.forClient(
+                    NotificationType.SHIPPING,
+                    "배송 도착",
+                    "주문번호 " + so.getSoCode() + "의 배송이 완료되었습니다. (기사: " + driver.getName() + ")",
+                    so.getClientEmployee().getId(),
+                    "client-portal/order/management" + so.getId()
             ));
         }
     }
