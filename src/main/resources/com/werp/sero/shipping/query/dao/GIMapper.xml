@@ -53,6 +53,13 @@
         <result property="managerPosition" column="manager_position"/>
         <result property="managerRank" column="manager_rank"/>
 
+        <!-- 배송 정보 -->
+        <result property="trackingNumber" column="tracking_number"/>
+        <result property="driverName" column="driver_name"/>
+        <result property="driverContact" column="driver_contact"/>
+        <result property="departedAt" column="departed_at"/>
+        <result property="arrivedAt" column="arrived_at"/>
+
         <!-- 출고지시 품목 목록 (Collection) -->
         <collection property="items" ofType="com.werp.sero.shipping.query.dto.GIDetailResponseDTO$GIDetailItemDTO">
             <id property="giItemCode" column="gi_item_code"/>
@@ -147,7 +154,14 @@
             M.status AS approval_status,
             M.line_type AS line_type,
             M.processed_at AS approval_processed_at,
-            M.note AS approval_note
+            M.note AS approval_note,
+
+            /* 배송 정보 */
+            DL.tracking_number,
+            DL.driver_name,
+            DL.driver_contact,
+            DL.departed_at,
+            DL.arrived_at
 
         FROM goods_issue A
         INNER JOIN sales_order B ON A.so_id = B.id
@@ -172,6 +186,7 @@
         LEFT JOIN department O ON N.dept_id = O.id
         LEFT JOIN common_code S ON N.position_code = S.code
         LEFT JOIN common_code T ON N.rank_code = T.code
+        LEFT JOIN delivery DL ON A.id = DL.gi_id
 
         WHERE A.id = #{id}
         ORDER BY H.id, M.sequence
