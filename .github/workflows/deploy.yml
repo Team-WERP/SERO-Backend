@@ -100,7 +100,7 @@ jobs:
           echo "Generated application.yml:"
           cat src/main/resources/application.yml
         env:
-          PORT: '5000'
+          PORT: '8080'
           SPRING_DATASOURCE_URL: jdbc:mariadb://${{ secrets.RDS_HOSTNAME }}:${{ secrets.RDS_PORT }}/${{ secrets.RDS_DB_NAME }}
           SPRING_DATASOURCE_USERNAME: ${{ secrets.RDS_USERNAME }}
           SPRING_DATASOURCE_PASSWORD: ${{ secrets.RDS_PASSWORD }}
