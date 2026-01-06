@@ -137,7 +137,7 @@ jobs:
       # CD: Elastic Beanstalk 배포
       #################################################
 
-      # 1. JAR 파일 이름 확인 및 복사
+      # 1. JAR 파일 이름 확인 및 ZIP 패키지 생성
       - name: Prepare deployment artifact
         run: |
           echo "> JAR 파일 확인"
@@ -146,6 +146,16 @@ jobs:
           # application.jar가 이미 생성되어 있음 (build.gradle에서 설정)
           echo "> application.jar 준비 완료"
           ls -lh build/libs/application.jar
+
+          # ZIP 패키지 생성 (.platform, .ebextensions 포함)
+          echo "> ZIP 패키지 생성"
+          mkdir -p deploy
+          cp build/libs/application.jar deploy/
+          cp -r .platform deploy/
+          cp -r .ebextensions deploy/
+          cd deploy && zip -r ../application.zip . && cd ..
+          echo "> ZIP 패키지 생성 완료"
+          ls -lh application.zip
 
       # 2. AWS 자격 증명 설정
       - name: Configure AWS credentials
@@ -165,6 +175,6 @@ jobs:
           environment_name: Sero-b-env
           version_label: sero-${{steps.current-time.outputs.formattedTime}}
           region: ap-northeast-2
-          deployment_package: build/libs/application.jar
+          deployment_package: application.zip
           wait_for_deployment: true
           wait_for_environment_recovery: 120
