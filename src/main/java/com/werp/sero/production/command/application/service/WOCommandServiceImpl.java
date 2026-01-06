@@ -70,17 +70,15 @@ public class WOCommandServiceImpl implements WOCommandService {
         LocalDate workDate = DateTimeUtils.parse(request.getWorkDate());
 
         // WorkOrder 생성 or 조회 (라인 + 날짜 기준)
-        WorkOrder wo = woRepository
-                .findByProductionLine_IdAndWorkDate(line.getId(), request.getWorkDate())
-                .orElseGet(() -> woRepository.save(
-                        new WorkOrder(
-                                documentSequenceCommandService.generateDocumentCode("DOC_WO"),
-                                request.getWorkDate(),
-                                line,
-                                currentEmployee,
-                                currentEmployee
-                        )
-                ));
+        WorkOrder wo = woRepository.save(
+                new WorkOrder(
+                        documentSequenceCommandService.generateDocumentCode("DOC_WO"),
+                        request.getWorkDate(),
+                        line,
+                        currentEmployee,
+                        currentEmployee
+                )
+        );
 
         // PP 단위 처리
         for (WorkOrderCreateRequestDTO.Item itemReq : request.getItems()) {
