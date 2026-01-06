@@ -63,6 +63,7 @@ public class WOQueryServiceImpl implements WOQueryService{
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<WorkOrderDailyResponseDTO> getDailyWorkOrders(String date) {
         List<WorkOrderDailyFlatDTO> rows =
                 woQueryMapper.selectDailyWorkOrders(date);
@@ -92,9 +93,27 @@ public class WOQueryServiceImpl implements WOQueryService{
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<WOEmergencyPRItemResponseDTO> getEmergencyTargets(int lineId) {
         return woQueryMapper.selectEmergencyTargetsByLine(lineId);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<WorkOrderResultListResponseDTO> getWorkOrderResultList(
+            String startDate,
+            String endDate,
+            Integer lineId,
+            String keyword
+    ) {
+        return woQueryMapper.selectWorkOrderResultList(
+                startDate,
+                endDate,
+                lineId,
+                keyword
+        );
+    }
+
 
 
 }

@@ -69,4 +69,26 @@ public class WOQueryController {
                 woQueryService.getEmergencyTargets(lineId)
         );
     }
+
+    @Operation(
+            summary = "작업지시 실적 목록 조회 (생산관리자)",
+            description = "실적이 등록된 작업지시만 기간/라인/검색어 기준으로 조회한다."
+    )
+    @GetMapping("/results")
+    public ResponseEntity<List<WorkOrderResultListResponseDTO>> getResultList(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) Integer lineId,
+            @RequestParam(required = false) String keyword
+    ) {
+        return ResponseEntity.ok(
+                woQueryService.getWorkOrderResultList(
+                        startDate,
+                        endDate,
+                        lineId,
+                        keyword
+                )
+        );
+    }
+
 }

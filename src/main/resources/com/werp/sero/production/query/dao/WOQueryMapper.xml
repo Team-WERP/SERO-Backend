@@ -142,5 +142,72 @@
         ORDER BY PR.due_at ASC, PRI.id ASC
     </select>
 
+    <select id="selectWorkOrderResultList"
+            resultType="com.werp.sero.production.query.dto.WorkOrderResultListResponseDTO">
+
+        SELECT
+        WO.id            AS woId,
+        WO.wo_code       AS woCode,
+
+        PL.id            AS lineId,
+        PL.line_name     AS lineName,
+
+        ITEM.item_name   AS itemName,
+
+        WO.quantity      AS plannedQuantity,
+        WOR.good_quantity      AS producedQuantity,
+        WOR.defective_quantity AS defectiveQuantity,
+
+        WOR.start_time   AS startTime,
+        WOR.end_time     AS endTime,
+        WOR.work_time   AS workMinutes,
+
+        EMP.name         AS workerName
+
+        FROM work_order WO
+        JOIN work_order_result WOR
+        ON WOR.wo_id = WO.id
+
+        JOIN production_line PL
+        ON PL.id = WO.line_id
+
+        JOIN employee EMP
+        ON EMP.id = WO.manager_id
+
+        /* 대표 품목 1개 */
+        JOIN (
+        SELECT
+        WOI.work_order_id,
+        MIN(SOI.item_name) AS item_name
+        FROM work_order_item WOI
+        JOIN production_request_item PRI
+        ON PRI.id = WOI.pr_item_id
+        JOIN sales_order_item SOI
+        ON SOI.id = PRI.so_item_id
+        GROUP BY WOI.work_order_id
+        ) ITEM
+        ON ITEM.work_order_id = WO.id
+
+        where 1=1
+
+        <if test="startDate != null and endDate != null">
+            AND WO.work_date BETWEEN #{startDate} AND #{endDate}
+        </if>
+
+
+        <if test="lineId != null">
+            AND PL.id = #{lineId}
+        </if>
+
+        <if test="keyword != null and keyword != ''">
+            AND (
+            WO.wo_code LIKE CONCAT('%', #{keyword}, '%')
+            OR ITEM.item_name LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
+
+        ORDER BY WOR.end_time DESC
+    </select>
+
 
 </mapper>
