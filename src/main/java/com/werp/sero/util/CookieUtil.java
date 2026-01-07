@@ -15,9 +15,9 @@ public class CookieUtil {
     public void generateRefreshTokenCookie(final HttpServletResponse response, final JwtToken token) {
         final ResponseCookie responseCookie = ResponseCookie.from(COOKIE_NAME, token.getToken())
                 .httpOnly(true)
-                .sameSite("None")
+                .sameSite("Lax")
                 .path("/")
-                .secure(true)
+                .secure(false)
                 .maxAge(token.getExpirationTime() / 1000)
                 .build();
 
@@ -27,9 +27,9 @@ public class CookieUtil {
     public void deleteRefreshTokenCookie(final HttpServletResponse response) {
         final ResponseCookie responseCookie = ResponseCookie.from(COOKIE_NAME, null)
                 .httpOnly(true)
-                .sameSite("None")
+                .sameSite("Lax")
                 .path("/")
-                .secure(true)
+                .secure(false)
                 .maxAge(0)
                 .build();
 
