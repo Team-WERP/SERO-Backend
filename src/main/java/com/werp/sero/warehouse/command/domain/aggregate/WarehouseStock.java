@@ -44,8 +44,6 @@ public class WarehouseStock {
                 String.format("가용 재고가 부족합니다. 필요: %d개, 가용: %d개", quantity, this.availableStock)
             );
         }
-
-        this.availableStock -= quantity;
     }
 
 
