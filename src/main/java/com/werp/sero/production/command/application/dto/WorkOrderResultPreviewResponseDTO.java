@@ -10,4 +10,5 @@ import java.util.List;
 public class WorkOrderResultPreviewResponseDTO {
     private int totalGoodQuantity;
     private List<WorkOrderItemPreviewDTO> items;
+    private List<WorkOrderMaterialPreviewDTO> materials;
 }
