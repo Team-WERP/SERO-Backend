@@ -80,7 +80,16 @@ public class PPQueryController {
         );
     }
 
-    @Operation(summary = "일자 기준 생산계획 + 작업지시 + 실적 미리보기")
+    @Operation(
+            summary = "일자 기준 생산계획 프리뷰",
+            description = """
+    작업지시 생성을 위한 판단용 조회 API입니다.
+
+    - 확정된 생산계획(PP_CONFIRMED) 기준
+    - 오늘 기준 일일 계획 수량 제공
+    - 이미 작업지시로 배정된 수량은 참고 정보로만 제공합니다.
+  """
+    )
     @GetMapping("/daily-preview")
     public ResponseEntity<List<PPDailyPreviewResponseDTO>> getDailyPreview(
             @RequestParam String date   // yyyy-MM-dd

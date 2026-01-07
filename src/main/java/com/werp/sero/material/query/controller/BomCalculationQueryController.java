@@ -49,7 +49,7 @@ public class BomCalculationQueryController {
     @RequirePermission(menu = "MM_MAT", authorities = {"AC_SYS", "AC_SAL", "AC_PRO", "AC_WHS"}, accessType = AccessType.READ)
     public BomExplosionResponseDTO calculateExplosion(
             @Parameter(description = "완제품 ID", example = "7", required = true)
-            @RequestParam int materialId,
+            @PathVariable int materialId,
             @Parameter(description = "생산 수량", example = "100", required = true)
             @RequestParam int quantity) {
         BomExplosionRequestDTO request = new BomExplosionRequestDTO(materialId, quantity);

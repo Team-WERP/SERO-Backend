@@ -11,9 +11,12 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -42,6 +45,21 @@ public class S3Uploader {
             return generateS3Url(objectKey);
         } catch (S3Exception | IOException e) {
             throw new SystemException(ErrorCode.S3_UPLOAD_FAILED);
+        }
+    }
+
+    public void delete( final String s3Url) {
+        try {
+            final String objectKey = extractKey(s3Url);
+
+            final DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder()
+                    .bucket(bucket)
+                    .key(objectKey)
+                    .build();
+
+            s3Client.deleteObject(deleteRequest);
+        } catch (Exception e) {
+            throw new SystemException(ErrorCode.S3_DELETE_FAILED);
         }
     }
 
@@ -75,6 +93,15 @@ public class S3Uploader {
         }
     }
 
+    private String extractKey(final String s3Url) {
+        try {
+            final URI uri = new URI(s3Url);
+
+            return uri.getPath().substring(1);
+        } catch (URISyntaxException e) {
+            throw new BusinessException(ErrorCode.S3_URL_INVALID);
+        }
+    }
 
     private String generateKey(final String path, final MultipartFile file) {
         final String extension = StringUtils.getFilenameExtension(file.getOriginalFilename());
@@ -85,9 +112,10 @@ public class S3Uploader {
 
     /**
      * PDF 파일 업로드 (byte 배열)
+     *
      * @param objectPath S3 경로 (예: "delivery-orders/", "goods-issues/")
-     * @param pdfBytes PDF 파일의 byte 배열
-     * @param fileName 파일명 (예: "DO-20251229-001.pdf")
+     * @param pdfBytes   PDF 파일의 byte 배열
+     * @param fileName   파일명 (예: "DO-20251229-001.pdf")
      * @return S3 URL
      */
     public String uploadPdf(final String objectPath, final byte[] pdfBytes, final String fileName) {

@@ -46,4 +46,60 @@ public class WOQueryController {
                 woQueryService.getResult(woId)
         );
     }
+
+    @Operation(
+            summary = "일자 기준 작업지시 조회",
+            description = "선택한 날짜에 라인별로 생성된 작업지시 목록과 아이템을 조회한다."
+    )
+    @GetMapping("/daily")
+    public ResponseEntity<List<WorkOrderDailyResponseDTO>> getDaily(
+            @RequestParam String date
+    ) {
+        return ResponseEntity.ok(
+                woQueryService.getDailyWorkOrders(date)
+        );
+    }
+
+    @Operation(summary = "라인 기준 긴급 작업 가능 PR Item 조회")
+    @GetMapping("/emergency-targets")
+    public ResponseEntity<List<WOEmergencyPRItemResponseDTO>> getEmergencyTargets(
+            @RequestParam int lineId
+    ) {
+        return ResponseEntity.ok(
+                woQueryService.getEmergencyTargets(lineId)
+        );
+    }
+
+    @Operation(
+            summary = "작업지시 실적 목록 조회 (생산관리자)",
+            description = "실적이 등록된 작업지시만 기간/라인/검색어 기준으로 조회한다."
+    )
+    @GetMapping("/results")
+    public ResponseEntity<List<WorkOrderResultListResponseDTO>> getResultList(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) Integer lineId,
+            @RequestParam(required = false) String keyword
+    ) {
+        return ResponseEntity.ok(
+                woQueryService.getWorkOrderResultList(
+                        startDate,
+                        endDate,
+                        lineId,
+                        keyword
+                )
+        );
+    }
+
+    @Operation(summary = "작업지시 실적 상세 통합 조회")
+    @GetMapping("/{woId}/detail")
+    public ResponseEntity<WorkOrderDetailResponseDTO> getDetail(
+            @PathVariable int woId
+    ) {
+        return ResponseEntity.ok(
+                woQueryService.getWorkOrderDetail(woId)
+        );
+    }
+
+
 }

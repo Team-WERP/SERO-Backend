@@ -20,7 +20,7 @@ public class WorkOrderItem {
     private WorkOrder workOrder;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "pp_id", nullable = false)
+    @JoinColumn(name = "pp_id")
     private ProductionPlan productionPlan;
 
     @ManyToOne(fetch = FetchType.LAZY)

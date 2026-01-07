@@ -1,37 +1,66 @@
 package com.werp.sero.code.command.domain.aggregate;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @Table(name = "common_code")
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity(name = "CommonCodeManage")
 public class CommonCode {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(nullable = false)
+    @Column(name = "type_code", nullable = false, length = 50)
+    private String typeCode;
+
+    @Column(nullable = false, unique = true, length = 50)
+    private String code;
+
+    @Column(nullable = false, length = 100)
     private String name;
 
-    @Column(nullable = false, unique = true)
-    private String code;
+    @Column(name = "parent_code", length = 50)
+    private String parentCode;
 
     @Column(name = "sort_order", nullable = false)
     private int sortOrder;
 
+    @Column(length = 255)
     private String description;
 
     @Column(name = "is_used", nullable = false, columnDefinition = "tinyint default 1")
     private boolean isUsed;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "type_id", nullable = false)
-    private CommonCodeType commonCodeType;
+    @Builder
+    public CommonCode(String typeCode, String code, String name, String parentCode,
+                      int sortOrder, String description, boolean isUsed) {
+        this.typeCode = typeCode;
+        this.code = code;
+        this.name = name;
+        this.parentCode = parentCode;
+        this.sortOrder = sortOrder;
+        this.description = description;
+        this.isUsed = isUsed;
+    }
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_id")
-    private CommonCode parentCommonCode;
+    public void update(String name, String parentCode, int sortOrder, String description, boolean isUsed) {
+        this.name = name;
+        this.parentCode = parentCode;
+        this.sortOrder = sortOrder;
+        this.description = description;
+        this.isUsed = isUsed;
+    }
+
+    public void activate() {
+        this.isUsed = true;
+    }
+
+    public void deactivate() {
+        this.isUsed = false;
+    }
 }

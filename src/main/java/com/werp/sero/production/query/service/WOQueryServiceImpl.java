@@ -12,7 +12,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -59,5 +62,91 @@ public class WOQueryServiceImpl implements WOQueryService{
         );
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<WorkOrderDailyResponseDTO> getDailyWorkOrders(String date) {
+        List<WorkOrderDailyFlatDTO> rows =
+                woQueryMapper.selectDailyWorkOrders(date);
+
+        Map<Integer, WorkOrderDailyResponseDTO> lineMap = new LinkedHashMap<>();
+
+        for (WorkOrderDailyFlatDTO row : rows) {
+
+            // Line
+            WorkOrderDailyResponseDTO lineDto =
+                    lineMap.computeIfAbsent(
+                            row.getLineId(),
+                            k -> WorkOrderDailyResponseDTO.from(row)
+                    );
+
+            // WorkOrder
+            WorkOrderSummaryDTO woDto =
+                    lineDto.getOrCreateWorkOrder(row);
+
+            // WorkOrderItem
+            if (row.getWorkOrderItemId() != null) {
+                woDto.addItem(WorkOrderItemDTO.from(row));
+            }
+        }
+
+        return new ArrayList<>(lineMap.values());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<WOEmergencyPRItemResponseDTO> getEmergencyTargets(int lineId) {
+        return woQueryMapper.selectEmergencyTargetsByLine(lineId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<WorkOrderResultListResponseDTO> getWorkOrderResultList(
+            String startDate,
+            String endDate,
+            Integer lineId,
+            String keyword
+    ) {
+        return woQueryMapper.selectWorkOrderResultList(
+                startDate,
+                endDate,
+                lineId,
+                keyword
+        );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public WorkOrderDetailResponseDTO getWorkOrderDetail(int woId) {
+
+        WorkOrderBaseDetailDTO base =
+                woQueryMapper.selectWorkOrderBaseDetail(woId);
+
+        List<WorkOrderItemDetailDTO> items =
+                woQueryMapper.selectWorkOrderItemDetails(woId);
+
+        List<WorkOrderMaterialDetailDTO> materials =
+                woQueryMapper.selectWorkOrderMaterialDetails(woId);
+
+        List<WorkOrderHistoryResponse> histories =
+                getHistory(woId);
+
+        return new WorkOrderDetailResponseDTO(
+                base.getWoId(),
+                base.getWoCode(),
+                base.getStatus(),
+                base.getLineId(),
+                base.getLineName(),
+                base.getManagerName(),
+                base.getPlannedQuantity(),
+                base.getGoodQuantity(),
+                base.getDefectiveQuantity(),
+                base.getWorkTime(),
+                base.getStartTime(),
+                base.getEndTime(),
+                items,
+                materials,
+                histories
+        );
+    }
 
 }

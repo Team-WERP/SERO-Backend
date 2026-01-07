@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.werp.sero.client.query.dao.ClientMapper">
+
+    <!-- 고객사 목록 조회용 ResultMap -->
+    <resultMap id="clientListResultMap" type="com.werp.sero.client.query.dto.ClientListResponseDTO">
+        <id property="id" column="id"/>
+        <result property="companyName" column="company_name"/>
+        <result property="address" column="address"/>
+        <result property="managerName" column="manager_name"/>
+        <result property="managerContact" column="manager_contact"/>
+        <result property="creditLimit" column="credit_limit"/>
+        <result property="receivables" column="receivables"/>
+        <result property="unpaidAmount" column="unpaid_amount"/>
+    </resultMap>
+
+    <!-- 고객사 상세 조회용 ResultMap -->
+    <resultMap id="clientDetailResultMap" type="com.werp.sero.client.query.dto.ClientDetailResponseDTO">
+        <id property="id" column="id"/>
+        <result property="companyName" column="company_name"/>
+        <result property="businessNumber" column="business_no"/>
+        <result property="businessType" column="business_type"/>
+        <result property="businessItem" column="business_item"/>
+        <result property="ceoName" column="ceo_name"/>
+        <result property="phoneNumber" column="company_contact"/>
+        <result property="managerName" column="manager_name"/>
+        <result property="managerContact" column="manager_contact"/>
+        <result property="managerEmail" column="manager_email"/>
+        <result property="creditLimit" column="credit_limit"/>
+        <result property="receivables" column="receivables"/>
+        <result property="unpaidAmount" column="unpaid_amount"/>
+    </resultMap>
+
+    <!-- 고객사 목록 조회 -->
+    <select id="findAllClients" resultMap="clientListResultMap">
+        SELECT
+            A.id,
+            A.company_name,
+            B.address,
+            A.manager_name,
+            A.manager_contact,
+            A.credit_limit,
+            A.receivables,
+            (A.credit_limit - A.receivables) AS unpaid_amount
+        FROM client A
+        LEFT JOIN client_address B ON A.id = B.client_id AND B.is_default = TRUE
+        ORDER BY A.created_at DESC
+    </select>
+
+    <!-- 고객사 상세 조회 -->
+    <select id="findClientById" resultMap="clientDetailResultMap">
+        SELECT
+            A.id,
+            A.company_name,
+            A.business_no,
+            A.business_type,
+            A.business_item,
+            A.ceo_name,
+            A.company_contact,
+            A.manager_name,
+            A.manager_contact,
+            A.manager_email,
+            A.credit_limit,
+            A.receivables,
+            (A.credit_limit - A.receivables) AS unpaid_amount,
+            A.created_at,
+            A.updated_at
+        FROM client A
+        WHERE A.id = #{clientId}
+    </select>
+
+</mapper>

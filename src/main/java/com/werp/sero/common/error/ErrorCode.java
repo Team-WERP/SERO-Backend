@@ -32,6 +32,14 @@ public enum ErrorCode {
     /* System */
     SYSTEM_COMMON_CODE_NOT_FOUND(HttpStatus.NOT_FOUND, "SYSTEM001", "공통코드를 찾을 수 없습니다."),
 
+    /* COMMON CODE */
+    COMMON_CODE_TYPE_NOT_FOUND(HttpStatus.NOT_FOUND, "CODE001", "공통코드 타입을 찾을 수 없습니다."),
+    COMMON_CODE_TYPE_ALREADY_EXISTS(HttpStatus.CONFLICT, "CODE002", "이미 존재하는 공통코드 타입입니다."),
+    COMMON_CODE_NOT_FOUND(HttpStatus.NOT_FOUND, "CODE003", "공통코드를 찾을 수 없습니다."),
+    COMMON_CODE_ALREADY_EXISTS(HttpStatus.CONFLICT, "CODE004", "이미 존재하는 공통코드입니다."),
+    COMMON_CODE_IN_USE(HttpStatus.CONFLICT, "CODE005", "사용 중인 공통코드는 삭제할 수 없습니다."),
+    COMMON_CODE_TYPE_HAS_CODES(HttpStatus.CONFLICT, "CODE006", "하위 공통코드가 존재하는 타입은 삭제할 수 없습니다."),
+
     /* WAREHOUSE */
     WAREHOUSE_STOCK_NOT_FOUND(HttpStatus.NOT_FOUND, "WAREHOUSE001", "창고 재고 정보를 찾을 수 없습니다."),
     WAREHOUSE_NOT_FOUND(HttpStatus.NOT_FOUND, "WAREHOUSE002", "창고 정보를 찾을 수 없습니다."),
@@ -110,6 +118,7 @@ public enum ErrorCode {
     S3_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "FILE003", "S3 파일 업로드에 실패했습니다."),
     PDF_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "FILE004", "PDF 생성에 실패했습니다."),
     S3_URL_INVALID(HttpStatus.BAD_REQUEST, "FILE005", "유효하지 않은 S3 URL입니다."),
+    S3_DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "FILE006", "S3 파일 삭제에 실패했습니다."),
 
     /* PRODUCTION PLAN */
     PP_ALREADY_EXISTS(HttpStatus.CONFLICT, "PRODUCTION101", "이미 해당 생산요청 품목에 대한 생산계획이 존재합니다."),
@@ -141,7 +150,11 @@ public enum ErrorCode {
     WO_INVALID_DISTRIBUTED_QUANTITY(HttpStatus.BAD_REQUEST,"PRODUCTION213", "아이템별 생산 수량 합계가 양품 수량과 일치하지 않습니다."),
     WO_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "PRODUCTION214", "작업지시 아이템을 찾을 수 없습니다."),
     WO_INVALID_PRODUCED_QUANTITY(HttpStatus.BAD_REQUEST,"PRODUCTION215", "생산 수량은 0 이상이어야 합니다."),
-    WO_EXCEED_PLANNED_QUANTITY(HttpStatus.BAD_REQUEST,"PRODUCTION216", "아이템 생산 수량이 계획 수량을 초과할 수 없습니다.");
+    WO_EXCEED_PLANNED_QUANTITY(HttpStatus.BAD_REQUEST,"PRODUCTION216", "아이템 생산 수량이 계획 수량을 초과할 수 없습니다."),
+
+    /* NOTICE */
+    NOTICE_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTICE001", "공지사항을 찾을 수 없습니다."),
+    NOTICE_ACCESS_DENIED(HttpStatus.BAD_REQUEST, "NOTICE002", "공지사항 수정/삭제 권한이 없습니다.");
 
 
     private final HttpStatus status;

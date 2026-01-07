@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.werp.sero.notice.query.dao.NoticeMapper">
+
+    <resultMap id="noticeDetailResponseResultMap" type="com.werp.sero.notice.query.dto.NoticeDetailResponseDTO">
+        <id column="notice_id" property="noticeId"/>
+        <result column="category" property="category"/>
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+        <result column="employee_id" property="creatorId"/>
+        <result column="employee_name" property="creatorName"/>
+        <result column="employee_rank_code" property="creatorRankCode"/>
+        <result column="employee_position_code" property="creatorPositionCode"/>
+        <result column="employee_department_name" property="creatorDepartmentName"/>
+        <result column="pinned_start_at" property="pinnedStartAt"/>
+        <result column="pinned_end_at" property="pinnedEndAt"/>
+        <result column="is_emergency" property="isEmergency"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+
+        <collection property="attachments" ofType="com.werp.sero.notice.query.dto.NoticeAttachmentInfoResponseDTO">
+            <id column="attachment_id" property="attachmentId"/>
+            <result column="attachment_name" property="attachmentName"/>
+            <result column="attachment_url" property="attachmentUrl"/>
+        </collection>
+    </resultMap>
+
+    <select id="findByNoticeId" resultMap="noticeDetailResponseResultMap" parameterType="_int">
+        SELECT
+               A.id AS notice_id
+             , A.category AS category
+             , A.title AS title
+             , A.content AS content
+             , A.pinned_start_at AS pinned_start_at
+             , A.pinned_end_at AS pinned_end_at
+             , A.is_emergency AS is_emergency
+             , A.created_at AS created_at
+             , A.updated_at AS updated_at
+             , B.id AS employee_id
+             , B.name AS employee_name
+             , B.rank_code AS employee_rank_code
+             , B.position_code AS employee_position_code
+             , C.dept_name AS employee_department_name
+             , D.id AS attachment_id
+             , D.name AS attachment_name
+             , D.url AS attachment_url
+          FROM notice A
+          JOIN employee B
+            ON A.creator_id = B.id
+          LEFT JOIN department C
+            ON B.dept_id = C.id
+          LEFT JOIN notice_attachment D
+            ON A.id = D.notice_id
+         WHERE A.id = #{noticeId}
+    </select>
+
+    <select id="countNoticesByFilter" resultType="_long">
+        SELECT
+               COUNT(A.id)
+          FROM notice A
+          JOIN employee B
+            ON A.creator_id = B.id
+          LEFT JOIN department C
+            ON B.dept_id = C.id
+         <where>
+            <if test="category != null and category != ''">
+                AND A.category = #{category}
+            </if>
+             <if test="onlyMine == true and employeeId != null">
+                AND A.creator_id = #{employeeId}
+            </if>
+             <if test="keyword != null and keyword != ''">
+                 AND (
+                 A.title LIKE CONCAT('%', #{keyword}, '%')
+                 OR A.content LIKE CONCAT('%', #{keyword}, '%')
+                 OR B.name LIKE CONCAT('%', #{keyword}, '%')
+                 )
+             </if>
+         </where>
+    </select>
+
+    <select id="findNoticesByFilter" resultType="com.werp.sero.notice.query.dto.NoticeSummaryResponseDTO">
+        SELECT
+               A.id AS noticeId
+             , A.title AS title
+             , A.category AS category
+             , A.created_at AS createdAt
+             , A.pinned_start_at AS pinnedStartAt
+             , A.pinned_end_at AS pinnedEndAt
+             , A.is_emergency AS isEmergency
+             , B.id AS employeeId
+             , B.name AS employeeName
+             , B.position_code AS employeePositionCode
+             , B.rank_code AS employeeRankCode
+             , C.dept_name AS employeeDepartmentName
+             , CASE
+                    WHEN EXISTS (SELECT
+                                        1
+                                   FROM notice_attachment F
+                                  WHERE A.id = F.notice_id)
+                    THEN true
+                    ELSE false
+               END AS isNoticeAttachment
+          FROM notice A
+          JOIN employee B
+            ON A.creator_id = B.id
+          LEFT JOIN department C
+            ON B.dept_id = C.id
+        <where>
+            <if test="category != null and category != ''">
+                AND A.category = #{category}
+            </if>
+            <if test="onlyMine == true and employeeId != null">
+                AND A.creator_id = #{employeeId}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                        A.title LIKE CONCAT('%', #{keyword}, '%')
+                     OR A.content LIKE CONCAT('%', #{keyword}, '%')
+                     OR B.name LIKE CONCAT('%', #{keyword}, '%')
+                    )
+            </if>
+        </where>
+        ORDER BY
+                 CASE
+                      WHEN A.is_emergency = true
+                        AND A.pinned_start_at IS NOT NULL
+                        AND A.pinned_end_at IS NOT NULL
+                        AND NOW() BETWEEN A.pinned_start_at AND A.pinned_end_at
+                      THEN 1
+                      WHEN A.pinned_start_at IS NOT NULL
+                        AND (A.pinned_end_at IS NULL
+                            OR A.pinned_end_at >= NOW()
+                            )
+                      THEN 2
+                      ELSE 3
+                 END,
+                 A.created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+</mapper>

@@ -20,9 +20,6 @@ public class Notice {
     @Column(nullable = false, columnDefinition = "text")
     private String content;
 
-    @Column(name = "attachment_url", columnDefinition = "text")
-    private String attachmentUrl;
-
     @Column(nullable = false)
     private String category;
 
@@ -44,4 +41,16 @@ public class Notice {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "creator_id", nullable = false)
     private Employee employee;
+
+    public Notice(final String title, final String content, final String category, final String pinnedStartAt,
+                  final String pinnedEndAt, final boolean isEmergency, final String createdAt, final Employee employee) {
+        this.title = title;
+        this.content = content;
+        this.category = category;
+        this.pinnedStartAt = pinnedStartAt;
+        this.pinnedEndAt = pinnedEndAt;
+        this.isEmergency = isEmergency;
+        this.createdAt = createdAt;
+        this.employee = employee;
+    }
 }
