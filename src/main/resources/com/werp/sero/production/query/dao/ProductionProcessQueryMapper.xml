@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.werp.sero.production.query.dao.ProductionProcessQueryMapper">
+
+    <select id="selectLineMaterialList"
+            resultType="com.werp.sero.production.query.dto.LineMaterialListItemDTO">
+
+        SELECT
+            A.id            AS lineMaterialId,
+            B.id             AS materialId,
+            B.material_code  AS materialCode,
+            B.name           AS materialName,
+            C.id            AS lineId,
+            C.line_name     AS lineName,
+            A.cycle_time    AS cycleTime
+        FROM line_material A
+                 JOIN material B ON B.id = A.material_id
+                 JOIN production_line C ON C.id = A.line_id
+        WHERE C.status = 'PL_ACTIVE'
+        ORDER BY B.material_code
+
+    </select>
+
+    <select id="selectProcessByLineMaterial"
+            parameterType="int"
+            resultType="com.werp.sero.production.query.dto.ProductionProcessResponseDTO">
+
+        SELECT
+            A.id               AS processId,
+            A.process_order    AS processOrder,
+            A.process_name     AS processName,
+            C.line_name        AS lineName,
+            A.standard_time    AS standardTime,
+            A.headcount        AS headCount,
+            A.note             AS note
+        FROM production_process A
+                 JOIN line_material B ON B.id = A.line_material_id
+                 JOIN production_line C ON C.id = B.line_id
+        WHERE A.line_material_id = #{lineMaterialId}
+        ORDER BY A.process_order ASC
+
+    </select>
+
+</mapper>
