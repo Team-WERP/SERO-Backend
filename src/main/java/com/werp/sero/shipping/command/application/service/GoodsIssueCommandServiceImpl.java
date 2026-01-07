@@ -345,8 +345,9 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
                 .warehouse(existingGoodsIssue.getWarehouse())
                 .build();
 
-        // 4. 저장
+        // 4. 저장 및 즉시 DB 반영
         goodsIssueRepository.save(updatedGoodsIssue);
+        goodsIssueRepository.flush();  // MyBatis 조회 전에 JPA 변경사항 DB에 즉시 반영
 
         // 5. PDF 생성 및 S3 업로드 (담당자 배정 후)
         try {
