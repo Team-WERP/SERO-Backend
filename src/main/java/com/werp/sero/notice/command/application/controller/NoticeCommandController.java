@@ -25,7 +25,7 @@ public class NoticeCommandController {
 
     @Operation(summary = "공지사항 등록")
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<NoticeResponseDTO> registerNotice(@CurrentUser final Employee employee,
+    public ResponseEntity<NoticeResponseDTO> registerNotice(@CurrentUser Employee employee,
                                                             @Valid @RequestPart(name = "requestDTO") final NoticeCreateRequestDTO requestDTO,
                                                             @RequestPart(name = "files", required = false) final List<MultipartFile> files) {
         final NoticeResponseDTO response = noticeCommandService.registerNotice(employee, requestDTO, files);
