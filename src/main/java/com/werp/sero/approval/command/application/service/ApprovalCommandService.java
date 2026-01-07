@@ -9,7 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface ApprovalCommandService {
-    ApprovalResponseDTO submitForApproval(final Employee employee, final ApprovalCreateRequestDTO requestDTO,
+    ApprovalResponseDTO submitForApproval(Employee employee, final ApprovalCreateRequestDTO requestDTO,
                                           final List<MultipartFile> files);
 
     void approve(final Employee employee, final int approvalId, final ApprovalDecisionRequestDTO requestDTO);
