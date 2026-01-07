@@ -41,7 +41,6 @@ public class DeliveryOrderCommandServiceImpl implements DeliveryOrderCommandServ
     private final SalesOrderItemHistoryRepository salesOrderItemHistoryRepository;
     private final DocumentSequenceCommandService documentSequenceCommandService;
     private final DODetailQueryService doDetailQueryService;
-    private final PdfGenerator pdfGenerator;
     private final ShippingPdfService shippingPdfService;
     private final S3Uploader s3Uploader;
     private final SOStateService soStateService;
@@ -114,8 +113,8 @@ public class DeliveryOrderCommandServiceImpl implements DeliveryOrderCommandServ
             // 7-2. HTML 템플릿 생성
             String htmlContent = shippingPdfService.generateDeliveryOrderDetailHtml(doDetail);
 
-            // 7-3. PDF 생성
-            byte[] pdfBytes = pdfGenerator.generatePdfFromHtml(htmlContent);
+            // 7-3. PDF 생성 (openhtmltopdf 사용)
+            byte[] pdfBytes = PdfGenerator.generate(htmlContent);
 
             // 7-4. S3 업로드
             String fileName = doCode + ".pdf";

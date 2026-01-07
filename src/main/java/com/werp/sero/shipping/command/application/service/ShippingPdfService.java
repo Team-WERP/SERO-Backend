@@ -25,10 +25,11 @@ public class ShippingPdfService {
     public String generateDeliveryOrderDetailHtml(DODetailResponseDTO dto) {
         StringBuilder html = new StringBuilder();
 
-        html.append("<!DOCTYPE html>");
-        html.append("<html>");
+        html.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+        html.append("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">");
+        html.append("<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"ko\" lang=\"ko\">");
         html.append("<head>");
-        html.append("<meta charset='UTF-8'/>");
+        html.append("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />");
         html.append("<title>납품서</title>");
         html.append("<style>");
         html.append(getDeliveryOrderStyles());
@@ -163,10 +164,11 @@ public class ShippingPdfService {
     public String generateGoodsIssueDetailHtml(GIDetailResponseDTO dto) {
         StringBuilder html = new StringBuilder();
 
-        html.append("<!DOCTYPE html>");
-        html.append("<html>");
+        html.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+        html.append("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">");
+        html.append("<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"ko\" lang=\"ko\">");
         html.append("<head>");
-        html.append("<meta charset='UTF-8'/>");
+        html.append("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />");
         html.append("<title>출고지시서</title>");
         html.append("<style>");
         html.append(getGoodsIssueStyles());
@@ -314,13 +316,15 @@ public class ShippingPdfService {
      */
     private String getDeliveryOrderStyles() {
         return """
+            @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&amp;display=swap');
+
             * {
                 margin: 0;
                 padding: 0;
                 box-sizing: border-box;
             }
             body {
-                font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+                font-family: 'Noto Sans KR', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
                 padding: 40px;
                 background: white;
             }
@@ -416,13 +420,15 @@ public class ShippingPdfService {
      */
     private String getGoodsIssueStyles() {
         return """
+            @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&amp;display=swap');
+
             * {
                 margin: 0;
                 padding: 0;
                 box-sizing: border-box;
             }
             body {
-                font-family: 'Malgun Gothic', sans-serif;
+                font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif;
                 padding: 20px;
             }
             .goods-issue-content {
