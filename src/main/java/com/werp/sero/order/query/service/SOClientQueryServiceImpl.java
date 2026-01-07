@@ -29,7 +29,7 @@ public class SOClientQueryServiceImpl implements SOClientQueryService {
     @Override
     @Transactional(readOnly = true)
     public List<SOClientResponseDTO> findOrderHistory(final ClientEmployee clientEmployee) {
-        int clientId = clientEmployee.getId();
+        int clientId = clientEmployee.getClient().getId();
 
         return soClientMapper.selectOrderHistory(clientId);
     }
@@ -37,7 +37,7 @@ public class SOClientQueryServiceImpl implements SOClientQueryService {
     @Override
     @Transactional(readOnly = true)
     public SOClientResponseDTO getOrderForReorder(final int orderId, final ClientEmployee clientEmployee) {
-        int clientId = clientEmployee.getId();
+        int clientId = clientEmployee.getClient().getId();
         SOClientResponseDTO order = soClientMapper.selectOrderForReorder(clientId, orderId);
 
         if(order == null){
