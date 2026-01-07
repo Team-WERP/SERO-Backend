@@ -38,7 +38,7 @@ public class SoClientDashboardQueryController {
     public ResponseEntity<SOClientDashboardResponseDTO> getDashboardData(
             @CurrentUser final ClientEmployee clientEmployee
     ) {
-        int clientId = clientEmployee.getId();
+        int clientId = clientEmployee.getClient().getId();
 
         SOClientDashboardResponseDTO response = clientDashboardService.getDashboardData(clientId);
 
