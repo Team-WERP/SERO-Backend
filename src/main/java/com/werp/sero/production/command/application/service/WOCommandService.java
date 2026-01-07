@@ -10,7 +10,7 @@ public interface WOCommandService {
 
     void createWorkOrder(WorkOrderCreateRequestDTO request, Employee currentEmployee);
 
-    void start(int woId, String note);
+    void start(int woId, String note, Employee worker);
 
     void pause(int woId, String note);
 

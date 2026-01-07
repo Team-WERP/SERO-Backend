@@ -17,6 +17,7 @@ public class WorkOrderDailyFlatDTO {
     private String workOrderCode;
     private String workOrderStatus;
     private String workOrderCreatedAt;
+    private int workOrderQuantity;
 
     // WorkOrderItem
     private Integer workOrderItemId;

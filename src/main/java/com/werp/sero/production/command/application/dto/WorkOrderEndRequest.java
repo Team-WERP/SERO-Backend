@@ -15,6 +15,13 @@ public class WorkOrderEndRequest {
     private String note;
 
     private List<ItemResult> items;
+    private List<MaterialResult> materials;
+
+    @Getter
+    public static class MaterialResult {
+        private int materialId;
+        private int actualQuantity;
+    }
 
     @Getter
     public static class ItemResult {
