@@ -7,8 +7,6 @@ import com.werp.sero.common.file.FileValidator;
 import com.werp.sero.common.file.S3Uploader;
 import com.werp.sero.common.util.DateTimeUtils;
 import com.werp.sero.employee.command.domain.aggregate.Employee;
-import com.werp.sero.employee.command.domain.repository.EmployeeRepository;
-import com.werp.sero.employee.exception.EmployeeNotFoundException;
 import com.werp.sero.notice.command.application.dto.NoticeAttachmentResponseDTO;
 import com.werp.sero.notice.command.application.dto.NoticeCreateRequestDTO;
 import com.werp.sero.notice.command.application.dto.NoticeResponseDTO;
@@ -38,7 +36,6 @@ public class NoticeCommandServiceImpl implements NoticeCommandService {
     private final S3Uploader s3Uploader;
     private final FileValidator fileValidator;
     private final EmployeePermissionRepository employeePermissionRepository;
-    private final EmployeeRepository employeeRepository;
 
     private final CommonCodeManageQueryService commonCodeManageQueryService;
 
@@ -46,8 +43,6 @@ public class NoticeCommandServiceImpl implements NoticeCommandService {
     @Override
     public NoticeResponseDTO registerNotice(Employee employee, final NoticeCreateRequestDTO requestDTO,
                                             final List<MultipartFile> files) {
-        employee = employeeRepository.findById(employee.getId()).orElseThrow(EmployeeNotFoundException::new);
-
         validateCategory(requestDTO.getCategory());
 
         Notice notice = new Notice(requestDTO.getTitle(), requestDTO.getContent(), requestDTO.getCategory(),

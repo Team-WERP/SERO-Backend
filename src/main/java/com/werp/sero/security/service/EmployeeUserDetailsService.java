@@ -21,7 +21,7 @@ public class EmployeeUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(final String username) throws UsernameNotFoundException {
-        final Employee employee = employeeRepository.findByEmailAndStatus(username, "ES_ACT")
+        final Employee employee = employeeRepository.findByEmailAndStatusWithFetchJoin(username, "ES_ACT")
                 .orElseThrow(EmployeeNotFoundException::new);
 
         final List<String> permissions = employeePermissionRepository.findPermissionCodeByEmployee(employee);
