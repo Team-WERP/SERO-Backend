@@ -67,26 +67,16 @@
             <if test="category != null and category != ''">
                 AND A.category = #{category}
             </if>
-            <if test="onlyMine == true">
+             <if test="onlyMine == true and employeeId != null">
                 AND A.creator_id = #{employeeId}
             </if>
-            <if test="keyword != null and keyword != ''">
-                AND (
-                    <foreach collection="searchTypes" item="searchType" separator=" OR ">
-                        <choose>
-                            <when test="searchType == 'TITLE'">
-                                A.title LIKE CONCAT('%', #{keyword}, '%')
-                            </when>
-                            <when test="searchType == 'CONTENT'">
-                                A.content LIKE CONCAT('%', #{keyword}, '%')
-                            </when>
-                            <when test="searchType == 'WRITER'">
-                                B.name LIKE CONCAT('%', #{keyword}, '%')
-                            </when>
-                        </choose>
-                    </foreach>
-                )
-            </if>
+             <if test="keyword != null and keyword != ''">
+                 AND (
+                 A.title LIKE CONCAT('%', #{keyword}, '%')
+                 OR A.content LIKE CONCAT('%', #{keyword}, '%')
+                 OR B.name LIKE CONCAT('%', #{keyword}, '%')
+                 )
+             </if>
          </where>
     </select>
 
@@ -121,25 +111,15 @@
             <if test="category != null and category != ''">
                 AND A.category = #{category}
             </if>
-            <if test="onlyMine == true">
+            <if test="onlyMine == true and employeeId != null">
                 AND A.creator_id = #{employeeId}
             </if>
             <if test="keyword != null and keyword != ''">
                 AND (
-                <foreach collection="searchTypes" item="searchType" separator=" OR ">
-                    <choose>
-                        <when test="searchType == 'TITLE'">
-                            A.title LIKE CONCAT('%', #{keyword}, '%')
-                        </when>
-                        <when test="searchType == 'CONTENT'">
-                            A.content LIKE CONCAT('%', #{keyword}, '%')
-                        </when>
-                        <when test="searchType == 'WRITER'">
-                            B.name LIKE CONCAT('%', #{keyword}, '%')
-                        </when>
-                    </choose>
-                </foreach>
-                )
+                        A.title LIKE CONCAT('%', #{keyword}, '%')
+                     OR A.content LIKE CONCAT('%', #{keyword}, '%')
+                     OR B.name LIKE CONCAT('%', #{keyword}, '%')
+                    )
             </if>
         </where>
         ORDER BY
