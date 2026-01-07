@@ -55,8 +55,6 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
     @Override
     public ApprovalResponseDTO submitForApproval(Employee employee, final ApprovalCreateRequestDTO requestDTO,
                                                  final List<MultipartFile> files) {
-        employee = employeeRepository.findById(employee.getId()).orElseThrow(EmployeeNotFoundException::new);
-
         validateDuplicateApproval(requestDTO.getRefCode());
 
         validateApprovalLines(requestDTO.getApprovalLines());
