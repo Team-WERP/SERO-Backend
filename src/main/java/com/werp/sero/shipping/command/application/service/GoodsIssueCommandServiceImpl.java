@@ -65,7 +65,6 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
     private final EmployeeRepository employeeRepository;
     private final DocumentSequenceCommandService documentSequenceCommandService;
     private final GIDetailQueryService giDetailQueryService;
-    private final PdfGenerator pdfGenerator;
     private final ShippingPdfService shippingPdfService;
     private final S3Uploader s3Uploader;
 
@@ -357,8 +356,8 @@ public class GoodsIssueCommandServiceImpl implements GoodsIssueCommandService {
             // 5-2. HTML 템플릿 생성
             String htmlContent = shippingPdfService.generateGoodsIssueDetailHtml(giDetail);
 
-            // 5-3. PDF 생성
-            byte[] pdfBytes = pdfGenerator.generatePdfFromHtml(htmlContent);
+            // 5-3. PDF 생성 (openhtmltopdf 사용)
+            byte[] pdfBytes = PdfGenerator.generate(htmlContent);
 
             // 5-4. S3 업로드
             String fileName = giCode + ".pdf";
