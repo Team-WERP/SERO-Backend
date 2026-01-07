@@ -62,6 +62,7 @@
             B.wo_code          AS workOrderCode,
             B.status           AS workOrderStatus,
             B.created_at       AS workOrderCreatedAt,
+            B.quantity         AS workOrderQuantity,
 
             /* WorkOrderItem */
             C.id               AS workOrderItemId,

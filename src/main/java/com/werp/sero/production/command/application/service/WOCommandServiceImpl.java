@@ -22,6 +22,7 @@ import com.werp.sero.warehouse.command.domain.aggregate.WarehouseStock;
 import com.werp.sero.warehouse.command.domain.repository.WarehouseStockRepository;
 import com.werp.sero.warehouse.exception.WarehouseStockNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class WOCommandServiceImpl implements WOCommandService {
     private final PPRepository ppRepository;
     private final WORepository woRepository;
@@ -238,14 +240,39 @@ public class WOCommandServiceImpl implements WOCommandService {
             throw new WorkOrderResultAlreadyExistsException();
         }
 
+        String endTime = DateTimeUtils.nowDateTimeSecond();
+
+        String startTime = request.getStartTime();
+        if (startTime == null || startTime.isBlank()) {
+
+            // 마지막 START/RESUME 가져오기 (가장 최근 RUN 시작 시점)
+            WorkOrderHistory lastRun = workOrderHistoryRepository
+                    .findTopByWorkOrder_IdAndActionInOrderByActedAtDesc(
+                            woId,
+                            List.of(Action.START, Action.RESUME)
+                    )
+                    .orElseThrow(WorkOrderInvalidWorkTimeException::new); // 또는 PRODUCTION208
+
+            startTime = lastRun.getActedAt(); // 엔티티 필드명에 맞게 getActedAt()/getActedAtString()
+        }
+
+        log.info("[WO_END] woId={}, reqStart={}, reqEnd={}, resolvedStart={}, resolvedEnd={}",
+                woId,
+                request.getStartTime(),
+                request.getEndTime(),
+                startTime,
+                endTime
+        );
         // 작업 시간 검증
         int workMinutes = DateTimeUtils.minutesBetween(
-                request.getStartTime(),
-                request.getEndTime()
+                startTime,
+                endTime
         );
         if (workMinutes <= 0) {
             throw new WorkOrderInvalidWorkTimeException();
         }
+        log.info("[WO_END] woId={}, workMinutes={}", woId, workMinutes);
+
 
         // 아이템별 실적 검증
         int sum = request.getItems().stream()
@@ -320,12 +347,27 @@ public class WOCommandServiceImpl implements WOCommandService {
             soItemHistoryRepository.save(history);
         }
 
+        // 자재 실사용량 반영
+        if (request.getMaterials() != null) {
+            String now = DateTimeUtils.nowDateTime();
+
+            for (WorkOrderEndRequest.MaterialResult m : request.getMaterials()) {
+                WorkOrderMaterial wom =
+                        workOrderMaterialRepository
+                                .findByWorkOrder_IdAndRawMaterial_Id(woId, m.getMaterialId())
+                                .orElseThrow(() ->
+                                        new IllegalStateException("WorkOrderMaterial 없음")
+                                );
+                wom.consume(m.getActualQuantity(),now);
+            }
+        }
+
         // WorkOrderResult 저장
         WorkOrderResult result = new WorkOrderResult(
                 request.getGoodQuantity(),
                 request.getDefectiveQuantity(),
-                request.getStartTime(),
-                request.getEndTime(),
+                startTime,
+                endTime,
                 workMinutes,
                 request.getNote(),
                 wo
@@ -378,20 +420,64 @@ public class WOCommandServiceImpl implements WOCommandService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public WorkOrderResultPreviewResponseDTO previewResult(
             int woId,
             WorkOrderResultPreviewRequestDTO request
     ) {
-        List<WorkOrderItem> items =
-                woItemRepository.findByWorkOrderId(woId);
+        WorkOrder wo = woRepository.findById(woId)
+                .orElseThrow(WorkOrderNotFoundException::new);
 
+        int goodQty = request.getGoodQuantity();
+        if (goodQty < 0) {
+            throw new InvalidProducedQuantityException(); // 이미 쓰는 예외 있으면 재활용
+        }
+
+        // 1) 아이템 분배 미리보기
+        List<WorkOrderItem> items = woItemRepository.findByWorkOrderId(woId);
         List<WorkOrderItemPreviewDTO> distributed =
-                distributor.distribute(items, request.getGoodQuantity());
+                distributor.distribute(items, goodQty);
+
+        // 2) 자재 미리보기
+        List<WorkOrderMaterial> woMaterials =
+                workOrderMaterialRepository.findByWorkOrder_Id(woId);
+
+        int plannedTotalQty = Math.max(0, wo.getQuantity());
+
+        double ratio;
+        if (plannedTotalQty > 0) {
+            ratio = (double) goodQty / (double) plannedTotalQty;
+        } else {
+            ratio = 0.0;
+        }
+
+        List<WorkOrderMaterialPreviewDTO> materialPreview =
+                woMaterials.stream()
+                        .map(m -> {
+                            int planned = Math.max(0, m.getPlannedQuantity());
+                            int expected = (int) Math.round(planned * ratio);
+                            int actual = expected;
+
+                            Material rm = m.getRawMaterial();
+                            return new WorkOrderMaterialPreviewDTO(
+                                    rm.getId(),
+                                    rm.getName(),
+                                    rm.getMaterialCode(),
+                                    rm.getSpec(),
+                                    rm.getBaseUnit(),
+                                    planned,
+                                    expected,
+                                    actual
+                            );
+                        })
+                        .toList();
 
         return new WorkOrderResultPreviewResponseDTO(
-                request.getGoodQuantity(),
-                distributed
+                goodQty,
+                distributed,
+                materialPreview
         );
     }
+
 
 }

@@ -13,6 +13,7 @@ public class WorkOrderSummaryDTO {
     private String status;
     private String createdAt;
 
+    private int quantity;
     private List<WorkOrderItemDTO> items = new ArrayList<>();
 
     public static WorkOrderSummaryDTO from(WorkOrderDailyFlatDTO row) {
@@ -21,6 +22,7 @@ public class WorkOrderSummaryDTO {
         dto.workOrderCode = row.getWorkOrderCode();
         dto.status = row.getWorkOrderStatus();
         dto.createdAt = row.getWorkOrderCreatedAt();
+        dto.quantity = row.getWorkOrderQuantity();
         return dto;
     }
 
