@@ -45,9 +45,7 @@ public class Employee {
     @Column(name = "created_at", nullable = false)
     private String createdAt;
 
-    // ▼▼▼ [핵심 수정 부분] ▼▼▼
-    @ManyToOne(fetch = FetchType.LAZY) // 1. 지연 로딩: 필요할 때만 조회 (쿼리 폭탄 방지)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "dept_id")
-    @JsonIgnore // 2. JSON 무시: 직렬화 시 부서 정보를 쳐다보지 않음 (무한 루프 방지)
     private Department department;
 }
