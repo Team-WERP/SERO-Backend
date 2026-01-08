@@ -201,7 +201,7 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
                             "주문 상태 변경",
                             "주문번호 " + so.getSoCode() + "의 상태가 진행중으로 변경되었습니다.",
                             so.getClientEmployee().getId(),
-                            "client-portal/order/management" + so.getId()
+                            "/orders/" + so.getId()
                     ));
                 }
             }
