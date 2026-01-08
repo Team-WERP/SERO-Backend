@@ -146,7 +146,7 @@ public class DeliveryCommandServiceImpl implements DeliveryCommandService {
                     "배송 도착",
                     "주문번호 " + so.getSoCode() + "의 배송이 완료되었습니다. (기사: " + driver.getName() + ")",
                     so.getClientEmployee().getId(),
-                    "client-portal/order/management" + so.getId()
+                    "orders/management/" + so.getId()
             ));
         }
     }
