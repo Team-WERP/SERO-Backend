@@ -17,7 +17,7 @@ public class CookieUtil {
                 .httpOnly(true)
                 .sameSite("None")
                 .path("/")
-                .secure(true)
+                .secure(true)  // HTTPS 환경에서 SameSite=None은 반드시 Secure=true 필요
                 .maxAge(token.getExpirationTime() / 1000)
                 .build();
 
@@ -29,7 +29,7 @@ public class CookieUtil {
                 .httpOnly(true)
                 .sameSite("None")
                 .path("/")
-                .secure(true)
+                .secure(true)  // 생성 시와 동일한 설정으로 삭제해야 브라우저가 인식
                 .maxAge(0)
                 .build();
 
