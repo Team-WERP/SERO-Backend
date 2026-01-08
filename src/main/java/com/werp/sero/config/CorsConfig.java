@@ -17,6 +17,7 @@ public class CorsConfig {
 
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:5173",
+                "http://sero-f-alb-2092902385.ap-northeast-2.elb.amazonaws.com",
                 "https://sero-erp.cloud"
         ));
 
