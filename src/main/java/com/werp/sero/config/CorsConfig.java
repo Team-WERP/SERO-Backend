@@ -7,6 +7,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
+
 //
 @Configuration
 public class CorsConfig {
@@ -15,12 +16,10 @@ public class CorsConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(List.of(
-            "http://localhost:5173",
-            "http://sero-f-alb-2092902385.ap-northeast-2.elb.amazonaws.com",
-            "http://sero-erp.cloud",
-            "http://api.sero-erp.cloud"
+                "http://localhost:5173",
+                "https://sero-erp.cloud"
         ));
-        
+
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
