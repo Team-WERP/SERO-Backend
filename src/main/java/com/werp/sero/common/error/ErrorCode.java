@@ -119,6 +119,7 @@ public enum ErrorCode {
     PDF_GENERATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "FILE004", "PDF 생성에 실패했습니다."),
     S3_URL_INVALID(HttpStatus.BAD_REQUEST, "FILE005", "유효하지 않은 S3 URL입니다."),
     S3_DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "FILE006", "S3 파일 삭제에 실패했습니다."),
+    S3_COPY_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "FILE007", "S3 파일 복사에 실패했습니다."),
 
     /* PRODUCTION PLAN */
     PP_ALREADY_EXISTS(HttpStatus.CONFLICT, "PRODUCTION101", "이미 해당 생산요청 품목에 대한 생산계획이 존재합니다."),

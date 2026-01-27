@@ -25,7 +25,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -49,12 +48,10 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
     private final S3Uploader s3Uploader;
     private final ApplicationEventPublisher applicationEventPublisher;
     private final DocumentSequenceCommandService documentSequenceCommandService;
-    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     @Override
-    public ApprovalResponseDTO submitForApproval(final Employee employee, final ApprovalCreateRequestDTO requestDTO,
-                                                 final List<MultipartFile> files) {
+    public ApprovalResponseDTO submitForApproval(final Employee employee, final ApprovalCreateRequestDTO requestDTO) {
         validateDuplicateApproval(requestDTO.getRefCode());
 
         validateApprovalLines(requestDTO.getApprovalLines());
@@ -65,39 +62,20 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
 
         final Approval approval = saveApproval(employee, approvalCode, requestDTO);
 
-        List<ApprovalAttachmentResponseDTO> approvalAttachmentResponseDTOs = new ArrayList<>();
-
-        if (files != null && !files.isEmpty()) {
-            approvalAttachmentResponseDTOs = saveApprovalAttachments(approval, files).stream()
-                    .map(ApprovalAttachmentResponseDTO::of)
-                    .collect(Collectors.toList());
+        if (requestDTO.getApprovalAttachments() != null && !requestDTO.getApprovalAttachments().isEmpty()) {
+            saveApprovalAttachments(approval, requestDTO.getApprovalAttachments());
         }
 
-        final List<ApprovalLine> approvalLines = saveApprovalLines(approval, requestDTO.getApprovalLines());
-
-        final List<ApprovalLineResponseDTO> approvalLineResponseDTOs = approvalLines.stream()
-                .filter(approvalLine ->
-                        approvalLine.getLineType().equals(APPROVAL_TYPE_APPROVAL) ||
-                                approvalLine.getLineType().equals(APPROVAL_TYPE_REVIEWER))
-                .sorted(Comparator.comparingInt(ApprovalLine::getSequence))
-                .map(ApprovalLineResponseDTO::of)
-                .collect(Collectors.toList());
-
-        final List<ApprovalLineResponseDTO> refLines = approvalLines.stream()
-                .filter(approvalLine -> approvalLine.getLineType().equals(APPROVAL_TYPE_REFERENCE))
-                .map(ApprovalLineResponseDTO::of)
-                .collect(Collectors.toList());
-
-        final List<ApprovalLineResponseDTO> rcptLines = approvalLines.stream()
-                .filter(approvalLine -> approvalLine.getLineType().equals(APPROVAL_TYPE_RECIPIENT))
-                .map(ApprovalLineResponseDTO::of)
-                .collect(Collectors.toList());
+        final ApprovalLine firstApprovalLine =
+                saveApprovalLinesAndGetFirstApprover(approval, requestDTO.getApprovalLines()).stream()
+                        .filter(approvalLine -> "ALS_RVW".equals(approvalLine.getStatus()))
+                        .findFirst().get();
 
         updateRefCode(requestDTO.getApprovalTargetType(), approvalCode, ref);
-        sendApprovalNotification(approval, ApprovalNotificationType.REQUEST,
-                approvalLineResponseDTOs.get(0).getApproverId());
 
-        return ApprovalResponseDTO.of(approval, approvalAttachmentResponseDTOs, approvalLineResponseDTOs, refLines, rcptLines);
+        sendApprovalNotification(approval, ApprovalNotificationType.REQUEST, firstApprovalLine.getEmployee().getId());
+
+        return ApprovalResponseDTO.of(approval);
     }
 
     @Transactional
@@ -195,8 +173,8 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
 
                 so.updateApprovalInfo(so.getApprovalCode(), (isRejected ? "ORD_APPR_RJCT" : "ORD_APPR_DONE"));
 
-                if(!isRejected){
-                    eventPublisher.publishEvent(NotificationEvent.forClient(
+                if (!isRejected) {
+                    applicationEventPublisher.publishEvent(NotificationEvent.forClient(
                             NotificationType.ORDER,
                             "주문 상태 변경",
                             "주문번호 " + so.getSoCode() + "의 상태가 진행중으로 변경되었습니다.",
@@ -313,19 +291,20 @@ public class ApprovalCommandServiceImpl implements ApprovalCommandService {
         return totalLine;
     }
 
-    private List<ApprovalAttachment> saveApprovalAttachments(final Approval approval, final List<MultipartFile> files) {
-        final List<ApprovalAttachment> approvalAttachments = files.stream()
-                .map(file -> {
-                    final String s3Url = s3Uploader.upload("sero/documents/", file);
+    private List<ApprovalAttachment> saveApprovalAttachments(final Approval approval,
+                                                             final List<ApprovalAttachmentRequestDTO> requestDTOs) {
+        final List<ApprovalAttachment> approvalAttachments = requestDTOs.stream()
+                .map(requestDTO -> {
+                    final String s3Url = s3Uploader.copy(requestDTO.getS3Url(), "sero/documents/");
 
-                    return new ApprovalAttachment(file.getOriginalFilename(), s3Url, approval);
+                    return new ApprovalAttachment(requestDTO.getOriginalFileName(), s3Url, approval);
                 })
                 .collect(Collectors.toList());
 
         return approvalAttachmentRepository.saveAll(approvalAttachments);
     }
 
-    private List<ApprovalLine> saveApprovalLines(final Approval approval, final List<ApprovalLineRequestDTO> requestDTOs) {
+    private List<ApprovalLine> saveApprovalLinesAndGetFirstApprover(final Approval approval, final List<ApprovalLineRequestDTO> requestDTOs) {
         final List<Employee> employees = employeeRepository.findByIdIn(requestDTOs.stream()
                 .map(ApprovalLineRequestDTO::getApproverId)
                 .collect(Collectors.toList()));
